@@ -23,3 +23,15 @@ go.work.sum
 
 # env file
 .env
+.qodo
+.DS_Store
+*~
+*.aar
+*.apk
+*.tar.gz
+.idea
+.vscode
+go.work
+go.work.sum
+
+examples/

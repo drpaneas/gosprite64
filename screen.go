@@ -5,10 +5,10 @@ import (
 	"image/color"
 	"image/draw"
 
-	"github.com/clktmr/n64/drivers/display"
-	n64draw "github.com/clktmr/n64/drivers/draw"
-	"github.com/clktmr/n64/machine"
-	"github.com/clktmr/n64/rcp/video"
+	"github.com/drpaneas/n64/drivers/display"
+	n64draw "github.com/drpaneas/n64/drivers/draw"
+	"github.com/drpaneas/n64/machine"
+	"github.com/drpaneas/n64/rcp/video"
 )
 
 // VideoPreset represents a predefined video configuration

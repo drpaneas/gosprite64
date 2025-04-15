@@ -1,4 +1,4 @@
-github.com/clktmr/n64 v0.0.0-20250412190149-dcd06c1adfdc h1:2jPqjH+HoXveHII8lymHlDBMC76qf+8cqapcjY8Pbhw=
-github.com/clktmr/n64 v0.0.0-20250412190149-dcd06c1adfdc/go.mod h1:WZEm+7iYvDei+ie8OZFowNQg/bXX+tPtar1LIOq2yZI=
+github.com/drpaneas/n64 v0.0.0-20250415192732-849e0733e7b3 h1:5O6zVNdbyiIFVaXuxeLqvIQyVOCRhzAjzO2vyp/bfhM=
+github.com/drpaneas/n64 v0.0.0-20250415192732-849e0733e7b3/go.mod h1:dVXMCfFEXer4c4vWZr4EzXPy4lzvtg3ggrFDGxgNoSQ=
 github.com/embeddedgo/display v1.1.0 h1:jXlY6/FeaUV89hX+ANGpTKogZWjhgno7vrCh86WA8aY=
 github.com/embeddedgo/display v1.1.0/go.mod h1:0sxxBoklqMbA1uBqEAg8Plntmwvt7cNsgxaf7UaS4yw=

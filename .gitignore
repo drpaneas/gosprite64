@@ -34,7 +34,8 @@ go.work.sum
 go.work
 go.work.sum
 
-examples/
+examples/*/*.mod
+examples/*/*.sum
 *.elf
 *.z64
 build.cfg

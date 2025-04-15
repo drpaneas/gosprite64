@@ -10,9 +10,7 @@
 [GoReport Status]: https://goreportcard.com/report/github.com/drpaneas/gosprite64
 [GoReport Widget]: https://goreportcard.com/badge/github.com/drpaneas/gosprite64
 
-<img src="https://github.com/kubernetes/minikube/raw/master/logo.png" width="100" alt="gosprite64 logo">
-
-Rendering nostalgia, one tile at a time
+![gosprite64 logo](logo.png)
 
 ## ✨ Features
 

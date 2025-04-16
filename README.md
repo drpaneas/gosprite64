@@ -1,5 +1,5 @@
 <h1 align="center" style="border-bottom: none">
-    <a href="https://gosprite64.dev" target="_blank"><img alt="GoSprite64" src="logo.png"></a><br>GoSprite64
+    <a href="https://gosprite64.dev" target="_blank"><img alt="GoSprite64" src="docs/logo.png"></a><br>GoSprite64
 </h1>
 
 <div align="center">

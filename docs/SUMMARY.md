@@ -1,6 +1,6 @@
 # Summary
 
-- [Introduction](./introduction/introduction.md)
+- [Introduction](introduction.md)
 - [Running an example](./setup/getting_started.md)
   - [Environment setup](./setup/setup.md)
     - [Linux setup](./setup/linux.md)
@@ -10,4 +10,3 @@
     - [Play in Emulator](,/setup/emulator.md)
     - [Play in Nintendo64](./setup/summercard64.md)
     - [Debugging](./setup/debugging.md)
-

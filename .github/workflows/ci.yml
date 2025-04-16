@@ -21,26 +21,17 @@ jobs:
           go-version: 'stable'
           cache: true
 
-      # --- Windows: Use Git Bash to run mage ---
-      - name: Run mage targets on Windows using Git Bash
-        if: runner.os == 'Windows'
-        shell: bash
-        run: mage Setup Test
-
       # --- macOS ARM64: Install mage via Homebrew then run manually ---
-      - name: Install mage using Homebrew (macOS ARM64)
+      - name: Install mage using Homebrew (macOS ARM64) and run 
         if: runner.os == 'macos' && runner.arch == 'arm64'
         run: |
           brew update
           brew install mage
-
-      - name: Run mage targets manually (macOS ARM64)
-        if: runner.os == 'macos' && runner.arch == 'arm64'
-        run: mage Setup Test
+          mage Setup Test
 
       # --- Other platforms: Use mage-action ---
       - name: Run Mage Setup and Test targets with mage-action
-        if: runner.os != 'Windows' && (runner.os != 'macos' || runner.arch != 'arm64')
+        if: runner.os != 'macos'
         uses: magefile/mage-action@v3
         with:
           version: latest

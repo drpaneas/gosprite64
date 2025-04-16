@@ -6,6 +6,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,8 +15,14 @@ import (
 	"strings"
 )
 
-// Base directory for the toolchain installation.
-var baseDir = filepath.Join(os.Getenv("HOME"), "toolchains", "nintendo64")
+// baseDir is set according to the OS:
+// On Windows, we use USERPROFILE; on Unix-like systems, we use HOME.
+var baseDir = func() string {
+	if runtime.GOOS == "windows" {
+		return filepath.Join(os.Getenv("USERPROFILE"), "toolchains", "nintendo64")
+	}
+	return filepath.Join(os.Getenv("HOME"), "toolchains", "nintendo64")
+}()
 
 // Directories for custom Go installation and GOPATH.
 var goDir = filepath.Join(baseDir, "go")
@@ -32,7 +40,7 @@ func runCommand(name string, args ...string) error {
 	return cmd.Run()
 }
 
-// runCommandInDir runs a command in the given directory.
+// runCommandInDir executes a command in the given directory.
 func runCommandInDir(dir, name string, args ...string) error {
 	fmt.Printf("Running in %s: %s %s\n", dir, name, strings.Join(args, " "))
 	cmd := exec.Command(name, args...)
@@ -42,8 +50,7 @@ func runCommandInDir(dir, name string, args ...string) error {
 	return cmd.Run()
 }
 
-// runDirenvCmd runs a command under the environment loaded from envDir,
-// by invoking "direnv exec <envDir> bash -c 'cd <workDir> && <cmd> <args>'".
+// runDirenvCmd executes a command under an environment loaded from envDir using direnv.
 func runDirenvCmd(envDir, workDir string, cmdAndArgs ...string) error {
 	fullCmd := strings.Join(cmdAndArgs, " ")
 	bashCmd := fmt.Sprintf("cd %s && %s", workDir, fullCmd)
@@ -51,12 +58,13 @@ func runDirenvCmd(envDir, workDir string, cmdAndArgs ...string) error {
 	return runCommand("direnv", "exec", envDir, "bash", "-c", bashCmd)
 }
 
-// SetCustomEnv programmatically sets environment variables for the custom toolchain.
+// SetCustomEnv sets the environment variables for our custom toolchain.
 func SetCustomEnv() {
 	os.Setenv("GOROOT", goDir)
 	os.Setenv("GOPATH", gopathDir)
 	gobin := filepath.Join(gopathDir, "bin")
 	os.Setenv("GOBIN", gobin)
+	// Prepend our custom directories to PATH.
 	path := os.Getenv("PATH")
 	newPath := gobin + string(os.PathListSeparator) + filepath.Join(goDir, "bin") + string(os.PathListSeparator) + path
 	os.Setenv("PATH", newPath)
@@ -67,7 +75,7 @@ func SetCustomEnv() {
 	fmt.Printf("  PATH=%s\n", os.Getenv("PATH"))
 }
 
-// VerifyCustomGo checks that "go version" prints the expected custom version fingerprint.
+// VerifyCustomGo checks that "go version" contains the expected custom version fingerprint.
 func VerifyCustomGo() error {
 	SetCustomEnv()
 	out, err := exec.Command("go", "version").Output()
@@ -83,8 +91,13 @@ func VerifyCustomGo() error {
 	return nil
 }
 
-// ConfigureDirenvHook ensures the appropriate direnv hook is in your shell's config file.
+// ConfigureDirenvHook configures the direnv hook in the user's shell configuration.
+// Skipped on Windows.
 func ConfigureDirenvHook() error {
+	if runtime.GOOS == "windows" {
+		fmt.Println("Direnv hook configuration skipped on Windows.")
+		return nil
+	}
 	shell := os.Getenv("SHELL")
 	var configFile, hookCmd string
 	if strings.Contains(shell, "bash") {
@@ -100,8 +113,6 @@ func ConfigureDirenvHook() error {
 		fmt.Printf("Your shell (%s) is not explicitly supported. Please add the direnv hook manually.\n", shell)
 		return nil
 	}
-
-	// Check if the hook is already present.
 	file, err := os.Open(configFile)
 	if err != nil {
 		return fmt.Errorf("failed to open %s: %w", configFile, err)
@@ -117,7 +128,6 @@ func ConfigureDirenvHook() error {
 	if err := scanner.Err(); err != nil {
 		return err
 	}
-	// Append the hook.
 	f, err := os.OpenFile(configFile, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open %s for appending: %w", configFile, err)
@@ -131,10 +141,46 @@ func ConfigureDirenvHook() error {
 	return nil
 }
 
-// InstallDirenv installs direnv using the system package manager and configures its hook.
+// InstallDirenv installs direnv using the system package manager on Linux/darwin,
+// and for Windows it automatically downloads the latest direnv executable.
 func InstallDirenv() error {
-	fmt.Println("Installing direnv...")
 	osType := runtime.GOOS
+	if osType == "windows" {
+		fmt.Println("Installing direnv on Windows...")
+		// Determine a destination path for direnv.exe. We'll place it in baseDir.
+		destPath := filepath.Join(baseDir, "direnv.exe")
+		// Check if already exists.
+		if _, err := os.Stat(destPath); err == nil {
+			fmt.Printf("direnv.exe already exists at %s\n", destPath)
+		} else {
+			// Use the "latest" URL pattern so it always gets the current version.
+			url := "https://github.com/direnv/direnv/releases/latest/download/direnv.windows-amd64.exe"
+			fmt.Printf("Downloading direnv from %s...\n", url)
+			resp, err := http.Get(url)
+			if err != nil {
+				return fmt.Errorf("failed to download direnv: %w", err)
+			}
+			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				return fmt.Errorf("failed to download direnv: received status code %d", resp.StatusCode)
+			}
+			outFile, err := os.Create(destPath)
+			if err != nil {
+				return fmt.Errorf("failed to create %s: %w", destPath, err)
+			}
+			defer outFile.Close()
+			_, err = io.Copy(outFile, resp.Body)
+			if err != nil {
+				return fmt.Errorf("failed to write file: %w", err)
+			}
+			fmt.Printf("direnv installed at %s\n", destPath)
+		}
+		// Optionally, if you need the downloaded direnv.exe available in PATH,
+		// you can instruct the user (or update the environment) accordingly.
+		return nil
+	}
+
+	// Linux
 	if osType == "linux" {
 		if _, err := exec.LookPath("apt-get"); err == nil {
 			fmt.Println("Debian/Ubuntu detected; installing direnv via apt-get...")
@@ -173,13 +219,18 @@ func InstallDirenv() error {
 	return ConfigureDirenvHook()
 }
 
-// AutoDirenvAllow automatically runs "direnv allow" in the base directory.
+// AutoDirenvAllow automatically runs "direnv allow" in baseDir.
+// This is skipped on Windows.
 func AutoDirenvAllow() error {
+	if runtime.GOOS == "windows" {
+		fmt.Println("Auto direnv allow skipped on Windows.")
+		return nil
+	}
 	fmt.Printf("Automatically allowing direnv in %s...\n", baseDir)
 	return runCommandInDir(baseDir, "direnv", "allow")
 }
 
-// SetupToolchain ensures that the base directory exists.
+// SetupToolchain ensures the base directory exists.
 func SetupToolchain() error {
 	fmt.Printf("Ensuring base directory %s exists...\n", baseDir)
 	return os.MkdirAll(baseDir, 0755)
@@ -187,14 +238,13 @@ func SetupToolchain() error {
 
 // BuildCustomGo clones the custom Go repository (mips branch) and builds it.
 // It skips rebuilding if the custom Go binary already exists.
-// On Windows, it uses "make.bat", while on other platforms it uses "./make.bash".
+// On Windows it uses make.bat; on other platforms, make.bash.
 func BuildCustomGo() error {
 	goBinaryPath := filepath.Join(goDir, "bin", "go")
 	if _, err := os.Stat(goBinaryPath); err == nil {
 		fmt.Println("Custom Go binary already built, skipping rebuild.")
 		return nil
 	}
-
 	if _, err := os.Stat(goDir); os.IsNotExist(err) {
 		fmt.Println("Cloning custom Go repository...")
 		if err := runCommand("git", "clone", "https://github.com/clktmr/go", "-b", "mips", goDir); err != nil {
@@ -203,7 +253,6 @@ func BuildCustomGo() error {
 	} else {
 		fmt.Println("Custom Go repository already cloned.")
 	}
-
 	// Ensure we're on the mips branch.
 	cmd := exec.Command("git", "checkout", "mips")
 	cmd.Dir = goDir
@@ -212,27 +261,21 @@ func BuildCustomGo() error {
 	if err := cmd.Run(); err != nil {
 		return err
 	}
-
 	// Build the custom Embedded Go.
 	srcDir := filepath.Join(goDir, "src")
 	fmt.Println("Building custom Embedded Go...")
-
 	if runtime.GOOS == "windows" {
-		// On Windows use make.bat.
 		if err := runCommandInDir(srcDir, "cmd", "/c", "make.bat"); err != nil {
 			return err
 		}
 	} else {
-		// On non-Windows platforms, use bash to run make.bash.
 		if err := runCommandInDir(srcDir, "bash", "-c", "./make.bash"); err != nil {
 			return err
 		}
 	}
-
 	fmt.Println("Custom Go built successfully.")
 	return nil
 }
-
 
 // SetupGopath creates the directory structure for GOPATH.
 func SetupGopath() error {
@@ -252,7 +295,7 @@ func SetupGopath() error {
 	return nil
 }
 
-// ConfigureEnv writes an .envrc file in the base directory to set environment variables.
+// ConfigureEnv writes an .envrc file in baseDir to set environment variables.
 func ConfigureEnv() error {
 	envrcPath := filepath.Join(baseDir, ".envrc")
 	content := fmt.Sprintf(`export GOROOT=%s
@@ -295,43 +338,55 @@ func CloneGosprite64() error {
 	return nil
 }
 
-// Test is a separate target that clones GoSprite64 (if needed) and then, in the examples/clearscreen
-// directory, performs the following steps using direnv to ensure the environment is loaded:
+// Test is a target that clones GoSprite64 (if needed) and in the examples/clearscreen directory performs:
 //  1. emgo mod init
 //  2. go mod edit -replace=github.com/drpaneas/gosprite64=<localPath>
 //  3. emgo mod tidy
 //  4. emgo build
-//  5. Check for a *.z64 file and report success or failure.
+//  5. Checks for a generated *.z64 file.
+//
+// On Unix-like systems, these steps use direnv; on Windows they run directly.
 func Test() error {
-	// Clone GoSprite64 if not present.
 	if err := CloneGosprite64(); err != nil {
 		return err
 	}
-
 	exampleDir := filepath.Join(gopathDir, "src", "gosprite64", "examples", "clearscreen")
 	localModulePath := filepath.Join(gopathDir, "src", "gosprite64")
-
-	// Step 1: Run "emgo mod init" in exampleDir.
-	fmt.Println("Running 'emgo mod init'...")
-	if err := runDirenvCmd(baseDir, exampleDir, "emgo", "mod", "init"); err != nil {
-		return fmt.Errorf("failed to run emgo mod init: %w", err)
+	if runtime.GOOS != "windows" {
+		fmt.Println("Running 'emgo mod init' via direnv in the example directory...")
+		if err := runDirenvCmd(baseDir, exampleDir, "emgo", "mod", "init"); err != nil {
+			return fmt.Errorf("failed to run emgo mod init: %w", err)
+		}
+		fmt.Println("Replacing module path in go.mod via direnv...")
+		if err := runDirenvCmd(baseDir, exampleDir, "go", "mod", "edit", "-replace=github.com/drpaneas/gosprite64="+localModulePath); err != nil {
+			return fmt.Errorf("failed to edit go.mod: %w", err)
+		}
+		fmt.Println("Running 'emgo mod tidy' via direnv...")
+		if err := runDirenvCmd(baseDir, exampleDir, "emgo", "mod", "tidy"); err != nil {
+			return fmt.Errorf("failed to run emgo mod tidy: %w", err)
+		}
+		fmt.Println("Running 'emgo build' via direnv...")
+		if err := runDirenvCmd(baseDir, exampleDir, "emgo", "build"); err != nil {
+			return fmt.Errorf("failed to run emgo build: %w", err)
+		}
+	} else {
+		fmt.Println("Running 'emgo mod init' in the example directory on Windows...")
+		if err := runCommandInDir(exampleDir, "emgo", "mod", "init"); err != nil {
+			return fmt.Errorf("failed to run emgo mod init: %w", err)
+		}
+		fmt.Println("Replacing module path in go.mod on Windows...")
+		if err := runCommandInDir(exampleDir, "go", "mod", "edit", "-replace=github.com/drpaneas/gosprite64="+localModulePath); err != nil {
+			return fmt.Errorf("failed to edit go.mod: %w", err)
+		}
+		fmt.Println("Running 'emgo mod tidy' on Windows...")
+		if err := runCommandInDir(exampleDir, "emgo", "mod", "tidy"); err != nil {
+			return fmt.Errorf("failed to run emgo mod tidy: %w", err)
+		}
+		fmt.Println("Running 'emgo build' on Windows...")
+		if err := runCommandInDir(exampleDir, "emgo", "build"); err != nil {
+			return fmt.Errorf("failed to run emgo build: %w", err)
+		}
 	}
-	// Step 2: Update go.mod to replace the module path.
-	fmt.Println("Replacing module path in go.mod...")
-	if err := runDirenvCmd(baseDir, exampleDir, "go", "mod", "edit", "-replace=github.com/drpaneas/gosprite64="+localModulePath); err != nil {
-		return fmt.Errorf("failed to edit go.mod: %w", err)
-	}
-	// Step 3: Run "emgo mod tidy".
-	fmt.Println("Running 'emgo mod tidy'...")
-	if err := runDirenvCmd(baseDir, exampleDir, "emgo", "mod", "tidy"); err != nil {
-		return fmt.Errorf("failed to run emgo mod tidy: %w", err)
-	}
-	// Step 4: Run "emgo build".
-	fmt.Println("Running 'emgo build'...")
-	if err := runDirenvCmd(baseDir, exampleDir, "emgo", "build"); err != nil {
-		return fmt.Errorf("failed to run emgo build: %w", err)
-	}
-	// Step 5: Check for a generated *.z64 file.
 	pattern := filepath.Join(exampleDir, "*.z64")
 	files, err := filepath.Glob(pattern)
 	if err != nil {
@@ -345,7 +400,7 @@ func Test() error {
 	return nil
 }
 
-// Setup is the primary target that sets up the toolchain without cloning GoSprite64.
+// Setup is the primary target that sets up the toolchain (without cloning GoSprite64).
 func Setup() error {
 	if err := SetupToolchain(); err != nil {
 		return err

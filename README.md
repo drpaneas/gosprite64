@@ -2,10 +2,9 @@
     <a href="https://gosprite64.dev" target="_blank"><img alt="GoSprite64" src="logo.png"></a><br>GoSprite64
 </h1>
 
-<p align="center">Visit <a href="https://gosprite64.dev" target="_blank">gosprite64.dev</a> for the full documentation,
-examples and guides.</p>
-
 <div align="center">
+
+a 2D retro gamedev library for Nintendo64 using Go!
 
 [![License][License-Image]][License-Url]
 [![CI][CI-Image]][CI-URL]
@@ -15,7 +14,8 @@ examples and guides.</p>
 
 </div>
 
-GoSprite64, a 2D retro gamedev library for Nintendo64 using Go!
+<p align="center">visit <a href="https://gosprite64.dev" target="_blank">gosprite64.dev</a> for the full documentation,
+examples and guides.</p>
 
 ## ✨ Features
 
@@ -49,4 +49,3 @@ This project is licensed under the MIT license. See the [LICENSE](LICENSE) file 
 [Dependabot-Image]: https://github.com/drpaneas/gosprite64/actions/workflows/dependabot/dependabot-updates/badge.svg
 [Doc-URL]: https://github.com/drpaneas/gosprite64/actions/workflows/mdbook.yml
 [Doc-Image]: https://github.com/drpaneas/gosprite64/actions/workflows/mdbook.yml/badge.svg
-

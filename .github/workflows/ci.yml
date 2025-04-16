@@ -1,4 +1,4 @@
-name: Mage CI
+name: CI
 
 on:
   push:

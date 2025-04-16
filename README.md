@@ -1,18 +1,27 @@
-# gosprite64
+<h1 align="center" style="border-bottom: none">
+    <a href="https://gosprite64.dev" target="_blank"><img alt="GoSprite64" src="logo.png"></a><br>GoSprite64
+</h1>
+
+<p align="center">Visit <a href="https://gosprite64.dev" target="_blank">gosprite64.dev</a> for the full documentation,
+examples and guides.</p>
+
+<div align="center">
 
 [![License][License-Image]][License-Url]
 [![CI][CI-Image]][CI-URL]
 [![Go Report Card](https://goreportcard.com/badge/github.com/drpaneas/gosprite64)](https://goreportcard.com/report/github.com/drpaneas/gosprite64)
+[![Publish docs][Doc-Image]][Doc-URL]
 [![Dependabot Updates][Dependabot-Image]][Dependabot-URL]
-![gosprite64 logo](logo.png)
 
-🚀 Introducing GoSprite64: 2D Retro Game Development for Nintendo64 using Go! 🚀
+</div>
+
+GoSprite64, a 2D retro gamedev library for Nintendo64 using Go!
 
 ## ✨ Features
 
-> "You only need X and Y."
-
 GoSprite64 embraces the flat world of tilemaps, palettes, and framebuffers — without the complexity of 3D pipelines.
+
+> "You only need X and Y."
 
 * 🕹️ Built on [embedded-go](https://github.com/embeddedgo/go) to provide Go idiomatic experience.
 
@@ -38,3 +47,6 @@ This project is licensed under the MIT license. See the [LICENSE](LICENSE) file 
 [CI-Image]: https://github.com/drpaneas/gosprite64/actions/workflows/ci.yml/badge.svg
 [Dependabot-URL]: https://github.com/drpaneas/gosprite64/actions/workflows/dependabot/dependabot-updates
 [Dependabot-Image]: https://github.com/drpaneas/gosprite64/actions/workflows/dependabot/dependabot-updates/badge.svg
+[Doc-URL]: https://github.com/drpaneas/gosprite64/actions/workflows/mdbook.yml
+[Doc-Image]: https://github.com/drpaneas/gosprite64/actions/workflows/mdbook.yml/badge.svg
+

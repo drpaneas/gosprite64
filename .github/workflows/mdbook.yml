@@ -8,6 +8,15 @@ on:
   # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
+    paths:
+      - 'book.toml'
+      - '.github/workflows/mdbook.yml'
+      - 'docs/**'
+  pull_request:
+    paths:
+      - 'book.toml'
+      - '.github/workflows/mdbook.yml'
+      - 'docs/**'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -47,14 +56,28 @@ jobs:
         with:
           path: ./book
 
-  # Deployment job
+  # Deploys to gosprite64.dev
   deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages (Production)
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # deploys to: https://drpaneas.github.io/gosprite64/deploy-preview/42/
+  preview:
+    if: github.event_name == 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages-preview
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages (PR Preview)
         id: deployment
         uses: actions/deploy-pages@v4

@@ -30,3 +30,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./book
+          publish_branch: gh-pages
+          cname: gosprite64.dev
+          force_orphan: true

@@ -186,13 +186,15 @@ func SetupToolchain() error {
 }
 
 // BuildCustomGo clones the custom Go repository (mips branch) and builds it.
-// It skips rebuilding if the custom Go binary is already present.
+// It skips rebuilding if the custom Go binary already exists.
+// On Windows, it uses "make.bat", while on other platforms it uses "./make.bash".
 func BuildCustomGo() error {
 	goBinaryPath := filepath.Join(goDir, "bin", "go")
 	if _, err := os.Stat(goBinaryPath); err == nil {
 		fmt.Println("Custom Go binary already built, skipping rebuild.")
 		return nil
 	}
+
 	if _, err := os.Stat(goDir); os.IsNotExist(err) {
 		fmt.Println("Cloning custom Go repository...")
 		if err := runCommand("git", "clone", "https://github.com/clktmr/go", "-b", "mips", goDir); err != nil {
@@ -201,6 +203,7 @@ func BuildCustomGo() error {
 	} else {
 		fmt.Println("Custom Go repository already cloned.")
 	}
+
 	// Ensure we're on the mips branch.
 	cmd := exec.Command("git", "checkout", "mips")
 	cmd.Dir = goDir
@@ -209,15 +212,27 @@ func BuildCustomGo() error {
 	if err := cmd.Run(); err != nil {
 		return err
 	}
+
 	// Build the custom Embedded Go.
 	srcDir := filepath.Join(goDir, "src")
 	fmt.Println("Building custom Embedded Go...")
-	if err := runCommandInDir(srcDir, "bash", "-c", "./make.bash"); err != nil {
-		return err
+
+	if runtime.GOOS == "windows" {
+		// On Windows use make.bat.
+		if err := runCommandInDir(srcDir, "cmd", "/c", "make.bat"); err != nil {
+			return err
+		}
+	} else {
+		// On non-Windows platforms, use bash to run make.bash.
+		if err := runCommandInDir(srcDir, "bash", "-c", "./make.bash"); err != nil {
+			return err
+		}
 	}
+
 	fmt.Println("Custom Go built successfully.")
 	return nil
 }
+
 
 // SetupGopath creates the directory structure for GOPATH.
 func SetupGopath() error {

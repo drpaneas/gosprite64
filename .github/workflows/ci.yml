@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Go
@@ -21,23 +21,28 @@ jobs:
           go-version: 'stable'
           cache: true
 
-      # For macOS Arm64, install mage using Homebrew.
+      # --- Windows: Use Git Bash to run mage ---
+      - name: Run mage targets on Windows using Git Bash
+        if: runner.os == 'Windows'
+        shell: bash
+        run: mage Setup Test
+
+      # --- macOS ARM64: Install mage via Homebrew then run manually ---
       - name: Install mage using Homebrew (macOS ARM64)
-        if: runner.os == 'macOS' && runner.arch == 'arm64'
+        if: runner.os == 'macos' && runner.arch == 'arm64'
         run: |
           brew update
           brew install mage
 
-      # For non-macOS-ARM64 runners, use the mage-action.
+      - name: Run mage targets manually (macOS ARM64)
+        if: runner.os == 'macos' && runner.arch == 'arm64'
+        run: mage Setup Test
+
+      # --- Other platforms: Use mage-action ---
       - name: Run Mage Setup and Test targets with mage-action
-        if: runner.os != 'macOS' || runner.arch != 'arm64'
+        if: runner.os != 'Windows' && (runner.os != 'macos' || runner.arch != 'arm64')
         uses: magefile/mage-action@v3
         with:
           version: latest
           args: Setup Test
-
-      # For macOS ARM64, run mage manually.
-      - name: Run mage targets manually (macOS ARM64)
-        if: runner.os == 'macOS' && runner.arch == 'arm64'
-        run: mage Setup Test
 

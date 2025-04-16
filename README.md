@@ -8,6 +8,7 @@ a 2D retro gamedev library for Nintendo64 using Go!
 
 [![License][License-Image]][License-Url]
 [![CI][CI-Image]][CI-URL]
+[![Go Report Card](https://goreportcard.com/badge/drpaneas/gosprite64)](https://goreportcard.com/report/drpaneas/gosprite64)
 [![GoReport Widget]][GoReport Status]
 [![Publish docs][Doc-Image]][Doc-URL]
 [![Dependabot Updates][Dependabot-Image]][Dependabot-URL]
@@ -49,5 +50,3 @@ This project is licensed under the MIT license. See the [LICENSE](LICENSE) file 
 [Dependabot-Image]: https://github.com/drpaneas/gosprite64/actions/workflows/dependabot/dependabot-updates/badge.svg
 [Doc-URL]: https://github.com/drpaneas/gosprite64/actions/workflows/mdbook.yml
 [Doc-Image]: https://github.com/drpaneas/gosprite64/actions/workflows/mdbook.yml/badge.svg
-[GoReport Status]: https://goreportcard.com/report/github.com/drpaneas/gosprite64
-[GoReport Widget]: https://goreportcard.com/badge/github.com/drpaneas/gosprite64

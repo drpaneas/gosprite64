@@ -1,0 +1,13 @@
+[book]
+authors = ["drpaneas"]
+language = "en"
+multilingual = false
+src = "src" # <- this is where the markdown files should be
+title = "GoSprite64 Documentation"
+description = "Technical reference for the GoSprite64 library to help you make 2D games for Nintendo64."
+
+[build]
+build-dir = "book" # <- default and expected by GH Actions. No need to create thid folder, Github will do.
+
+[output.html]
+cname="gosprite64.dev"

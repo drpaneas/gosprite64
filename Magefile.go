@@ -13,14 +13,14 @@ import (
 	"strings"
 )
 
-// Base directory for our toolchain installation.
+// Base directory for the toolchain installation.
 var baseDir = filepath.Join(os.Getenv("HOME"), "toolchains", "nintendo64")
 
-// Directories for the custom Go and GOPATH.
+// Directories for custom Go installation and GOPATH.
 var goDir = filepath.Join(baseDir, "go")
 var gopathDir = filepath.Join(baseDir, "gopath")
 
-// expectedVersionFingerprint is the substring we expect in our custom Go version.
+// expectedVersionFingerprint is the substring expected in our custom Go version.
 const expectedVersionFingerprint = "af62b1cff2"
 
 // runCommand executes a command and streams its output.
@@ -32,7 +32,7 @@ func runCommand(name string, args ...string) error {
 	return cmd.Run()
 }
 
-// runCommandInDir executes a command in a given directory.
+// runCommandInDir runs a command in the given directory.
 func runCommandInDir(dir, name string, args ...string) error {
 	fmt.Printf("Running in %s: %s %s\n", dir, name, strings.Join(args, " "))
 	cmd := exec.Command(name, args...)
@@ -42,18 +42,24 @@ func runCommandInDir(dir, name string, args ...string) error {
 	return cmd.Run()
 }
 
-// SetCustomEnv programmatically sets the environment variables needed for your custom Go.
+// runDirenvCmd runs a command under the environment loaded from envDir,
+// by invoking "direnv exec <envDir> bash -c 'cd <workDir> && <cmd> <args>'".
+func runDirenvCmd(envDir, workDir string, cmdAndArgs ...string) error {
+	fullCmd := strings.Join(cmdAndArgs, " ")
+	bashCmd := fmt.Sprintf("cd %s && %s", workDir, fullCmd)
+	fmt.Printf("Running under direnv in %s: %s\n", workDir, bashCmd)
+	return runCommand("direnv", "exec", envDir, "bash", "-c", bashCmd)
+}
+
+// SetCustomEnv programmatically sets environment variables for the custom toolchain.
 func SetCustomEnv() {
 	os.Setenv("GOROOT", goDir)
 	os.Setenv("GOPATH", gopathDir)
 	gobin := filepath.Join(gopathDir, "bin")
 	os.Setenv("GOBIN", gobin)
-
-	// Prepend our custom directories to PATH.
 	path := os.Getenv("PATH")
 	newPath := gobin + string(os.PathListSeparator) + filepath.Join(goDir, "bin") + string(os.PathListSeparator) + path
 	os.Setenv("PATH", newPath)
-
 	fmt.Println("Custom environment variables set:")
 	fmt.Printf("  GOROOT=%s\n", goDir)
 	fmt.Printf("  GOPATH=%s\n", gopathDir)
@@ -61,11 +67,9 @@ func SetCustomEnv() {
 	fmt.Printf("  PATH=%s\n", os.Getenv("PATH"))
 }
 
-// VerifyCustomGo ensures that "go version" prints the expected custom version fingerprint.
+// VerifyCustomGo checks that "go version" prints the expected custom version fingerprint.
 func VerifyCustomGo() error {
-	// Set our custom environment.
 	SetCustomEnv()
-
 	out, err := exec.Command("go", "version").Output()
 	if err != nil {
 		return fmt.Errorf("failed to run go version: %w", err)
@@ -79,11 +83,10 @@ func VerifyCustomGo() error {
 	return nil
 }
 
-// ConfigureDirenvHook detects the current shell and adds the appropriate direnv hook if not present.
+// ConfigureDirenvHook ensures the appropriate direnv hook is in your shell's config file.
 func ConfigureDirenvHook() error {
 	shell := os.Getenv("SHELL")
 	var configFile, hookCmd string
-
 	if strings.Contains(shell, "bash") {
 		configFile = filepath.Join(os.Getenv("HOME"), ".bashrc")
 		hookCmd = `eval "$(direnv hook bash)"`
@@ -104,7 +107,6 @@ func ConfigureDirenvHook() error {
 		return fmt.Errorf("failed to open %s: %w", configFile, err)
 	}
 	defer file.Close()
-
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		if strings.TrimSpace(scanner.Text()) == hookCmd {
@@ -115,14 +117,12 @@ func ConfigureDirenvHook() error {
 	if err := scanner.Err(); err != nil {
 		return err
 	}
-
-	// Append the hook if not present.
+	// Append the hook.
 	f, err := os.OpenFile(configFile, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open %s for appending: %w", configFile, err)
 	}
 	defer f.Close()
-
 	fmt.Printf("Appending direnv hook to %s...\n", configFile)
 	if _, err := f.WriteString("\n# Load direnv\n" + hookCmd + "\n"); err != nil {
 		return fmt.Errorf("failed to append to %s: %w", configFile, err)
@@ -131,14 +131,13 @@ func ConfigureDirenvHook() error {
 	return nil
 }
 
-// InstallDirenv installs direnv using the appropriate package manager and then configures the hook.
+// InstallDirenv installs direnv using the system package manager and configures its hook.
 func InstallDirenv() error {
 	fmt.Println("Installing direnv...")
 	osType := runtime.GOOS
-
 	if osType == "linux" {
 		if _, err := exec.LookPath("apt-get"); err == nil {
-			fmt.Println("Debian/Ubuntu detected. Installing direnv via apt-get...")
+			fmt.Println("Debian/Ubuntu detected; installing direnv via apt-get...")
 			if err := runCommand("sudo", "apt-get", "update"); err != nil {
 				return err
 			}
@@ -146,12 +145,12 @@ func InstallDirenv() error {
 				return err
 			}
 		} else if _, err := exec.LookPath("dnf"); err == nil {
-			fmt.Println("Fedora detected. Installing direnv via dnf...")
+			fmt.Println("Fedora detected; installing direnv via dnf...")
 			if err := runCommand("sudo", "dnf", "install", "-y", "direnv"); err != nil {
 				return err
 			}
 		} else if _, err := exec.LookPath("pacman"); err == nil {
-			fmt.Println("Arch Linux detected. Installing direnv via pacman...")
+			fmt.Println("Arch Linux detected; installing direnv via pacman...")
 			if err := runCommand("sudo", "pacman", "-Syu", "direnv"); err != nil {
 				return err
 			}
@@ -160,7 +159,7 @@ func InstallDirenv() error {
 		}
 	} else if osType == "darwin" {
 		if _, err := exec.LookPath("brew"); err == nil {
-			fmt.Println("macOS detected. Installing direnv via Homebrew...")
+			fmt.Println("macOS detected; installing direnv via Homebrew...")
 			if err := runCommand("brew", "install", "direnv"); err != nil {
 				return err
 			}
@@ -171,7 +170,6 @@ func InstallDirenv() error {
 		fmt.Printf("Unsupported OS: %s. Please install direnv manually.\n", osType)
 		return nil
 	}
-
 	return ConfigureDirenvHook()
 }
 
@@ -188,16 +186,13 @@ func SetupToolchain() error {
 }
 
 // BuildCustomGo clones the custom Go repository (mips branch) and builds it.
-// If the custom Go binary already exists, it skips the build.
+// It skips rebuilding if the custom Go binary is already present.
 func BuildCustomGo() error {
-	// Check if the custom Go binary exists.
 	goBinaryPath := filepath.Join(goDir, "bin", "go")
 	if _, err := os.Stat(goBinaryPath); err == nil {
 		fmt.Println("Custom Go binary already built, skipping rebuild.")
 		return nil
 	}
-
-	// Clone repository if it doesn't exist.
 	if _, err := os.Stat(goDir); os.IsNotExist(err) {
 		fmt.Println("Cloning custom Go repository...")
 		if err := runCommand("git", "clone", "https://github.com/clktmr/go", "-b", "mips", goDir); err != nil {
@@ -206,7 +201,6 @@ func BuildCustomGo() error {
 	} else {
 		fmt.Println("Custom Go repository already cloned.")
 	}
-
 	// Ensure we're on the mips branch.
 	cmd := exec.Command("git", "checkout", "mips")
 	cmd.Dir = goDir
@@ -215,7 +209,6 @@ func BuildCustomGo() error {
 	if err := cmd.Run(); err != nil {
 		return err
 	}
-
 	// Build the custom Embedded Go.
 	srcDir := filepath.Join(goDir, "src")
 	fmt.Println("Building custom Embedded Go...")
@@ -226,7 +219,7 @@ func BuildCustomGo() error {
 	return nil
 }
 
-// SetupGopath creates the GOPATH directory structure.
+// SetupGopath creates the directory structure for GOPATH.
 func SetupGopath() error {
 	dirs := []string{
 		gopathDir,
@@ -252,7 +245,7 @@ export GOPATH=%s
 export GOBIN=%s
 export PATH=$GOBIN:%s/bin:$PATH
 `, goDir, gopathDir, filepath.Join(gopathDir, "bin"), goDir)
-	fmt.Printf("Creating .envrc at %s\n", envrcPath)
+	fmt.Printf("Creating .envrc at %s...\n", envrcPath)
 	if err := os.WriteFile(envrcPath, []byte(content), 0644); err != nil {
 		return err
 	}
@@ -260,15 +253,7 @@ export PATH=$GOBIN:%s/bin:$PATH
 	return nil
 }
 
-// EditGoMod uses Go's own module editing command to update go.mod.
-// It replaces "github.com/drpaneas/gosprite64" with the local path.
-func EditGoMod() error {
-	localModulePath := filepath.Join(gopathDir, "src", "gosprite64")
-	fmt.Println("Editing go.mod to replace module path with local module path...")
-	return runCommand("go", "mod", "edit", "-replace=github.com/drpaneas/gosprite64="+localModulePath)
-}
-
-// InstallEmgo installs the emgo tool—but only after verifying we are using the correct Go environment.
+// InstallEmgo installs the emgo tool after verifying the custom Go environment.
 func InstallEmgo() error {
 	if err := VerifyCustomGo(); err != nil {
 		return fmt.Errorf("cannot install emgo: %w", err)
@@ -295,34 +280,57 @@ func CloneGosprite64() error {
 	return nil
 }
 
-// BuildExample builds the clearscreen example using emgo.
-// It verifies that the custom Go environment is active.
-// When running in GitHub Actions, it also tidies modules and updates module paths.
-func BuildExample() error {
-	if err := VerifyCustomGo(); err != nil {
-		return fmt.Errorf("cannot build example: %w", err)
-	}
-	exampleDir := filepath.Join(gopathDir, "src", "gosprite64", "examples", "clearscreen")
-	// For GitHub Actions, tidy and update module paths using go mod edit instead of sed.
-	if os.Getenv("GITHUB_ACTIONS") == "true" {
-		fmt.Println("Detected GitHub Actions environment; running emgo mod tidy...")
-		if err := runCommandInDir(exampleDir, "emgo", "mod", "tidy"); err != nil {
-			return err
-		}
-		fmt.Println("Editing go.mod in the example to use the local module path...")
-		if err := EditGoMod(); err != nil {
-			fmt.Println("Warning: Failed to edit go.mod:", err)
-		}
-	}
-	fmt.Println("Building clearscreen example...")
-	if err := runCommandInDir(exampleDir, "emgo", "build"); err != nil {
+// Test is a separate target that clones GoSprite64 (if needed) and then, in the examples/clearscreen
+// directory, performs the following steps using direnv to ensure the environment is loaded:
+//  1. emgo mod init
+//  2. go mod edit -replace=github.com/drpaneas/gosprite64=<localPath>
+//  3. emgo mod tidy
+//  4. emgo build
+//  5. Check for a *.z64 file and report success or failure.
+func Test() error {
+	// Clone GoSprite64 if not present.
+	if err := CloneGosprite64(); err != nil {
 		return err
 	}
-	fmt.Println("Clearscreen example built successfully.")
+
+	exampleDir := filepath.Join(gopathDir, "src", "gosprite64", "examples", "clearscreen")
+	localModulePath := filepath.Join(gopathDir, "src", "gosprite64")
+
+	// Step 1: Run "emgo mod init" in exampleDir.
+	fmt.Println("Running 'emgo mod init'...")
+	if err := runDirenvCmd(baseDir, exampleDir, "emgo", "mod", "init"); err != nil {
+		return fmt.Errorf("failed to run emgo mod init: %w", err)
+	}
+	// Step 2: Update go.mod to replace the module path.
+	fmt.Println("Replacing module path in go.mod...")
+	if err := runDirenvCmd(baseDir, exampleDir, "go", "mod", "edit", "-replace=github.com/drpaneas/gosprite64="+localModulePath); err != nil {
+		return fmt.Errorf("failed to edit go.mod: %w", err)
+	}
+	// Step 3: Run "emgo mod tidy".
+	fmt.Println("Running 'emgo mod tidy'...")
+	if err := runDirenvCmd(baseDir, exampleDir, "emgo", "mod", "tidy"); err != nil {
+		return fmt.Errorf("failed to run emgo mod tidy: %w", err)
+	}
+	// Step 4: Run "emgo build".
+	fmt.Println("Running 'emgo build'...")
+	if err := runDirenvCmd(baseDir, exampleDir, "emgo", "build"); err != nil {
+		return fmt.Errorf("failed to run emgo build: %w", err)
+	}
+	// Step 5: Check for a generated *.z64 file.
+	pattern := filepath.Join(exampleDir, "*.z64")
+	files, err := filepath.Glob(pattern)
+	if err != nil {
+		return fmt.Errorf("error searching for .z64 files: %w", err)
+	}
+	if len(files) == 0 {
+		return fmt.Errorf("error: no .z64 file generated in %s", exampleDir)
+	}
+	fmt.Printf("Build succeeded! Generated .z64 file(s): %v\n", files)
+	fmt.Println("Please load the .z64 file into the Ares emulator.")
 	return nil
 }
 
-// Setup runs the setup tasks for the toolchain, excluding cloning GoSprite64.
+// Setup is the primary target that sets up the toolchain without cloning GoSprite64.
 func Setup() error {
 	if err := SetupToolchain(); err != nil {
 		return err
@@ -346,20 +354,5 @@ func Setup() error {
 		return err
 	}
 	fmt.Println("Toolchain setup complete.")
-	return nil
-}
-
-// Test is a separate target that clones the GoSprite64 repository, updates go.mod, and builds the example.
-func Test() error {
-	if err := CloneGosprite64(); err != nil {
-		return err
-	}
-	if err := EditGoMod(); err != nil {
-		return err
-	}
-	if err := BuildExample(); err != nil {
-		return err
-	}
-	fmt.Println("Test target complete: GoSprite64 cloned and example built.")
 	return nil
 }

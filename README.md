@@ -9,7 +9,6 @@ a 2D retro gamedev library for Nintendo64 using Go!
 [![License][License-Image]][License-Url]
 [![CI][CI-Image]][CI-URL]
 [![Go Report Card](https://goreportcard.com/badge/drpaneas/gosprite64)](https://goreportcard.com/report/drpaneas/gosprite64)
-[![GoReport Widget]][GoReport Status]
 [![Publish docs][Doc-Image]][Doc-URL]
 [![Dependabot Updates][Dependabot-Image]][Dependabot-URL]
 

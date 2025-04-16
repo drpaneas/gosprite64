@@ -2,9 +2,8 @@
 
 [![License][License-Image]][License-Url]
 [![CI][CI-Image]][CI-URL]
-[![GoReport Widget]][GoReport Status]
+[![Go Report Card](https://goreportcard.com/badge/github.com/drpaneas/gosprite64)](https://goreportcard.com/report/github.com/drpaneas/gosprite64)
 [![Dependabot Updates][Dependabot-Image]][Dependabot-URL]
-
 ![gosprite64 logo](logo.png)
 
 🚀 Introducing GoSprite64: 2D Retro Game Development for Nintendo64 using Go! 🚀
@@ -33,8 +32,6 @@ If you are interested in contributing to GoSprite64, read about our [Contributin
 
 This project is licensed under the MIT license. See the [LICENSE](LICENSE) file for details.
 
-[GoReport Status]: https://goreportcard.com/report/github.com/drpaneas/gosprite64
-[GoReport Widget]: https://goreportcard.com/badge/github.com/drpaneas/gosprite64
 [License-Url]: https://mit-license.org/
 [License-Image]: https://img.shields.io/badge/License-MIT-blue.svg
 [CI-URL]: https://github.com/drpaneas/gosprite64/actions/workflows/ci.yml

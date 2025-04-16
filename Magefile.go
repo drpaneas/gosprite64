@@ -146,75 +146,81 @@ func ConfigureDirenvHook() error {
 func InstallDirenv() error {
 	osType := runtime.GOOS
 	if osType == "windows" {
-		fmt.Println("Installing direnv on Windows...")
-		// Determine a destination path for direnv.exe. We'll place it in baseDir.
-		destPath := filepath.Join(baseDir, "direnv.exe")
-		// Check if already exists.
-		if _, err := os.Stat(destPath); err == nil {
-			fmt.Printf("direnv.exe already exists at %s\n", destPath)
-		} else {
-			// Use the "latest" URL pattern so it always gets the current version.
-			url := "https://github.com/direnv/direnv/releases/latest/download/direnv.windows-amd64.exe"
-			fmt.Printf("Downloading direnv from %s...\n", url)
-			resp, err := http.Get(url)
-			if err != nil {
-				return fmt.Errorf("failed to download direnv: %w", err)
-			}
-			defer resp.Body.Close()
-			if resp.StatusCode != http.StatusOK {
-				return fmt.Errorf("failed to download direnv: received status code %d", resp.StatusCode)
-			}
-			outFile, err := os.Create(destPath)
-			if err != nil {
-				return fmt.Errorf("failed to create %s: %w", destPath, err)
-			}
-			defer outFile.Close()
-			_, err = io.Copy(outFile, resp.Body)
-			if err != nil {
-				return fmt.Errorf("failed to write file: %w", err)
-			}
-			fmt.Printf("direnv installed at %s\n", destPath)
-		}
-		// Optionally, if you need the downloaded direnv.exe available in PATH,
-		// you can instruct the user (or update the environment) accordingly.
-		return nil
+		return installDirenvWindows()
 	}
-
-	// Linux
 	if osType == "linux" {
-		if _, err := exec.LookPath("apt-get"); err == nil {
-			fmt.Println("Debian/Ubuntu detected; installing direnv via apt-get...")
-			if err := runCommand("sudo", "apt-get", "update"); err != nil {
-				return err
-			}
-			if err := runCommand("sudo", "apt-get", "install", "-y", "direnv"); err != nil {
-				return err
-			}
-		} else if _, err := exec.LookPath("dnf"); err == nil {
-			fmt.Println("Fedora detected; installing direnv via dnf...")
-			if err := runCommand("sudo", "dnf", "install", "-y", "direnv"); err != nil {
-				return err
-			}
-		} else if _, err := exec.LookPath("pacman"); err == nil {
-			fmt.Println("Arch Linux detected; installing direnv via pacman...")
-			if err := runCommand("sudo", "pacman", "-Syu", "direnv"); err != nil {
-				return err
-			}
-		} else {
-			fmt.Println("No supported package manager found. Please install direnv manually.")
+		return installDirenvLinux()
+	}
+	if osType == "darwin" {
+		return installDirenvDarwin()
+	}
+	fmt.Printf("Unsupported OS: %s. Please install direnv manually.\n", osType)
+	return nil
+}
+
+func installDirenvWindows() error {
+	fmt.Println("Installing direnv on Windows...")
+	destPath := filepath.Join(baseDir, "direnv.exe")
+	if _, err := os.Stat(destPath); err == nil {
+		fmt.Printf("direnv.exe already exists at %s\n", destPath)
+	} else {
+		url := "https://github.com/direnv/direnv/releases/latest/download/direnv.windows-amd64.exe"
+		fmt.Printf("Downloading direnv from %s...\n", url)
+		resp, err := http.Get(url)
+		if err != nil {
+			return fmt.Errorf("failed to download direnv: %w", err)
 		}
-	} else if osType == "darwin" {
-		if _, err := exec.LookPath("brew"); err == nil {
-			fmt.Println("macOS detected; installing direnv via Homebrew...")
-			if err := runCommand("brew", "install", "direnv"); err != nil {
-				return err
-			}
-		} else {
-			fmt.Println("Homebrew not installed. Please install Homebrew or install direnv manually.")
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("failed to download direnv: received status code %d", resp.StatusCode)
+		}
+		outFile, err := os.Create(destPath)
+		if err != nil {
+			return fmt.Errorf("failed to create %s: %w", destPath, err)
+		}
+		defer outFile.Close()
+		_, err = io.Copy(outFile, resp.Body)
+		if err != nil {
+			return fmt.Errorf("failed to write file: %w", err)
+		}
+		fmt.Printf("direnv installed at %s\n", destPath)
+	}
+	return nil
+}
+
+func installDirenvLinux() error {
+	if _, err := exec.LookPath("apt-get"); err == nil {
+		fmt.Println("Debian/Ubuntu detected; installing direnv via apt-get...")
+		if err := runCommand("sudo", "apt-get", "update"); err != nil {
+			return err
+		}
+		if err := runCommand("sudo", "apt-get", "install", "-y", "direnv"); err != nil {
+			return err
+		}
+	} else if _, err := exec.LookPath("dnf"); err == nil {
+		fmt.Println("Fedora detected; installing direnv via dnf...")
+		if err := runCommand("sudo", "dnf", "install", "-y", "direnv"); err != nil {
+			return err
+		}
+	} else if _, err := exec.LookPath("pacman"); err == nil {
+		fmt.Println("Arch Linux detected; installing direnv via pacman...")
+		if err := runCommand("sudo", "pacman", "-Syu", "direnv"); err != nil {
+			return err
 		}
 	} else {
-		fmt.Printf("Unsupported OS: %s. Please install direnv manually.\n", osType)
-		return nil
+		fmt.Println("No supported package manager found. Please install direnv manually.")
+	}
+	return ConfigureDirenvHook()
+}
+
+func installDirenvDarwin() error {
+	if _, err := exec.LookPath("brew"); err == nil {
+		fmt.Println("macOS detected; installing direnv via Homebrew...")
+		if err := runCommand("brew", "install", "direnv"); err != nil {
+			return err
+		}
+	} else {
+		fmt.Println("Homebrew not installed. Please install Homebrew or install direnv manually.")
 	}
 	return ConfigureDirenvHook()
 }

@@ -1,7 +1,7 @@
 # Summary
 
 - [Introduction](introduction.md)
-- [Running an example](getting_started.md)
+- [Getting Started](getting_started.md)
   - [Environment setup](setup.md)
     - [Linux setup](linux.md)
     - [Windows setup](windows.md)

@@ -1,6 +1,6 @@
 # Introduction
 
-![Gopher](../logo.png)
+![Gopher](logo.png)
 
 **GoSprite64** is your portal to building retro-fueled 2D games for the **Nintendo 64**, using the modern power of **Go**. With clean APIs, minimal setup (Linux, Mac, Windows are all supported), and a rebellious retro soul, it lets you bring your pixel dreams to life—on real N64 hardware.
 

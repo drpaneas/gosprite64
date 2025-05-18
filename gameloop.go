@@ -18,8 +18,7 @@ type Gamelooper interface {
 // It will initialize the display, call Init() once, then repeatedly call Update() and Draw().
 func Run(g Gamelooper) {
 	// Initialize display with default settings
-	qualityPreset := LowRes // TODO: make this configurable
-	screen := Init(qualityPreset)
+	videoInit(LowRes)
 
 	// Call Init before starting the game loop
 	g.Init()
@@ -30,8 +29,8 @@ func Run(g Gamelooper) {
 		g.Update()
 
 		// Draw game
-		screen.beginDrawing()
+		beginDrawing()
 		g.Draw()
-		screen.endDrawing()
+		endDrawing()
 	}
 }

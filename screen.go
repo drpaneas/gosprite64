@@ -15,71 +15,6 @@ import (
 	"github.com/drpaneas/n64/rcp/video"
 )
 
-// PICO-8 color indices
-const (
-	Black      = 0
-	DarkBlue   = 1
-	DarkPurple = 2
-	DarkGreen  = 3
-	Brown      = 4
-	DarkGray   = 5
-	LightGray  = 6
-	White      = 7
-	Red        = 8
-	Orange     = 9
-	Yellow     = 10
-	Green      = 11
-	Blue       = 12
-	Indigo     = 13
-	Pink       = 14
-	Peach      = 15
-)
-
-// alpha is the default alpha value for colors.
-const alpha uint8 = 255
-
-// Pico8Palette defines the standard 16 PICO-8 colors.
-var Pico8Palette = []color.Color{
-	color.RGBA{R: 0, G: 0, B: 0, A: alpha},       // 0 black
-	color.RGBA{R: 29, G: 43, B: 83, A: alpha},    // 1 dark-blue
-	color.RGBA{R: 126, G: 37, B: 83, A: alpha},   // 2 dark-purple
-	color.RGBA{R: 0, G: 135, B: 81, A: alpha},    // 3 dark-green
-	color.RGBA{R: 171, G: 82, B: 54, A: alpha},   // 4 brown
-	color.RGBA{R: 95, G: 87, B: 79, A: alpha},    // 5 dark-gray
-	color.RGBA{R: 194, G: 195, B: 199, A: alpha}, // 6 light-gray
-	color.RGBA{R: 255, G: 241, B: 232, A: alpha}, // 7 white
-	color.RGBA{R: 255, G: 0, B: 77, A: alpha},    // 8 red
-	color.RGBA{R: 255, G: 163, B: 0, A: alpha},   // 9 orange
-	color.RGBA{R: 255, G: 236, B: 39, A: alpha},  // 10 yellow
-	color.RGBA{R: 0, G: 228, B: 54, A: alpha},    // 11 green
-	color.RGBA{R: 41, G: 173, B: 255, A: alpha},  // 12 blue
-	color.RGBA{R: 131, G: 118, B: 156, A: alpha}, // 13 indigo
-	color.RGBA{R: 255, G: 119, B: 168, A: alpha}, // 14 pink
-	color.RGBA{R: 255, G: 204, B: 170, A: alpha}, // 15 peach
-}
-
-// PaletteTransparency defines which colors in the Pico8Palette should be treated as transparent.
-// By default, only color 0 (black) is transparent.
-var PaletteTransparency = []bool{true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}
-
-// DefaultFontSize is the default size used for the Print function.
-// PICO-8 font is typically 6px high.
-const DefaultFontSize = 6.0
-
-// Default values for cursor and display
-const (
-	defaultCursorX     = 0
-	defaultCursorY     = 0
-	defaultCursorColor = White
-)
-
-// These variables hold the internal state for the cursor used by Print.
-var (
-	cursorX     = defaultCursorX
-	cursorY     = defaultCursorY
-	cursorColor = defaultCursorColor
-)
-
 // VideoPreset represents a predefined video configuration.
 type VideoPreset int
 
@@ -101,16 +36,35 @@ const (
 type screen struct {
 	Display  *display.Display
 	Renderer *n64draw.Rdp
+	width    int
+	height   int
+	pixels   [][]int // 2D array to store color indices
+}
+
+// newScreen creates a new screen instance with the given dimensions
+func newScreen(disp *display.Display, renderer *n64draw.Rdp, width, height int) *screen {
+	// Initialize the pixel buffer with -1 (transparent/undefined)
+	pixels := make([][]int, height)
+	for i := range pixels {
+		pixels[i] = make([]int, width)
+		for j := range pixels[i] {
+			pixels[i][j] = defaultColorIndex // -1 represents transparent/undefined
+		}
+	}
+
+	log.Printf("Screen initialized with %d x %d pixels", width, height)
+
+	return &screen{
+		Display:  disp,
+		Renderer: renderer,
+		width:    width,
+		height:   height,
+		pixels:   pixels,
+	}
 }
 
 // currentScreen holds the active screen instance.
 var currentScreen *screen
-
-// Screen represents the display surface that can be drawn to.
-// This is a thin wrapper around the N64's display and renderer.
-type Screen struct {
-	renderer *n64draw.Rdp
-}
 
 // Config holds the configuration for initializing the display.
 type Config struct {
@@ -140,10 +94,10 @@ func getPresetConfig(preset VideoPreset) (image.Point, video.ColorDepth, machine
 	}
 }
 
-// Init initializes the display with the specified video preset.
+// videoInit initializes the display with the specified video preset.
 // It sets up the framebuffer and renderer for drawing.
-// Returns a new Screen instance that can be used for drawing operations.
-func Init(preset VideoPreset) *Screen {
+// Returns a new screen instance that can be used for drawing operations.
+func videoInit(preset VideoPreset) {
 	resolution, colorDepth, mode, interlaced := getPresetConfig(preset)
 
 	// Set the video mode and setup
@@ -155,42 +109,33 @@ func Init(preset VideoPreset) *Screen {
 	renderer := n64draw.NewRdp()
 	renderer.SetFramebuffer(disp.Swap())
 
-	currentScreen = &screen{
-		Display:  disp,
-		Renderer: renderer,
-	}
-
-	return &Screen{
-		renderer: renderer,
-	}
+	// Create screen with our custom implementation
+	currentScreen = newScreen(disp, renderer, resolution.X, resolution.Y)
 }
 
 // beginDrawing prepares for a new frame by swapping the framebuffer.
 // This is an internal function used by the package.
-func (s *Screen) beginDrawing() {
+func beginDrawing() {
 	if currentScreen == nil || currentScreen.Display == nil {
 		log.Println("Warning: beginDrawing called before screen was ready.")
 		return
 	}
 	fb := currentScreen.Display.Swap()
-	s.renderer.SetFramebuffer(fb)
+	currentScreen.Renderer.SetFramebuffer(fb)
 }
 
 // endDrawing finalizes the frame by flushing the renderer.
 // This is an internal function used by the package.
-func (s *Screen) endDrawing() {
-	if s.renderer != nil {
-		s.renderer.Flush()
+func endDrawing() {
+	if currentScreen != nil && currentScreen.Renderer != nil {
+		currentScreen.Renderer.Flush()
 	}
 }
 
-// Fill fills the entire screen with the specified color.
-func (s *screen) Fill(c color.Color) {
+// fill fills the entire screen with the specified color.
+func (s *screen) fill(c color.Color) {
 	s.Renderer.Draw(s.Renderer.Bounds(), &image.Uniform{c}, image.Point{}, draw.Src)
 }
-
-// Default color index for Cls
-const defaultColorIndex = Black
 
 // ClearScreen clears the current drawing screen with a specified PICO-8 color index.
 // If no colorIndex is provided, it defaults to Pico8Black (0).
@@ -210,9 +155,100 @@ func ClearScreen(colorIndex ...int) {
 		idx = defaultColorIndex
 	}
 
-	currentScreen.Fill(Pico8Palette[idx])
+	// Clear our pixel buffer
+	for y := range currentScreen.pixels {
+		for x := range currentScreen.pixels[y] {
+			currentScreen.pixels[y][x] = idx
+		}
+	}
+
+	// Clear the screen
+	currentScreen.fill(Pico8Palette[idx])
 
 	// Reset the global print cursor position
 	cursorX = defaultCursorX
 	cursorY = defaultCursorY
+}
+
+// Pget returns the PICO-8 color index (0-15) of the pixel at coordinates (x, y)
+// on the current drawing screen.
+//
+// If the coordinates are outside the screen bounds, it returns 0 (black).
+// If the pixel has not been set (is transparent), it returns 0.
+//
+// Example:
+//
+//	// Set pixel at (10, 20) to red (index 8)
+//	Pset(10, 20, 8)
+//
+//	// Get the color index of the pixel we just set
+//	pixelColorIndex := Pget(10, 20) // Returns 8 (red)
+func Pget(x, y int) int {
+	if currentScreen == nil {
+		log.Println("Warning: Pget() called before screen was ready.")
+		return 0
+	}
+
+	// Check bounds
+	if x < 0 || x >= currentScreen.width || y < 0 || y >= currentScreen.height {
+		return 0 // PICO-8 pget returns 0 for out-of-bounds
+	}
+
+	// Return the color index from our buffer
+	colorIdx := currentScreen.pixels[y][x]
+	if colorIdx == -1 {
+		return 0 // Return black for undefined/transparent pixels
+	}
+	return colorIdx
+}
+
+// Pset draws a single pixel at coordinates (x, y) on the current drawing screen
+// using the specified PICO-8 color index or the current cursorColor.
+//
+// The color is specified by its index (0-15) in the standard Pico8Palette.
+// If no colorIndex is provided, the current cursorColor is used.
+//
+// If the coordinates (x, y) are outside the screen bounds, the function does nothing.
+// If an invalid colorIndex is provided (e.g., < 0 or > 15), a warning is logged,
+// and the function does nothing.
+//
+// Example:
+//
+//	Cursor(0, 0, 8) // Set current color to red
+//	Pset(10, 20) // Draws a red pixel at (10, 20)
+//	Pset(50, 50, 12) // Draws a blue pixel at (50, 50), color overrides cursorColor
+func Pset(x, y int, colorIndex ...int) {
+	// Check if screen is ready
+	if currentScreen == nil || currentScreen.Renderer == nil {
+		log.Println("Warning: Pset() called before screen was ready.")
+		return
+	}
+
+	// Check bounds
+	if x < 0 || x >= currentScreen.width || y < 0 || y >= currentScreen.height {
+		return
+	}
+
+	// Determine color to use
+	color := cursorColor // Default to current cursor color
+	if len(colorIndex) > 0 {
+		color = colorIndex[0]
+		if color < 0 || color >= len(Pico8Palette) {
+			log.Printf("Warning: Pset() called with invalid color index %d. Palette has %d colors. Ignoring.", color, len(Pico8Palette))
+			return
+		}
+	}
+
+	// Check if this is a transparent color (binary transparency from PaletteTransparency)
+	if color < len(PaletteTransparency) && PaletteTransparency[color] {
+		// Don't draw transparent pixels (binary transparency)
+		return
+	}
+
+	// Update our pixel buffer
+	currentScreen.pixels[y][x] = color
+
+	// Draw the pixel using a 1x1 rectangle
+	rect := image.Rect(x, y, x+1, y+1)
+	currentScreen.Renderer.Draw(rect, &image.Uniform{Pico8Palette[color]}, image.Point{}, draw.Over)
 }

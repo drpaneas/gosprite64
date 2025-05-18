@@ -11,6 +11,9 @@ import (
 	"github.com/drpaneas/n64/rcp/video"
 )
 
+// currentScreen holds the active screen instance
+var currentScreen *screen
+
 // VideoPreset represents a predefined video configuration
 type VideoPreset int
 
@@ -22,24 +25,31 @@ const (
 )
 
 // Screen represents the display surface that can be drawn to.
+// This is used internally by the package but needs to be exported
+// for the API to work with the n64 drivers.
 type Screen struct {
 	renderer *n64draw.Rdp
 }
 
-// BeginDrawing prepares for a new frame by swapping the framebuffer.
-func (s *Screen) BeginDrawing() {
+// beginDrawing prepares for a new frame by swapping the framebuffer.
+// This is an internal function used by the package.
+func (s *Screen) beginDrawing() {
 	fb := currentScreen.Display.Swap()
 	s.renderer.SetFramebuffer(fb)
 }
 
-// EndDrawing finalizes the frame by flushing the renderer.
-func (s *Screen) EndDrawing() {
+// endDrawing finalizes the frame by flushing the renderer.
+// This is an internal function used by the package.
+func (s *Screen) endDrawing() {
 	s.renderer.Flush()
 }
 
 // Clear clears the screen with the specified color.
-func (s *Screen) Clear(c color.Color) {
-	s.renderer.Draw(s.renderer.Bounds(), &image.Uniform{c}, image.Point{}, draw.Src)
+// This is a package-level function that can be called as gosprite64.Clear(color).
+func Clear(c color.Color) {
+	if currentScreen != nil {
+		currentScreen.Renderer.Draw(currentScreen.Renderer.Bounds(), &image.Uniform{c}, image.Point{}, draw.Src)
+	}
 }
 
 // screen holds all the display-related objects and state.
@@ -47,8 +57,6 @@ type screen struct {
 	Display  *display.Display
 	Renderer *n64draw.Rdp
 }
-
-var currentScreen *screen
 
 // getPresetConfig returns the configuration for a given preset
 func getPresetConfig(preset VideoPreset) (resolution image.Point, colorDepth video.ColorDepth, mode machine.VideoType, interlaced bool) {

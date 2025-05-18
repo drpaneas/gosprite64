@@ -1,28 +1,23 @@
 package main
 
 import (
-	"image/color"
-	"github.com/drpaneas/gosprite64"
+	. "github.com/drpaneas/gosprite64"
 )
 
-var Azure = color.RGBA{0xf0, 0xff, 0xff, 0xff} // rgb(240, 255, 255)
-
+// Game instances to store game state
 type Game struct{}
 
 // Init is called once at the start of the game
-func (g *Game) Init() {
-	// Initialize game state, load resources, etc.
-}
+func (g *Game) Init() {}
 
-func (g *Game) Update() {
-	// Update game logic here
-}
+// Update game logic here
+func (g *Game) Update() {}
 
+// Draw game here
 func (g *Game) Draw() {
-	gosprite64.Clear(Azure)
+	ClearScreen(DarkBlue)
 }
 
 func main() {
-	// Run the game
-	gosprite64.Run(&Game{})
+	Run(&Game{})
 }

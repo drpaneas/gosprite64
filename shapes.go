@@ -172,6 +172,174 @@ func max(x, y int) int {
 	return y
 }
 
+// parseCircArgs parses common arguments for Circ and Circfill.
+// It returns the center coordinates (x, y), radius, the PICO-8 color index to use,
+// and whether parsing was successful.
+func parseCircArgs(x, y, radius float64, options []interface{}) (float64, float64, float64, int, bool) {
+	// Determine drawing color
+	drawColorIndex := cursorColor // Use the current cursor color
+	if len(options) >= 1 {
+		switch v := options[0].(type) {
+		case int:
+			if v >= 0 && v < len(Pico8Palette) {
+				drawColorIndex = v
+			} else {
+				log.Printf("Warning: Circ/Circfill called with invalid color index %d. Using current color %d.", v, cursorColor)
+			}
+		case float64:
+			intVal := int(v)
+			if intVal >= 0 && intVal < len(Pico8Palette) {
+				drawColorIndex = intVal
+			} else {
+				log.Printf("Warning: Circ/Circfill called with invalid color index %d. Using current color %d.", intVal, cursorColor)
+			}
+		case float32:
+			intVal := int(v)
+			if intVal >= 0 && intVal < len(Pico8Palette) {
+				drawColorIndex = intVal
+			} else {
+				log.Printf("Warning: Circ/Circfill called with invalid color index %d. Using current color %d.", intVal, cursorColor)
+			}
+		default:
+			log.Printf("Warning: Circ/Circfill called with invalid color type %T. Using current color %d.", options[0], cursorColor)
+		}
+	}
+
+	if len(options) > 1 {
+		log.Printf("Warning: Circ/Circfill called with too many arguments (%d), expected max 4.", len(options)+3)
+	}
+
+	return x, y, radius, drawColorIndex, true
+}
+
+// drawCirclePoints draws circle points using Midpoint Circle Algorithm
+func drawCirclePoints(cx, cy, x, y int, filled bool, colorIndex int) {
+	if filled {
+		// Draw horizontal lines between points at the same y-level
+		for dx := -x; dx <= x; dx++ {
+			setPixel(cx+dx, cy+y, colorIndex)
+			setPixel(cx+dx, cy-y, colorIndex)
+		}
+		for dx := -y; dx <= y; dx++ {
+			setPixel(cx+dx, cy+x, colorIndex)
+			setPixel(cx+dx, cy-x, colorIndex)
+		}
+	} else {
+		// Draw 8 symmetric points
+		setPixel(cx+x, cy+y, colorIndex)
+		setPixel(cx-x, cy+y, colorIndex)
+		setPixel(cx+x, cy-y, colorIndex)
+		setPixel(cx-x, cy-y, colorIndex)
+		setPixel(cx+y, cy+x, colorIndex)
+		setPixel(cx-y, cy+x, colorIndex)
+		setPixel(cx+y, cy-x, colorIndex)
+		setPixel(cx-y, cy-x, colorIndex)
+	}
+}
+
+// Circ draws an outline circle.
+//
+// Args:
+//
+//	x, y: Coordinates of the center point (any Number type)
+//	radius: Radius of the circle (any Number type)
+//	colorIndex: Optional PICO-8 color index (0-15)
+func Circ[X, Y, R Number](x X, y Y, radius R, colorIndex ...int) {
+	if currentScreen == nil || currentScreen.Renderer == nil {
+		log.Println("Warning: Circ() called before screen was ready.")
+		return
+	}
+
+	// Parse optional color argument
+	var options []interface{}
+	if len(colorIndex) > 0 {
+		options = append(options, colorIndex[0])
+	}
+	drawColorIndex, ok := parseLineArgs(options)
+	if !ok {
+		return // Error already logged
+	}
+
+	// Convert to integers for pixel-perfect drawing
+	cx, cy := int(math.Round(float64(x))), int(math.Round(float64(y)))
+	r := int(math.Round(float64(radius)))
+
+	// Midpoint Circle Algorithm for outline
+	x0, y0 := r, 0
+	err := 1 - r
+
+	for x0 >= y0 {
+		drawCirclePoints(cx, cy, x0, y0, false, drawColorIndex)
+		y0++
+		if err <= 0 {
+			err += 2*y0 + 1
+		} else {
+			x0--
+			err += 2*(y0-x0) + 1
+		}
+	}
+}
+
+// Circfill draws a filled circle.
+//
+// Args:
+//
+//	x, y: Coordinates of the center point (any Number type)
+//	radius: Radius of the circle (any Number type)
+//	colorIndex: Optional PICO-8 color index (0-15)
+func Circfill[X, Y, R Number](x X, y Y, radius R, colorIndex ...int) {
+	if currentScreen == nil || currentScreen.Renderer == nil {
+		log.Println("Warning: Circfill() called before screen was ready.")
+		return
+	}
+
+	// Parse optional color argument
+	var options []interface{}
+	if len(colorIndex) > 0 {
+		options = append(options, colorIndex[0])
+	}
+	drawColorIndex, ok := parseLineArgs(options)
+	if !ok {
+		return // Error already logged
+	}
+
+	// Convert to integers for pixel-perfect drawing
+	cx, cy := int(math.Round(float64(x))), int(math.Round(float64(y)))
+	r := int(math.Round(float64(radius)))
+
+	// Midpoint Circle Algorithm for filled circle
+	x0, y0 := r, 0
+	err := 1 - r
+
+	for x0 >= y0 {
+		drawCirclePoints(cx, cy, x0, y0, true, drawColorIndex)
+		y0++
+		if err <= 0 {
+			err += 2*y0 + 1
+		} else {
+			x0--
+			err += 2*(y0-x0) + 1
+		}
+	}
+}
+
+// setPixel sets a pixel at (x,y) with the specified color index
+func setPixel(x, y, colorIndex int) {
+	if x >= 0 && x < len(currentScreen.pixels[0]) && y >= 0 && y < len(currentScreen.pixels) {
+		currentScreen.pixels[y][x] = colorIndex
+		screenX := x + screenOffsetX
+		if screenX >= 0 && screenX < len(currentScreen.pixels[0]) {
+			color := Pico8Palette[colorIndex]
+			currentScreen.Renderer.Draw(
+				image.Rect(screenX, y, screenX+1, y+1),
+				&image.Uniform{color},
+				image.Point{},
+				draw.Src,
+			)
+		}
+	}
+}
+
 // parseLineArgs parses common arguments for Line function.
 // It returns the PICO-8 color index to use and whether parsing was successful.
 func parseLineArgs(options []interface{}) (int, bool) {

@@ -21,6 +21,8 @@ func (g *Game) Draw() {
 	Rect(0, 10, 20, 20)
 	Rectfill(0, 60, 40, 80)
 	Line(0, 8, 40, 8)
+	Circ(60, 20, 10)
+	Circfill(100, 20, 10)
 }
 
 func main() {

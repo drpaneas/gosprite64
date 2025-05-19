@@ -25,6 +25,9 @@ func Run(g Gamelooper) {
 
 	// Main game loop
 	for {
+		// Update controller state
+		updateControllerState()
+
 		// Update game logic
 		g.Update()
 

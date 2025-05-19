@@ -2,11 +2,34 @@ package gosprite64
 
 import (
 	"image"
-	"image/color"
 	"image/draw"
 	"log"
 	"math"
 )
+
+// abs returns the absolute value of x
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+// toInterfaceSlice converts a slice of any type to []interface{}
+func toInterfaceSlice(slice interface{}) []interface{} {
+	s := make([]interface{}, 0)
+	switch v := slice.(type) {
+	case []int:
+		for _, val := range v {
+			s = append(s, val)
+		}
+	case []float64:
+		for _, val := range v {
+			s = append(s, val)
+		}
+	}
+	return s
+}
 
 // Number is a constraint that permits any numeric type.
 // This includes both integer and floating-point types.
@@ -44,6 +67,7 @@ func drawRect(fx1, fy1, fx2, fy2 float64, filled bool, colorIndex ...int) {
 	// Convert to integers for pixel-perfect drawing
 	x1, y1 := int(math.Round(fx1)), int(math.Round(fy1))
 	x2, y2 := int(math.Round(fx2)), int(math.Round(fy2))
+
 	// Check if screen is ready
 	if currentScreen == nil || currentScreen.Renderer == nil {
 		log.Println("Warning: drawRect() called before screen was ready.")
@@ -62,9 +86,6 @@ func drawRect(fx1, fy1, fx2, fy2 float64, filled bool, colorIndex ...int) {
 		col = cursorColor
 	}
 
-	// Get the color from the PICO-8 palette
-	c := Pico8Palette[col]
-
 	// Ensure x1,y1 is the top-left and x2,y2 is the bottom-right
 	if x1 > x2 {
 		x1, x2 = x2, x1
@@ -73,103 +94,83 @@ func drawRect(fx1, fy1, fx2, fy2 float64, filled bool, colorIndex ...int) {
 		y1, y2 = y2, y1
 	}
 
-	// Apply screen offset for overscan in the drawing loop
+	// Apply screen offset for overscan
+	x1 += screenOffsetX
+	x2 += screenOffsetX
 
+	// Update the pixel buffer for Pget()
 	if filled {
 		// Draw filled rectangle
 		for y := y1; y <= y2; y++ {
 			for x := x1; x <= x2; x++ {
-				screenX := x + screenOffsetX
-				if screenX >= 0 && screenX < len(currentScreen.pixels[0]) && y >= 0 && y < len(currentScreen.pixels) {
-					currentScreen.pixels[y][screenX] = col
-					currentScreen.Renderer.Draw(
-						image.Rect(screenX, y, screenX+1, y+1),
-						&image.Uniform{c},
-						image.Point{},
-						draw.Src,
-					)
-				}
+				setPixel(x, y, col)
 			}
 		}
 	} else {
 		// Draw outline rectangle
 		// Top and bottom lines
 		for x := x1; x <= x2; x++ {
-			screenX := x + screenOffsetX
-			// Top line
-			if screenX >= 0 && screenX < len(currentScreen.pixels[0]) && y1 >= 0 && y1 < len(currentScreen.pixels) {
-				currentScreen.pixels[y1][screenX] = col
-				currentScreen.Renderer.Draw(
-					image.Rect(screenX, y1, screenX+1, y1+1),
-					&image.Uniform{c},
-					image.Point{},
-					draw.Src,
-				)
-			}
-			// Bottom line
-			if screenX >= 0 && screenX < len(currentScreen.pixels[0]) && y2 >= 0 && y2 < len(currentScreen.pixels) {
-				currentScreen.pixels[y2][screenX] = col
-				currentScreen.Renderer.Draw(
-					image.Rect(screenX, y2, screenX+1, y2+1),
-					&image.Uniform{c},
-					image.Point{},
-					draw.Src,
-				)
-			}
+			setPixel(x, y1, col)
+			setPixel(x, y2, col)
 		}
-		// Left and right lines (without corners to avoid double-drawing)
+		// Left and right lines (avoiding double-drawing corners)
 		for y := y1 + 1; y < y2; y++ {
-			// Left line
-			screenX := x1 + screenOffsetX
-			if screenX >= 0 && screenX < len(currentScreen.pixels[0]) && y >= 0 && y < len(currentScreen.pixels) {
-				currentScreen.pixels[y][screenX] = col
-				currentScreen.Renderer.Draw(
-					image.Rect(screenX, y, screenX+1, y+1),
-					&image.Uniform{c},
-					image.Point{},
-					draw.Src,
-				)
-			}
-			// Right line
-			screenX = x2 + screenOffsetX
-			if screenX >= 0 && screenX < len(currentScreen.pixels[0]) && y >= 0 && y < len(currentScreen.pixels) {
-				currentScreen.pixels[y][screenX] = col
-				currentScreen.Renderer.Draw(
-					image.Rect(screenX, y, screenX+1, y+1),
-					&image.Uniform{c},
-					image.Point{},
-					draw.Src,
-				)
-			}
-		}
-	}
-
-	// Update the pixel buffer
-	for y := y1; y <= y2; y++ {
-		for x := x1; x <= x2; x++ {
-			if y >= 0 && y < len(currentScreen.pixels) && x >= 0 && x < len(currentScreen.pixels[y]) {
-				if filled || (x == x1 || x == x2 || y == y1 || y == y2) {
-					currentScreen.pixels[y][x] = col
-				}
-			}
+			setPixel(x1, y, col)
+			setPixel(x2, y, col)
 		}
 	}
 }
 
-// min returns the smaller of x or y.
-func min(x, y int) int {
-	if x < y {
-		return x
+// setPixel sets a pixel at (x,y) with the specified color index
+func setPixel(x, y, colorIndex int) {
+	if currentScreen == nil || currentScreen.Renderer == nil || currentScreen.pixels == nil {
+		return
 	}
-	return y
+
+	// Apply screen offset for overscan
+	screenX := x + screenOffsetX
+
+	// Check bounds
+	if screenX >= 0 && screenX < len(currentScreen.pixels[0]) && y >= 0 && y < len(currentScreen.pixels) {
+		// Update the pixel buffer
+		currentScreen.pixels[y][screenX] = colorIndex
+
+		// Draw the pixel using the renderer
+		c := Pico8Palette[colorIndex]
+		currentScreen.Renderer.Draw(
+			image.Rect(screenX, y, screenX+1, y+1),
+			&image.Uniform{c},
+			image.Point{},
+			draw.Src,
+		)
+	}
 }
 
-// max returns the larger of x or y.
-func max(x, y int) int {
-	if x > y {
-		return x
+// parseLineArgs parses color index arguments for drawing functions.
+// It returns the color index to use and whether parsing was successful.
+func parseLineArgs(args []interface{}) (int, bool) {
+	if len(args) == 0 {
+		return cursorColor, true
 	}
-	return y
+
+	switch v := args[0].(type) {
+	case int:
+		if v >= 0 && v < len(Pico8Palette) {
+			return v, true
+		}
+		log.Printf("Warning: Invalid color index %d. Using cursor color %d.", v, cursorColor)
+		return cursorColor, false
+	case float64:
+		intVal := int(v)
+		if intVal >= 0 && intVal < len(Pico8Palette) {
+			return intVal, true
+		}
+		log.Printf("Warning: Invalid color index %d. Using cursor color %d.", intVal, cursorColor)
+		return cursorColor, false
+	default:
+		log.Printf("Warning: Invalid color index type %T. Using cursor color %d.", v, cursorColor)
+		return cursorColor, false
+	}
 }
 
 // parseCircArgs parses common arguments for Circ and Circfill.
@@ -193,47 +194,40 @@ func parseCircArgs(x, y, radius float64, options []interface{}) (float64, float6
 			} else {
 				log.Printf("Warning: Circ/Circfill called with invalid color index %d. Using current color %d.", intVal, cursorColor)
 			}
-		case float32:
-			intVal := int(v)
-			if intVal >= 0 && intVal < len(Pico8Palette) {
-				drawColorIndex = intVal
-			} else {
-				log.Printf("Warning: Circ/Circfill called with invalid color index %d. Using current color %d.", intVal, cursorColor)
-			}
-		default:
-			log.Printf("Warning: Circ/Circfill called with invalid color type %T. Using current color %d.", options[0], cursorColor)
 		}
-	}
-
-	if len(options) > 1 {
-		log.Printf("Warning: Circ/Circfill called with too many arguments (%d), expected max 4.", len(options)+3)
 	}
 
 	return x, y, radius, drawColorIndex, true
 }
 
-// drawCirclePoints draws circle points using Midpoint Circle Algorithm
-func drawCirclePoints(cx, cy, x, y int, filled bool, colorIndex int) {
+// drawCirclePoints draws the 8 symmetric points of a circle
+func drawCirclePoints(cx, cy, x, y int, filled bool, colorIdx int) {
 	if filled {
 		// Draw horizontal lines between points at the same y-level
-		for dx := -x; dx <= x; dx++ {
-			setPixel(cx+dx, cy+y, colorIndex)
-			setPixel(cx+dx, cy-y, colorIndex)
-		}
-		for dx := -y; dx <= y; dx++ {
-			setPixel(cx+dx, cy+x, colorIndex)
-			setPixel(cx+dx, cy-x, colorIndex)
+		drawHorizontalLine(cx-x, cx+x, cy+y, colorIdx)
+		if y != 0 {
+			drawHorizontalLine(cx-x, cx+x, cy-y, colorIdx)
 		}
 	} else {
-		// Draw 8 symmetric points
-		setPixel(cx+x, cy+y, colorIndex)
-		setPixel(cx-x, cy+y, colorIndex)
-		setPixel(cx+x, cy-y, colorIndex)
-		setPixel(cx-x, cy-y, colorIndex)
-		setPixel(cx+y, cy+x, colorIndex)
-		setPixel(cx-y, cy+x, colorIndex)
-		setPixel(cx+y, cy-x, colorIndex)
-		setPixel(cx-y, cy-x, colorIndex)
+		// Draw the 8 symmetric points
+		setPixel(cx+x, cy+y, colorIdx)
+		setPixel(cx-x, cy+y, colorIdx)
+		setPixel(cx+x, cy-y, colorIdx)
+		setPixel(cx-x, cy-y, colorIdx)
+		setPixel(cx+y, cy+x, colorIdx)
+		setPixel(cx-y, cy+x, colorIdx)
+		setPixel(cx+y, cy-x, colorIdx)
+		setPixel(cx-y, cy-x, colorIdx)
+	}
+}
+
+// drawHorizontalLine draws a horizontal line from x1 to x2 at y
+func drawHorizontalLine(x1, x2, y, colorIdx int) {
+	if x1 > x2 {
+		x1, x2 = x2, x1
+	}
+	for x := x1; x <= x2; x++ {
+		setPixel(x, y, colorIdx)
 	}
 }
 
@@ -245,37 +239,46 @@ func drawCirclePoints(cx, cy, x, y int, filled bool, colorIndex int) {
 //	radius: Radius of the circle (any Number type)
 //	colorIndex: Optional PICO-8 color index (0-15)
 func Circ[X, Y, R Number](x X, y Y, radius R, colorIndex ...int) {
+	// Check if screen is ready
 	if currentScreen == nil || currentScreen.Renderer == nil {
 		log.Println("Warning: Circ() called before screen was ready.")
 		return
 	}
 
-	// Parse optional color argument
-	var options []interface{}
-	if len(colorIndex) > 0 {
-		options = append(options, colorIndex[0])
+	// Convert to float64 for calculations
+	fx, fy, fradius := float64(x), float64(y), float64(radius)
+
+
+	// Convert colorIndex to []interface{}
+	var colorArgs []interface{}
+	for _, c := range colorIndex {
+		colorArgs = append(colorArgs, c)
 	}
-	drawColorIndex, ok := parseLineArgs(options)
+
+	// Parse optional color argument
+	drawColorIndex, ok := parseLineArgs(colorArgs)
 	if !ok {
 		return // Error already logged
 	}
 
 	// Convert to integers for pixel-perfect drawing
-	cx, cy := int(math.Round(float64(x))), int(math.Round(float64(y)))
-	r := int(math.Round(float64(radius)))
+	ix, iy, iradius := int(math.Round(fx)), int(math.Round(fy)), int(math.Round(fradius))
 
-	// Midpoint Circle Algorithm for outline
-	x0, y0 := r, 0
-	err := 1 - r
+	// Apply screen offset for overscan
+	ix += screenOffsetX
 
-	for x0 >= y0 {
-		drawCirclePoints(cx, cy, x0, y0, false, drawColorIndex)
-		y0++
-		if err <= 0 {
-			err += 2*y0 + 1
+	// Use Midpoint Circle Algorithm to draw the circle
+	x1, y1 := iradius, 0
+	dp1 := 3 - 2*iradius
+
+	for x1 >= y1 {
+		drawCirclePoints(ix, iy, x1, y1, false, drawColorIndex)
+		y1++
+		if dp1 <= 0 {
+			dp1 = dp1 + 4*y1 + 6
 		} else {
-			x0--
-			err += 2*(y0-x0) + 1
+			x1--
+			dp1 = dp1 + 4*(y1-x1) + 10
 		}
 	}
 }
@@ -288,100 +291,50 @@ func Circ[X, Y, R Number](x X, y Y, radius R, colorIndex ...int) {
 //	radius: Radius of the circle (any Number type)
 //	colorIndex: Optional PICO-8 color index (0-15)
 func Circfill[X, Y, R Number](x X, y Y, radius R, colorIndex ...int) {
+	// Check if screen is ready
 	if currentScreen == nil || currentScreen.Renderer == nil {
 		log.Println("Warning: Circfill() called before screen was ready.")
 		return
 	}
 
-	// Parse optional color argument
-	var options []interface{}
-	if len(colorIndex) > 0 {
-		options = append(options, colorIndex[0])
+	// Convert to float64 for calculations
+	fx, fy, fradius := float64(x), float64(y), float64(radius)
+
+	// Convert colorIndex to []interface{}
+	var colorArgs []interface{}
+	for _, c := range colorIndex {
+		colorArgs = append(colorArgs, c)
 	}
-	drawColorIndex, ok := parseLineArgs(options)
+
+	// Parse optional color argument
+	drawColorIndex, ok := parseLineArgs(colorArgs)
 	if !ok {
 		return // Error already logged
 	}
 
 	// Convert to integers for pixel-perfect drawing
-	cx, cy := int(math.Round(float64(x))), int(math.Round(float64(y)))
-	r := int(math.Round(float64(radius)))
+	ix, iy, iradius := int(math.Round(fx)), int(math.Round(fy)), int(math.Round(fradius))
 
-	// Midpoint Circle Algorithm for filled circle
-	x0, y0 := r, 0
-	err := 1 - r
+	// Apply screen offset for overscan
+	ix += screenOffsetX
 
-	for x0 >= y0 {
-		drawCirclePoints(cx, cy, x0, y0, true, drawColorIndex)
-		y0++
-		if err <= 0 {
-			err += 2*y0 + 1
+	// Use Midpoint Circle Algorithm to draw the filled circle
+	x1, y1 := iradius, 0
+	dp1 := 3 - 2*iradius
+
+	for x1 >= y1 {
+		drawCirclePoints(ix, iy, x1, y1, true, drawColorIndex)
+		y1++
+		if dp1 <= 0 {
+			dp1 = dp1 + 4*y1 + 6
 		} else {
-			x0--
-			err += 2*(y0-x0) + 1
+			x1--
+			dp1 = dp1 + 4*(y1-x1) + 10
 		}
 	}
 }
 
-// setPixel sets a pixel at (x,y) with the specified color index
-func setPixel(x, y, colorIndex int) {
-	if x >= 0 && x < len(currentScreen.pixels[0]) && y >= 0 && y < len(currentScreen.pixels) {
-		currentScreen.pixels[y][x] = colorIndex
-		screenX := x + screenOffsetX
-		if screenX >= 0 && screenX < len(currentScreen.pixels[0]) {
-			color := Pico8Palette[colorIndex]
-			currentScreen.Renderer.Draw(
-				image.Rect(screenX, y, screenX+1, y+1),
-				&image.Uniform{color},
-				image.Point{},
-				draw.Src,
-			)
-		}
-	}
-}
-
-// parseLineArgs parses common arguments for Line function.
-// It returns the PICO-8 color index to use and whether parsing was successful.
-func parseLineArgs(options []interface{}) (int, bool) {
-	// Use the current cursor color by default
-	drawColorIndex := cursorColor
-
-	// If color index is provided, use it
-	if len(options) > 0 {
-		switch v := options[0].(type) {
-		case int:
-			if v >= 0 && v < len(Pico8Palette) {
-				drawColorIndex = v
-			} else {
-				log.Printf("Warning: Line() called with invalid color index %d. Using current color %d.", v, cursorColor)
-			}
-		case float64:
-			intVal := int(v)
-			if intVal >= 0 && intVal < len(Pico8Palette) {
-				drawColorIndex = intVal
-			} else {
-				log.Printf("Warning: Line() called with invalid color index %d. Using current color %d.", intVal, cursorColor)
-			}
-		case float32:
-			intVal := int(v)
-			if intVal >= 0 && intVal < len(Pico8Palette) {
-				drawColorIndex = intVal
-			} else {
-				log.Printf("Warning: Line() called with invalid color index %d. Using current color %d.", intVal, cursorColor)
-			}
-		default:
-			log.Printf("Warning: Line() called with invalid color type %T. Using current color %d.", options[0], cursorColor)
-		}
-	}
-
-	if len(options) > 1 {
-		log.Printf("Warning: Line() called with too many arguments (%d), expected max 5.", len(options)+4)
-	}
-
-	return drawColorIndex, true
-}
-
-// Line draws a line between two points.
+// Line draws a line between two points using hardware acceleration.
 // The line is drawn using the current cursor color or an optional color index.
 //
 // Args:
@@ -398,70 +351,53 @@ func Line[X1, Y1, X2, Y2 Number](x1 X1, y1 Y1, x2 X2, y2 Y2, options ...interfac
 		return
 	}
 
-	// Convert to float64 for calculations
-	fx1, fy1, fx2, fy2 := float64(x1), float64(y1), float64(x2), float64(y2)
-
-	// Parse optional color argument
-	drawColorIndex, ok := parseLineArgs(options)
+	// Parse options
+	colorIdx, ok := parseLineArgs(options)
 	if !ok {
-		return // Error already logged
+		return
 	}
 
-	// Get the actual color from the palette
-	var actualColor color.Color
-	if drawColorIndex >= 0 && drawColorIndex < len(Pico8Palette) {
-		actualColor = Pico8Palette[drawColorIndex]
-	} else {
-		actualColor = Pico8Palette[0] // Fallback to black
-		log.Printf("Error: Invalid effective drawing color index %d for Line(). Defaulting to black.", drawColorIndex)
-	}
+	// Convert to integer coordinates
+	ix1, iy1 := int(math.Round(float64(x1))), int(math.Round(float64(y1)))
+	ix2, iy2 := int(math.Round(float64(x2))), int(math.Round(float64(y2)))
 
-	// Convert to integers for pixel-perfect drawing
-	ix1, iy1, ix2, iy2 := int(math.Round(fx1)), int(math.Round(fy1)), int(math.Round(fx2)), int(math.Round(fy2))
+	// Apply screen offset for overscan
+	ix1 += screenOffsetX
+	ix2 += screenOffsetX
 
-	// Use Bresenham's line algorithm to draw the line
-	dx := int(math.Abs(float64(ix2 - ix1)))
-	dy := int(math.Abs(float64(iy2 - iy1)))
+	// For now, we'll use the pixel-by-pixel approach for lines
+	// This can be optimized further with a proper line drawing algorithm
+	// that works with the N64's RDP
+	updateLineInPixelBuffer(ix1, iy1, ix2, iy2, colorIdx)
+}
+
+// updateLineInPixelBuffer updates the pixel buffer for a line using Bresenham's algorithm
+func updateLineInPixelBuffer(x1, y1, x2, y2, colorIdx int) {
+	// This is a simple implementation of Bresenham's line algorithm
+	dx := abs(x2 - x1)
+	dy := -abs(y2 - y1)
 	sx, sy := 1, 1
-
-	if ix1 > ix2 {
+	if x1 > x2 {
 		sx = -1
 	}
-	if iy1 > iy2 {
+	if y1 > y2 {
 		sy = -1
 	}
-	err := dx - dy
+	err := dx + dy // error value e_xy
 
 	for {
-		// Draw the current pixel if it's within bounds
-		if ix1 >= 0 && ix1 < len(currentScreen.pixels[0]) && iy1 >= 0 && iy1 < len(currentScreen.pixels) {
-			currentScreen.pixels[iy1][ix1] = drawColorIndex
-		}
-
-		// Check if we've reached the end point
-		if ix1 == ix2 && iy1 == iy2 {
+		setPixel(x1, y1, colorIdx)
+		if x1 == x2 && y1 == y2 {
 			break
 		}
-
 		e2 := 2 * err
-		if e2 > -dy {
-			err -= dy
-			ix1 += sx
+		if e2 >= dy { // e_xy + e_x > 0
+			err += dy
+			x1 += sx
 		}
-		if e2 < dx {
+		if e2 <= dx { // e_xy + e_y < 0
 			err += dx
-			iy1 += sy
-		}
-
-		// Draw the actual pixel on screen
-		screenX := ix1 + screenOffsetX
-		if screenX >= 0 && screenX < len(currentScreen.pixels[0]) && iy1 >= 0 && iy1 < len(currentScreen.pixels) {
-			currentScreen.Renderer.Draw(
-				image.Rect(screenX, iy1, screenX+1, iy1+1),
-				&image.Uniform{actualColor},
-				image.Point{},
-				draw.Src,
-			)
+			y1 += sy
 		}
 	}
 }

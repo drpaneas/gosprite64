@@ -7,6 +7,8 @@ import (
 // Game instances to store game state
 type Game struct{}
 
+var x, y int
+
 // Init is called once at the start of the game
 func (g *Game) Init() {}
 
@@ -16,13 +18,20 @@ func (g *Game) Update() {}
 // Draw game here
 func (g *Game) Draw() {
 	ClearScreen(DarkBlue)
-	Pset(4, 0, Red)
-	// Print(fmt.Sprintf("%v", Pget(4, 0)))
-	Rect(0, 10, 20, 20)
-	Rectfill(0, 60, 40, 80)
-	Line(0, 8, 40, 8)
-	Circ(60, 20, 10)
-	Circfill(100, 20, 10)
+
+	if Btn(BtnUp) {
+		y -= 5
+	}
+	if Btn(BtnDown) {
+		y += 5
+	}
+	if Btn(BtnLeft) {
+		x -= 5
+	}
+	if Btn(BtnRight) {
+		x += 5
+	}
+	Rectfill(x, y, x+10, y+10, 7)
 }
 
 func main() {

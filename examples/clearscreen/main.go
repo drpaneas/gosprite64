@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	. "github.com/drpaneas/gosprite64"
 )
 
@@ -16,6 +18,8 @@ func (g *Game) Update() {}
 // Draw game here
 func (g *Game) Draw() {
 	ClearScreen(DarkBlue)
+	Pset(4, 0, Red)
+	Print(fmt.Sprintf("%v", Pget(4, 0)))
 }
 
 func main() {

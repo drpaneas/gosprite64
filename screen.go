@@ -38,8 +38,11 @@ type screen struct {
 	Renderer *n64draw.Rdp
 	width    int
 	height   int
-	pixels   [][]int // 2D array to store color indices
+	pixels   [][]int // 2D slice to store color indices
 }
+
+// Screen offset constant to handle horizontal overscan
+const screenOffsetX = 4 // Number of pixels to offset X coordinate for overscan
 
 // newScreen creates a new screen instance with the given dimensions
 func newScreen(disp *display.Display, renderer *n64draw.Rdp, width, height int) *screen {
@@ -178,11 +181,11 @@ func ClearScreen(colorIndex ...int) {
 //
 // Example:
 //
-//	// Set pixel at (10, 20) to red (index 8)
-//	Pset(10, 20, 8)
+// 	// Set pixel at (10, 20) to red (index 8)
+// 	Pset(10, 20, 8)
 //
-//	// Get the color index of the pixel we just set
-//	pixelColorIndex := Pget(10, 20) // Returns 8 (red)
+// 	// Get the color index of the pixel we just set
+// 	pixelColorIndex := Pget(10, 20) // Returns 8 (red)
 func Pget(x, y int) int {
 	if currentScreen == nil {
 		log.Println("Warning: Pget() called before screen was ready.")
@@ -214,9 +217,9 @@ func Pget(x, y int) int {
 //
 // Example:
 //
-//	Cursor(0, 0, 8) // Set current color to red
-//	Pset(10, 20) // Draws a red pixel at (10, 20)
-//	Pset(50, 50, 12) // Draws a blue pixel at (50, 50), color overrides cursorColor
+// 	Cursor(0, 0, 8) // Set current color to red
+// 	Pset(10, 20) // Draws a red pixel at (10, 20)
+// 	Pset(50, 50, 12) // Draws a blue pixel at (50, 50), color overrides cursorColor
 func Pset(x, y int, colorIndex ...int) {
 	// Check if screen is ready
 	if currentScreen == nil || currentScreen.Renderer == nil {
@@ -224,31 +227,37 @@ func Pset(x, y int, colorIndex ...int) {
 		return
 	}
 
-	// Check bounds
-	if x < 0 || x >= currentScreen.width || y < 0 || y >= currentScreen.height {
-		return
+	// Apply horizontal offset for overscan
+	screenX := x + screenOffsetX
+	screenY := y // No Y offset needed
+
+	// Get the color index from arguments or use the current cursor color
+	col := cursorColor
+	if len(colorIndex) > 0 {
+		col = colorIndex[0]
 	}
 
-	// Determine color to use
-	color := cursorColor // Default to current cursor color
-	if len(colorIndex) > 0 {
-		color = colorIndex[0]
-		if color < 0 || color >= len(Pico8Palette) {
-			log.Printf("Warning: Pset() called with invalid color index %d. Palette has %d colors. Ignoring.", color, len(Pico8Palette))
-			return
+	// Validate color index
+	if col < 0 || col >= len(Pico8Palette) {
+		log.Printf("Warning: Pset() called with invalid color index %d. Defaulting to cursorColor (%d).", col, cursorColor)
+		col = cursorColor
+	}
+
+	// Get the color from the PICO-8 palette
+	c := Pico8Palette[col]
+
+	// Draw the pixel using the renderer
+	currentScreen.Renderer.Draw(
+		image.Rect(screenX, screenY, screenX+1, screenY+1),
+		&image.Uniform{c},
+		image.Point{},
+		draw.Src,
+	)
+
+	// Update the pixel buffer if it exists
+	if y >= 0 && y < len(currentScreen.pixels) {
+		if x >= 0 && x < len(currentScreen.pixels[y]) {
+			currentScreen.pixels[y][x] = col
 		}
 	}
-
-	// Check if this is a transparent color (binary transparency from PaletteTransparency)
-	if color < len(PaletteTransparency) && PaletteTransparency[color] {
-		// Don't draw transparent pixels (binary transparency)
-		return
-	}
-
-	// Update our pixel buffer
-	currentScreen.pixels[y][x] = color
-
-	// Draw the pixel using a 1x1 rectangle
-	rect := image.Rect(x, y, x+1, y+1)
-	currentScreen.Renderer.Draw(rect, &image.Uniform{Pico8Palette[color]}, image.Point{}, draw.Over)
 }

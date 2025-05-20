@@ -72,5 +72,5 @@ func Color(colorIndex int) {
 
 	// Update both color variables to keep them in sync
 	currentDrawColor = colorIndex
-	cursorColor = colorIndex
+	// cursorColor = colorIndex
 }

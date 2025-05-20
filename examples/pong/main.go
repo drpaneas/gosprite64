@@ -43,7 +43,7 @@ type Game struct {
 func (g *Game) Init() {
 	g.player = Paddle{8, 63, 2, 10, 1, 12}
 	g.computer = Paddle{117, 63, 2, 10, 0.75, 8}
-	ballDy := float64(2) - 0.5
+	ballDy := float64(Flr(Rnd(2))) - 0.5
 	g.ball = Ball{x: 63, y: 63, size: 2, color: 7, dx: 0.6, dy: ballDy, speed: 1, boost: 0.05}
 
 	// sound is not working at the moment
@@ -126,7 +126,7 @@ func (g *Game) Update() {
 
 // Draw renders the game elements to the screen each frame
 func (g *Game) Draw() {
-	ClearScreen(0)
+	ClearScreen(1)
 
 	// Court outline
 	Rect(courtLeft, courtTop, courtRight, courtBottom, 5)
@@ -142,8 +142,9 @@ func (g *Game) Draw() {
 	Rectfill(g.computer.x, g.computer.y, g.computer.x+g.computer.width, g.computer.y+g.computer.height, g.computer.color)
 
 	// Scores
-	Print(fmt.Sprint(g.playerScore), 30, 2)
-	Print(fmt.Sprint(g.computerScore), 95, 2)
+	PrintBitmap(fmt.Sprint(g.playerScore), 30, 2, 7)
+	PrintBitmap(fmt.Sprint(g.computerScore), 95, 2, 7)
+	// PrintBitmap("HELLO, N64!", 20, 20, 7)
 }
 
 // collide checks axis-aligned collision between ball and paddle

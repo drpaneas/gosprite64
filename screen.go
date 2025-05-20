@@ -15,6 +15,8 @@ import (
 	"github.com/drpaneas/n64/rcp/video"
 )
 
+const widthOffset = 4 // Number of pixels to offset X coordinate for overscan
+
 // VideoPreset represents a predefined video configuration.
 type VideoPreset int
 
@@ -36,34 +38,30 @@ const (
 type screen struct {
 	Display  *display.Display
 	Renderer *n64draw.Rdp
-	width    int
-	height   int
-	pixels   [][]int // 2D slice to store color indices
+	Bounds   image.Rectangle
+	// Cache of image.Uniform for each PICO-8 color
+	colorUniforms [16]*image.Uniform
+	width         int
+	height        int
 }
-
-// Screen offset constant to handle horizontal overscan
-const screenOffsetX = 4 // Number of pixels to offset X coordinate for overscan
 
 // newScreen creates a new screen instance with the given dimensions
 func newScreen(disp *display.Display, renderer *n64draw.Rdp, width, height int) *screen {
-	// Initialize the pixel buffer with -1 (transparent/undefined)
-	pixels := make([][]int, height)
-	for i := range pixels {
-		pixels[i] = make([]int, width)
-		for j := range pixels[i] {
-			pixels[i][j] = defaultColorIndex // -1 represents transparent/undefined
-		}
+	s := &screen{
+		Display:  disp,
+		Renderer: renderer,
+		Bounds:   image.Rect(0, 0, width, height),
+		width:    width,
+		height:   height,
+	}
+
+	// Initialize color uniforms for PICO-8 palette
+	for i := range s.colorUniforms {
+		s.colorUniforms[i] = &image.Uniform{C: Pico8Palette[i]}
 	}
 
 	log.Printf("Screen initialized with %d x %d pixels", width, height)
-
-	return &screen{
-		Display:  disp,
-		Renderer: renderer,
-		width:    width,
-		height:   height,
-		pixels:   pixels,
-	}
+	return s
 }
 
 // currentScreen holds the active screen instance.
@@ -97,15 +95,19 @@ func getPresetConfig(preset VideoPreset) (image.Point, video.ColorDepth, machine
 	}
 }
 
+// Public export
+const ScreenWidth = lowResWidth
+const ScreenHeight = lowResHeight
+
 // videoInit initializes the display with the specified video preset.
 // It sets up the framebuffer and renderer for drawing.
 // Returns a new screen instance that can be used for drawing operations.
 func videoInit(preset VideoPreset) {
-	resolution, colorDepth, mode, interlaced := getPresetConfig(preset)
+	resolution, colorDepth, mode, isInterlaced := getPresetConfig(preset)
 
 	// Set the video mode and setup
 	machine.Video = mode
-	video.Setup(interlaced)
+	video.Setup(isInterlaced)
 
 	// Create display and renderer
 	disp := display.NewDisplay(resolution, colorDepth)
@@ -137,6 +139,14 @@ func endDrawing() {
 
 // fill fills the entire screen with the specified color.
 func (s *screen) fill(c color.Color) {
+	// Try to find the color in PICO-8 palette to use cached uniform
+	for i, picoColor := range Pico8Palette {
+		if picoColor == c {
+			s.Renderer.Draw(s.Renderer.Bounds(), s.colorUniforms[i], image.Point{}, draw.Src)
+			return
+		}
+	}
+	// Fallback for colors not in PICO-8 palette (shouldn't happen with public API)
 	s.Renderer.Draw(s.Renderer.Bounds(), &image.Uniform{c}, image.Point{}, draw.Src)
 }
 
@@ -158,106 +168,10 @@ func ClearScreen(colorIndex ...int) {
 		idx = defaultColorIndex
 	}
 
-	// Clear our pixel buffer
-	for y := range currentScreen.pixels {
-		for x := range currentScreen.pixels[y] {
-			currentScreen.pixels[y][x] = idx
-		}
-	}
-
 	// Clear the screen
 	currentScreen.fill(Pico8Palette[idx])
 
 	// Reset the global print cursor position
-	cursorX = defaultCursorX
-	cursorY = defaultCursorY
-}
-
-// Pget returns the PICO-8 color index (0-15) of the pixel at coordinates (x, y)
-// on the current drawing screen.
-//
-// If the coordinates are outside the screen bounds, it returns 0 (black).
-// If the pixel has not been set (is transparent), it returns 0.
-//
-// Example:
-//
-// 	// Set pixel at (10, 20) to red (index 8)
-// 	Pset(10, 20, 8)
-//
-// 	// Get the color index of the pixel we just set
-// 	pixelColorIndex := Pget(10, 20) // Returns 8 (red)
-func Pget(x, y int) int {
-	if currentScreen == nil {
-		log.Println("Warning: Pget() called before screen was ready.")
-		return 0
-	}
-
-	// Check bounds
-	if x < 0 || x >= currentScreen.width || y < 0 || y >= currentScreen.height {
-		return 0 // PICO-8 pget returns 0 for out-of-bounds
-	}
-
-	// Return the color index from our buffer
-	colorIdx := currentScreen.pixels[y][x]
-	if colorIdx == -1 {
-		return 0 // Return black for undefined/transparent pixels
-	}
-	return colorIdx
-}
-
-// Pset draws a single pixel at coordinates (x, y) on the current drawing screen
-// using the specified PICO-8 color index or the current cursorColor.
-//
-// The color is specified by its index (0-15) in the standard Pico8Palette.
-// If no colorIndex is provided, the current cursorColor is used.
-//
-// If the coordinates (x, y) are outside the screen bounds, the function does nothing.
-// If an invalid colorIndex is provided (e.g., < 0 or > 15), a warning is logged,
-// and the function does nothing.
-//
-// Example:
-//
-// 	Cursor(0, 0, 8) // Set current color to red
-// 	Pset(10, 20) // Draws a red pixel at (10, 20)
-// 	Pset(50, 50, 12) // Draws a blue pixel at (50, 50), color overrides cursorColor
-func Pset(x, y int, colorIndex ...int) {
-	// Check if screen is ready
-	if currentScreen == nil || currentScreen.Renderer == nil {
-		log.Println("Warning: Pset() called before screen was ready.")
-		return
-	}
-
-	// Apply horizontal offset for overscan
-	screenX := x + screenOffsetX
-	screenY := y // No Y offset needed
-
-	// Get the color index from arguments or use the current cursor color
-	col := cursorColor
-	if len(colorIndex) > 0 {
-		col = colorIndex[0]
-	}
-
-	// Validate color index
-	if col < 0 || col >= len(Pico8Palette) {
-		log.Printf("Warning: Pset() called with invalid color index %d. Defaulting to cursorColor (%d).", col, cursorColor)
-		col = cursorColor
-	}
-
-	// Get the color from the PICO-8 palette
-	c := Pico8Palette[col]
-
-	// Draw the pixel using the renderer
-	currentScreen.Renderer.Draw(
-		image.Rect(screenX, screenY, screenX+1, screenY+1),
-		&image.Uniform{c},
-		image.Point{},
-		draw.Src,
-	)
-
-	// Update the pixel buffer if it exists
-	if y >= 0 && y < len(currentScreen.pixels) {
-		if x >= 0 && x < len(currentScreen.pixels[y]) {
-			currentScreen.pixels[y][x] = col
-		}
-	}
+	// cursorX = defaultCursorX
+	// cursorY = defaultCursorY
 }

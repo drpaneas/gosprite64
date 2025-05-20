@@ -2,6 +2,7 @@ package gosprite64
 
 import (
 	_ "embed"
+	"embedded/arch/r4000/systim"
 	"embedded/rtos"
 	"log"
 	"os"
@@ -9,11 +10,13 @@ import (
 
 	"github.com/drpaneas/n64/drivers/carts"
 	_ "github.com/drpaneas/n64/machine"
+	"github.com/drpaneas/n64/rcp/cpu"
 
 	"github.com/embeddedgo/fs/termfs"
 )
 
 func init() {
+	systim.Setup(cpu.ClockSpeed) // required for timer to work
 	var err error
 	var cart carts.Cart
 

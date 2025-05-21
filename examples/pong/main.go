@@ -8,10 +8,10 @@ import (
 
 // Court boundaries
 const (
-	courtLeft   = 10
-	courtRight  = 301
+	courtLeft   = 15
+	courtRight  = 296
 	courtTop    = 10
-	courtBottom = 239
+	courtBottom = 229
 	centerX     = (courtRight + courtLeft) / 2
 	centerY     = (courtBottom + courtTop) / 2
 	lineLen     = 4
@@ -42,10 +42,13 @@ type Game struct {
 
 // Init initializes the game state with default paddle and ball positions
 func (g *Game) Init() {
-	g.player = Paddle{courtLeft + 8, centerY + 5, 2, 10, 1, Blue}
-	g.computer = Paddle{courtRight - 10, centerY + g.player.height/2, g.player.width, g.player.height, 0.75, Red}
+	difficulty := 1.5
+	paddleHeight := 20.0
+	paddleWidth := 4.0
+	g.player = Paddle{courtLeft + paddleWidth*2, centerY + paddleHeight/2, paddleWidth, paddleHeight, 1.0 * difficulty, Blue}
+	g.computer = Paddle{courtRight - paddleWidth*3, centerY + paddleHeight/2, paddleWidth, paddleHeight, 0.75 * difficulty, Red}
 	ballDy := float64(Flr(Rnd(2))) - 0.5
-	g.ball = Ball{x: centerX, y: centerY, size: 2, color: White, dx: 0.6, dy: ballDy, speed: 1, boost: 0.05}
+	g.ball = Ball{x: centerX, y: centerY, size: 2, color: White, dx: 1.0 * difficulty, dy: ballDy, speed: 1.0 * difficulty, boost: 0.05 * difficulty}
 
 	// // sound
 	// switch g.Scored {
@@ -145,8 +148,8 @@ func (g *Game) Draw() {
 	DrawRectFill(int(g.computer.x), int(g.computer.y), int(g.computer.x+g.computer.width), int(g.computer.y+g.computer.height), Pico8Palette[g.computer.color])
 
 	// Scores
-	PrintBitmap(fmt.Sprint(g.playerScore), centerX/2, 2, 12)
-	PrintBitmap(fmt.Sprint(g.computerScore), centerX+centerX/2, 2, 12)
+	PrintBitmap(fmt.Sprint(g.playerScore), centerX/2, 2, Yellow)
+	PrintBitmap(fmt.Sprint(g.computerScore), centerX+centerX/2, 2, Yellow)
 }
 
 // collide checks axis-aligned collision between ball and paddle

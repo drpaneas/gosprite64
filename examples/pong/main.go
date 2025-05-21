@@ -8,11 +8,12 @@ import (
 
 // Court boundaries
 const (
-	courtLeft   = 0
-	courtRight  = 127
+	courtLeft   = 10
+	courtRight  = 301
 	courtTop    = 10
-	courtBottom = 127
+	courtBottom = 239
 	centerX     = (courtRight + courtLeft) / 2
+	centerY     = (courtBottom + courtTop) / 2
 	lineLen     = 4
 )
 
@@ -41,12 +42,12 @@ type Game struct {
 
 // Init initializes the game state with default paddle and ball positions
 func (g *Game) Init() {
-	g.player = Paddle{8, 63, 2, 10, 1, 12}
-	g.computer = Paddle{117, 63, 2, 10, 0.75, 8}
+	g.player = Paddle{courtLeft + 8, centerY + 5, 2, 10, 1, Blue}
+	g.computer = Paddle{courtRight - 10, centerY + g.player.height/2, g.player.width, g.player.height, 0.75, Red}
 	ballDy := float64(Flr(Rnd(2))) - 0.5
-	g.ball = Ball{x: 63, y: 63, size: 2, color: 7, dx: 0.6, dy: ballDy, speed: 1, boost: 0.05}
+	g.ball = Ball{x: centerX, y: centerY, size: 2, color: White, dx: 0.6, dy: ballDy, speed: 1, boost: 0.05}
 
-	// sound is not working at the moment
+	// // sound
 	// switch g.Scored {
 	// case "Player":
 	// 	p8.Music(3)
@@ -78,10 +79,10 @@ func (g *Game) Update() {
 		}
 	} else {
 		// return to center
-		if mid > 73 {
+		if mid > ((centerY + g.player.height/2) + g.player.height) {
 			g.computer.y -= g.computer.speed
 		}
-		if mid < 53 {
+		if mid < ((centerY + g.player.height/2) - g.player.height) {
 			g.computer.y += g.computer.speed
 		}
 	}
@@ -126,25 +127,26 @@ func (g *Game) Update() {
 
 // Draw renders the game elements to the screen each frame
 func (g *Game) Draw() {
-	ClearScreen(1)
+	ClearScreen(0)
 
 	// Court outline
-	Rect(courtLeft, courtTop, courtRight, courtBottom, 5)
+	DrawRect(courtLeft, courtTop, courtRight, courtBottom, Pico8Palette[White])
 
 	// Center dashed line
 	for y := courtTop; y < courtBottom; y += lineLen * 2 {
-		Rectfill(centerX, y, centerX+1, y+lineLen, 5)
+		// p8.Line(centerX, float64(y), centerX, float64(y+lineLen), 5)
+		DrawLine(centerX, y, centerX, y+lineLen, Pico8Palette[White])
+		// Rectfill(centerX, y, centerX, y+lineLen, Pico8Palette[White])
 	}
 
 	// Ball and paddles
-	Rectfill(g.ball.x, g.ball.y, g.ball.x+g.ball.size, g.ball.y+g.ball.size, g.ball.color)
-	Rectfill(g.player.x, g.player.y, g.player.x+g.player.width, g.player.y+g.player.height, g.player.color)
-	Rectfill(g.computer.x, g.computer.y, g.computer.x+g.computer.width, g.computer.y+g.computer.height, g.computer.color)
+	DrawRectFill(int(g.ball.x), int(g.ball.y), int(g.ball.x+g.ball.size), int(g.ball.y+g.ball.size), Pico8Palette[g.ball.color])
+	DrawRectFill(int(g.player.x), int(g.player.y), int(g.player.x+g.player.width), int(g.player.y+g.player.height), Pico8Palette[g.player.color])
+	DrawRectFill(int(g.computer.x), int(g.computer.y), int(g.computer.x+g.computer.width), int(g.computer.y+g.computer.height), Pico8Palette[g.computer.color])
 
 	// Scores
-	PrintBitmap(fmt.Sprint(g.playerScore), 30, 2, 7)
-	PrintBitmap(fmt.Sprint(g.computerScore), 95, 2, 7)
-	// PrintBitmap("HELLO, N64!", 20, 20, 7)
+	PrintBitmap(fmt.Sprint(g.playerScore), centerX/2, 2, 12)
+	PrintBitmap(fmt.Sprint(g.computerScore), centerX+centerX/2, 2, 12)
 }
 
 // collide checks axis-aligned collision between ball and paddle

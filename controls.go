@@ -3,8 +3,8 @@ package gosprite64
 import (
 	"sync"
 
-	"github.com/drpaneas/n64/drivers/controller"
-	"github.com/drpaneas/n64/rcp/serial/joybus"
+	"github.com/clktmr/n64/drivers/controller"
+	"github.com/clktmr/n64/rcp/serial/joybus"
 )
 
 // Button constants for N64 controller
@@ -44,18 +44,13 @@ var (
 	controllerMutex sync.Mutex
 )
 
-// init initializes the controller input system
-func init() {
-	// The controller package initializes everything we need in its init()
-}
-
 // updateControllerState updates the current and previous button states
 func updateControllerState() {
 	controllerMutex.Lock()
 	defer controllerMutex.Unlock()
 
 	// Poll all controllers
-	controller.States.Poll()
+	controller.Poll()
 
 	// Save previous button state
 	prevButtons = buttons

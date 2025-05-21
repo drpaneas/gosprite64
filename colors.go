@@ -53,7 +53,7 @@ var PaletteTransparency = []bool{true, false, false, false, false, false, false,
 const defaultColorIndex = Black
 
 // currentDrawColor holds the current drawing color index (0-15)
-var currentDrawColor = defaultColorIndex
+// var currentDrawColor = defaultColorIndex
 
 // Color sets the current draw color to be used by subsequent drawing operations.
 // The color parameter should be a number from 0 to 15 corresponding to the PICO-8 palette.
@@ -62,15 +62,15 @@ var currentDrawColor = defaultColorIndex
 //
 //	Color(8) // Set current draw color to red (color 8)
 //	Pset(10, 20) // Draw a red pixel at (10, 20)
-func Color(colorIndex int) {
-	// Clamp color index to valid range (0-15)
-	if colorIndex < 0 {
-		colorIndex = 0
-	} else if colorIndex >= len(Pico8Palette) {
-		colorIndex = len(Pico8Palette) - 1
-	}
+// func Color(colorIndex int) {
+// 	// Clamp color index to valid range (0-15)
+// 	if colorIndex < 0 {
+// 		colorIndex = 0
+// 	} else if colorIndex >= len(Pico8Palette) {
+// 		colorIndex = len(Pico8Palette) - 1
+// 	}
 
-	// Update both color variables to keep them in sync
-	currentDrawColor = colorIndex
-	// cursorColor = colorIndex
-}
+// 	// Update both color variables to keep them in sync
+// 	// currentDrawColor = colorIndex
+// 	// cursorColor = colorIndex
+// }

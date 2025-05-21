@@ -3,8 +3,8 @@ module github.com/drpaneas/gosprite64
 go 1.22
 
 require (
-	github.com/drpaneas/n64 v0.0.0-20250415192732-849e0733e7b3
-	github.com/embeddedgo/fs v0.1.0
+	github.com/clktmr/n64 v0.0.0-20250514144408-7410fc26cec0
+	github.com/embeddedgo/fs v0.1.3
 )
 
 require (

@@ -8,9 +8,9 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/drpaneas/n64/drivers/carts"
-	_ "github.com/drpaneas/n64/machine"
-	"github.com/drpaneas/n64/rcp/cpu"
+	"github.com/clktmr/n64/drivers/carts"
+	_ "github.com/clktmr/n64/machine"
+	"github.com/clktmr/n64/rcp/cpu"
 
 	"github.com/embeddedgo/fs/termfs"
 )

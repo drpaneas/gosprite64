@@ -1,9 +1,9 @@
-github.com/drpaneas/n64 v0.0.0-20250415192732-849e0733e7b3 h1:5O6zVNdbyiIFVaXuxeLqvIQyVOCRhzAjzO2vyp/bfhM=
-github.com/drpaneas/n64 v0.0.0-20250415192732-849e0733e7b3/go.mod h1:dVXMCfFEXer4c4vWZr4EzXPy4lzvtg3ggrFDGxgNoSQ=
+github.com/clktmr/n64 v0.0.0-20250514144408-7410fc26cec0 h1:E51W4SdnSevo/bYMMVqETKF02+GU7Qulzmn4VKK5lzY=
+github.com/clktmr/n64 v0.0.0-20250514144408-7410fc26cec0/go.mod h1:WZEm+7iYvDei+ie8OZFowNQg/bXX+tPtar1LIOq2yZI=
 github.com/embeddedgo/display v1.1.0 h1:jXlY6/FeaUV89hX+ANGpTKogZWjhgno7vrCh86WA8aY=
 github.com/embeddedgo/display v1.1.0/go.mod h1:0sxxBoklqMbA1uBqEAg8Plntmwvt7cNsgxaf7UaS4yw=
-github.com/embeddedgo/fs v0.1.0 h1:M4bOltC28+cWixII514NKExkrRzBnjWLaRbTvZ87kIE=
-github.com/embeddedgo/fs v0.1.0/go.mod h1:0PeMg4i1WKpXdRqXEktx9o0Wd9EIzwWD4KTBbvAvZ3Q=
+github.com/embeddedgo/fs v0.1.3 h1:uKp26pruDzT/qi9K8HcV41JBdAgDTGIIagCZQ15GRzs=
+github.com/embeddedgo/fs v0.1.3/go.mod h1:iQRMLUL0YeL5Ou2ILYTlspw32A0BeoXs7O2fuTZoS1M=
 github.com/sigurn/crc8 v0.0.0-20220107193325-2243fe600f9f h1:1R9KdKjCNSd7F8iGTxIpoID9prlYH8nuNYKt0XvweHA=
 github.com/sigurn/crc8 v0.0.0-20220107193325-2243fe600f9f/go.mod h1:vQhwQ4meQEDfahT5kd61wLAF5AAeh5ZPLVI4JJ/tYo8=
 golang.org/x/text v0.13.0 h1:ablQoSUd0tRdKxZewP80B+BaqeKJuVhuRxj/dkrun3k=

@@ -1,6 +1,3 @@
-// Package gosprite64 provides a simple 2D graphics library for Nintendo 64 development.
-// It offers a high-level API for drawing graphics, handling the low-level details
-// of the N64's Reality Display Processor (RDP) and video initialization.
 package gosprite64
 
 import (
@@ -9,13 +6,11 @@ import (
 	"image/draw"
 	"log"
 
-	"github.com/drpaneas/n64/drivers/display"
-	n64draw "github.com/drpaneas/n64/drivers/draw"
-	"github.com/drpaneas/n64/machine"
-	"github.com/drpaneas/n64/rcp/video"
+	"github.com/clktmr/n64/drivers/display"
+	n64draw "github.com/clktmr/n64/drivers/draw"
+	"github.com/clktmr/n64/machine"
+	"github.com/clktmr/n64/rcp/video"
 )
-
-const widthOffset = 4 // Number of pixels to offset X coordinate for overscan
 
 // VideoPreset represents a predefined video configuration.
 type VideoPreset int
@@ -79,40 +74,35 @@ func DefaultConfig() Config {
 	}
 }
 
-// getPresetConfig returns the configuration for a given preset.
-func getPresetConfig(preset VideoPreset) (image.Point, video.ColorDepth, machine.VideoType, bool) {
+func getPresetConfig(preset VideoPreset) (image.Point, video.ColorDepth, uint32, bool) {
 	switch preset {
 	case HighRes:
 		return image.Point{X: highResWidth, Y: highResHeight},
-			video.ColorDepth(video.BPP32),
-			machine.VideoNTSC,
-			true
+			video.BPP32,
+			uint32(machine.VideoNTSC), // This is a uint32 value
+			true // Interlaced for high resolution
 	default: // LowRes or unknown
 		return image.Point{X: lowResWidth, Y: lowResHeight},
-			video.ColorDepth(video.BPP16),
-			machine.VideoNTSC,
-			false
+			video.BPP16,
+			uint32(machine.VideoNTSC), // This is a uint32 value
+			false // Non-interlaced for low resolution
 	}
 }
 
-// Public export
-const ScreenWidth = lowResWidth
-const ScreenHeight = lowResHeight
-
-// videoInit initializes the display with the specified video preset.
-// It sets up the framebuffer and renderer for drawing.
-// Returns a new screen instance that can be used for drawing operations.
 func videoInit(preset VideoPreset) {
-	resolution, colorDepth, mode, isInterlaced := getPresetConfig(preset)
+	resolution, colorDepth, _, isInterlaced := getPresetConfig(preset)
 
 	// Set the video mode and setup
-	machine.Video = mode
 	video.Setup(isInterlaced)
 
 	// Create display and renderer
 	disp := display.NewDisplay(resolution, colorDepth)
 	renderer := n64draw.NewRdp()
-	renderer.SetFramebuffer(disp.Swap())
+
+	// The antialiasing is automatically set to aaResampling in SetFramebuffer
+	if fb := disp.Swap(); fb != nil {
+		renderer.SetFramebuffer(fb)
+	}
 
 	// Create screen with our custom implementation
 	currentScreen = newScreen(disp, renderer, resolution.X, resolution.Y)
@@ -154,7 +144,7 @@ func (s *screen) fill(c color.Color) {
 // If no colorIndex is provided, it defaults to Pico8Black (0).
 func ClearScreen(colorIndex ...int) {
 	if currentScreen == nil {
-		log.Println("Warning: Cls() called before screen was ready.")
+		log.Println("Warning: ClearScreen() called before screen was ready.")
 		return
 	}
 
@@ -164,14 +154,10 @@ func ClearScreen(colorIndex ...int) {
 	}
 
 	if idx < 0 || idx >= len(Pico8Palette) {
-		log.Printf("Warning: Cls() called with invalid color index %d. Defaulting to %d.", idx, defaultColorIndex)
+		log.Printf("Warning: ClearScreen() called with invalid color index %d. Defaulting to %d.", idx, defaultColorIndex)
 		idx = defaultColorIndex
 	}
 
 	// Clear the screen
 	currentScreen.fill(Pico8Palette[idx])
-
-	// Reset the global print cursor position
-	// cursorX = defaultCursorX
-	// cursorY = defaultCursorY
 }

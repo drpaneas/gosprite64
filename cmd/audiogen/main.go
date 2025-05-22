@@ -113,7 +113,6 @@ package %s
 import (
 	"embed"
 
-	"github.com/clktmr/n64/drivers/cartfs"
 	"github.com/drpaneas/gosprite64"
 )
 
@@ -122,8 +121,7 @@ var audioFS embed.FS
 
 func init() {
 	// Initialize the audio filesystem with embedded audio files
-	fs := cartfs.Embed(audioFS)
-	gosprite64.SetAudioFS(fs)
+	gosprite64.SetAudioFS(audioFS)
 }
 `, pkgName, strings.Join(audioFiles, " "))
 

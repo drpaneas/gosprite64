@@ -15,7 +15,7 @@ import (
 var (
 	audioFS         embed.FS
 	audioFSInit     bool           // Flag to track if audioFS has been initialized
-	initializedOnce sync.Once     // Ensures initialization happens only once
+	initializedOnce sync.Once      // Ensures initialization happens only once
 	musicFiles      map[int]string // Map track IDs to filenames
 )
 
@@ -43,11 +43,13 @@ type musicTrack struct {
 
 func getAudioPlayer() *audioPlayer {
 	audioOnce.Do(func() {
+		// log.Println("Initializing audio player with sample rate 48000Hz")
 		audio.SetSampleRate(48000)
 		audioPlayerInstance = &audioPlayer{
 			musicData:    make(map[int][]byte),
 			activeTracks: make(map[int]*musicTrack),
 		}
+		// log.Println("Audio player initialized successfully")
 	})
 	return audioPlayerInstance
 }
@@ -58,6 +60,7 @@ func (a *audioPlayer) update() {
 
 	for id, track := range a.activeTracks {
 		if track == nil || len(track.data) == 0 {
+			log.Printf("Removing empty or nil track %d", id)
 			delete(a.activeTracks, id)
 			continue
 		}
@@ -68,6 +71,7 @@ func (a *audioPlayer) update() {
 				track.position = 0
 				remaining = len(track.data)
 			} else {
+				// log.Printf("Track %d finished playing", id)
 				delete(a.activeTracks, id)
 				continue
 			}
@@ -79,7 +83,17 @@ func (a *audioPlayer) update() {
 		}
 
 		chunk := track.data[track.position : track.position+chunkSize]
-		audio.Buffer.Write(chunk)
+		// log.Printf("Writing %d bytes to audio buffer for track %d (position: %d/%d)",
+		// chunkSize, id, track.position, len(track.data))
+
+		n, err := audio.Buffer.Write(chunk)
+		if err != nil {
+			log.Printf("Error writing to audio buffer: %v (wrote %d/%d bytes)", err, n, chunkSize)
+		} else {
+			// log.Printf("Successfully wrote %d bytes to audio buffer", n)
+		}
+
+		audio.Buffer.Flush()
 		track.position += chunkSize
 	}
 }
@@ -87,11 +101,21 @@ func (a *audioPlayer) update() {
 // Music plays or stops music
 // If n is -1, stops all music
 func Music(n int, loop bool) {
+	// log.Printf("Music(%d, loop=%v) called", n, loop)
 	ap := getAudioPlayer()
-	
+
+	if n == -1 {
+		// log.Println("Stopping all music")
+		ap.mutex.Lock()
+		ap.activeTracks = make(map[int]*musicTrack)
+		ap.mutex.Unlock()
+		return
+	}
+
 	// Check if we already have this track loaded
 	_, exists := ap.musicData[n]
 	if !exists {
+		// log.Printf("Track %d not in memory, attempting to load...", n)
 		// Try to load the track
 		data, err := loadAudioData(n)
 		if err != nil {
@@ -99,13 +123,20 @@ func Music(n int, loop bool) {
 			return
 		}
 		// Store the loaded data
+		// log.Printf("Loaded track %d into memory (%d bytes)", n, len(data))
 		ap.musicData[n] = data
+	} else {
+		// log.Printf("Track %d already in memory, reusing", n)
 	}
+
+	ap.mutex.Lock()
+	defer ap.mutex.Unlock()
 
 	ap.activeTracks[n] = &musicTrack{
 		data: ap.musicData[n],
 		loop: loop,
 	}
+	// log.Printf("Added track %d to active tracks (total active: %d)", n, len(ap.activeTracks))
 }
 
 // LoadAudio loads raw PCM audio data for a track
@@ -119,8 +150,8 @@ func LoadAudio(id int, pcmData []byte) {
 
 // LoadAudioFile registers an audio file to be loaded on demand
 func LoadAudioFile(id int, filename string) error {
-	log.Printf("Registering audio file: %s as track ID: %d", filename, id)
-	
+	// log.Printf("Registering audio file: %s as track ID: %d", filename, id)
+
 	// Check if the audio filesystem is properly initialized
 	if !audioFSInit {
 		log.Printf("ERROR: audioFS has not been initialized when trying to register %s", filename)
@@ -129,7 +160,7 @@ func LoadAudioFile(id int, filename string) error {
 
 	// Just store the filename, we'll load it when needed
 	musicFiles[id] = filename
-	log.Printf("Registered audio file %s as track ID %d", filename, id)
+	// log.Printf("Registered audio file %s as track ID %d", filename, id)
 	return nil
 }
 
@@ -155,7 +186,7 @@ func loadAudioData(id int) ([]byte, error) {
 		return nil, fmt.Errorf("audio file %s is empty", filename)
 	}
 
-	log.Printf("Loaded audio file %s as track ID %d (%d bytes)", filename, id, len(data))
+	// log.Printf("Loaded audio file %s as track ID %d (%d bytes)", filename, id, len(data))
 	return data, nil
 }
 
@@ -165,16 +196,16 @@ func PlaySFX(name string) {
 	if name == "" {
 		return
 	}
-	
+
 	filename := "sfx_" + name + ".raw"
 	id := -int(hashString(name)) // Generate the same ID as in initAudio
-	
+
 	// Check if the sound effect is already loaded
 	player := getAudioPlayer()
 	player.mutex.Lock()
 	_, exists := player.musicData[id]
 	player.mutex.Unlock()
-	
+
 	if !exists {
 		// Try to load the SFX if it hasn't been loaded yet
 		if err := LoadAudioFile(id, filename); err != nil {
@@ -182,21 +213,23 @@ func PlaySFX(name string) {
 			return
 		}
 	}
-	
+
 	// Play the SFX (with loop set to false)
 	Music(id, false)
 }
 
 // UpdateAudio updates the audio system (call in game loop)
 func UpdateAudio() {
-	getAudioPlayer().update()
+	ap := getAudioPlayer()
+	// log.Printf("UpdateAudio called (active tracks: %d)", len(ap.activeTracks))
+	ap.update()
 }
 
 func initAudio() {
 	initializedOnce.Do(func() {
 		log.Println("Initializing audio system...")
-		log.Printf("Audio filesystem type: %T, value: %+v", audioFS, audioFS)
-		
+		// log.Printf("Audio filesystem type: %T, value: %+v", audioFS, audioFS)
+
 		// Check if the audio filesystem is properly initialized
 		if !audioFSInit {
 			log.Println("ERROR: Cannot initialize audio - audioFS has not been set up")
@@ -205,9 +238,9 @@ func initAudio() {
 
 		// Initialize music files map
 		musicFiles = make(map[int]string)
-		
+
 		// List all files in the audio directory
-		log.Println("Scanning for audio files...")
+		// log.Println("Scanning for audio files...")
 		files, err := audioFS.ReadDir(".")
 		if err != nil {
 			log.Printf("ERROR: Failed to list audio files: %v", err)
@@ -228,7 +261,7 @@ func initAudio() {
 				if err := LoadAudioFile(trackID, name); err != nil {
 					log.Printf("Could not load music track %d (%s): %v", trackID, name, err)
 				} else {
-					log.Printf("Successfully loaded music track %d: %s", trackID, name)
+					// log.Printf("Successfully loaded music track %d: %s", trackID, name)
 					loadedCount++
 				}
 			}
@@ -250,26 +283,26 @@ func hashString(s string) uint32 {
 // SetAudioFS sets the audio filesystem instance
 // This is called by the generated audio_embed.go file
 func SetAudioFS(fs embed.FS) {
-	log.Println("Setting up audio filesystem...")
+	// log.Println("Setting up audio filesystem...")
 	audioFS = fs
 	audioFSInit = true
-	
+
 	// List all files in the root directory to verify the filesystem
-	log.Println("Audio filesystem contents:")
+	// log.Println("Audio filesystem contents:")
 	files, err := fs.ReadDir(".")
 	if err != nil {
 		log.Printf("ERROR: Failed to read directory: %v", err)
 	} else {
 		for _, file := range files {
-			info, err := file.Info()
+			_, err := file.Info()
 			if err != nil {
 				log.Printf("  - %s (error getting info: %v)", file.Name(), err)
 			} else {
-				log.Printf("  - %s (dir: %v, size: %d)", file.Name(), file.IsDir(), info.Size())
+				// log.Printf("  - %s (dir: %v, size: %d)", file.Name(), file.IsDir(), info.Size())
 			}
 		}
 	}
-	
+
 	// Initialize and load audio files now that we have the filesystem
 	initAudio()
 }

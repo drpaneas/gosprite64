@@ -72,8 +72,10 @@ func Run(g Gamelooper) {
 		// Update game logic
 		g.Update()
 
-		// Draw game
+		// Update audio
+		UpdateAudio()
 
+		// Draw game
 		beginDrawing()
 		// Draw debug border
 		currentScreen.DrawBorder()

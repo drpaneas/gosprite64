@@ -1,3 +1,5 @@
+//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir .
+
 package main
 
 import (
@@ -50,15 +52,15 @@ func (g *Game) Init() {
 	ballDy := float64(Flr(Rnd(2))) - 0.5
 	g.ball = Ball{x: centerX, y: centerY, size: 2, color: White, dx: 1.0 * difficulty, dy: ballDy, speed: 1.0 * difficulty, boost: 0.05 * difficulty}
 
-	// // sound
-	// switch g.Scored {
-	// case "Player":
-	// 	p8.Music(3)
-	// case "Computer":
-	// 	p8.Music(4)
-	// default:
-	// 	p8.Music(5)
-	// }
+	// sound
+	switch g.Scored {
+	case "Player":
+		Music(3, false)
+	case "Computer":
+		Music(4, false)
+	default:
+		Music(5, false)
+	}
 }
 
 // Update handles game logic each frame including input, AI, collisions and scoring
@@ -94,7 +96,7 @@ func (g *Game) Update() {
 	// 1. Ball vs paddles
 	if collide(g.ball, g.computer) {
 		g.ball.dx = -(g.ball.dx + g.ball.boost)
-		// p8.Music(0)
+		Music(0, false)
 	}
 	if collide(g.ball, g.player) {
 		// adjust dy if player changes paddle angle
@@ -102,13 +104,13 @@ func (g *Game) Update() {
 			g.ball.dy += sign(g.ball.dy) * g.ball.boost * 2
 		}
 		g.ball.dx = -(g.ball.dx - g.ball.boost)
-		// p8.Music(1)
+		Music(1, false)
 	}
 
 	// 2. Ball vs top/bottom
 	if g.ball.y <= courtTop+1 || g.ball.y+g.ball.size >= courtBottom-1 {
 		g.ball.dy = -g.ball.dy
-		// p8.Music(2)
+		Music(2, false)
 	}
 
 	// 3. Ball vs Walls (aka scoring)

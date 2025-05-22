@@ -40,12 +40,18 @@ func Run(g Gamelooper) {
 	// Call Init before starting the game loop
 	g.Init()
 
+	// Initialize audio
+	initAudio()
+
 	lastTime := rtos.Nanotime()
 	accumulator := time.Duration(0)
 
 	// counter for looping pixel per pixel the bounds of the screen
 	// x := 0
 	// y := 0
+
+	// Update audio
+	UpdateAudio()
 
 	// Main game loop
 	for {

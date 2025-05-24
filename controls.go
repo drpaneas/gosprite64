@@ -27,12 +27,12 @@ const (
 
 // Button aliases for PICO-8 compatibility
 const (
-	BtnRight = BtnDRight
-	BtnLeft  = BtnDLeft
-	BtnUp    = BtnDUp
-	BtnDown  = BtnDDown
-	BtnX     = BtnCLeft  // PICO-8 X button
-	BtnC     = BtnCRight // PICO-8 O button
+	RIGHT = BtnDRight
+	LEFT  = BtnDLeft
+	UP    = BtnDUp
+	DOWN  = BtnDDown
+	X     = joybus.ButtonA
+	O     = joybus.ButtonB
 )
 
 var (

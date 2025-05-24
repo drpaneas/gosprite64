@@ -21,23 +21,23 @@ func DrawRect(x1, y1, x2, y2 int, c color.Color) {
 	}
 
 	// Draw top line
-	DrawLine(x1, y1, x2, y1, c)
+	Line(x1, y1, x2, y1, c)
 	// Draw bottom line
-	DrawLine(x1, y2, x2, y2, c)
+	Line(x1, y2, x2, y2, c)
 	// Draw left line (offset by 1 to avoid double-drawing corners)
 	if y2-y1 > 1 {
-		DrawLine(x1, y1+1, x1, y2-1, c)
+		Line(x1, y1+1, x1, y2-1, c)
 	}
 	// Draw right line (offset by 1 to avoid double-drawing corners)
 	if y2-y1 > 1 {
-		DrawLine(x2, y1+1, x2, y2-1, c)
+		Line(x2, y1+1, x2, y2-1, c)
 	}
 }
 
-// DrawLine draws a line from (x1,y1) to (x2,y2) using DrawRectFill.
+// Line draws a line from (x1,y1) to (x2,y2) using DrawRectFill.
 // The line will be 1 pixel thick.
 // Coordinates must be within the screen bounds (0-319, 0-239).
-func DrawLine(x1, y1, x2, y2 int, c color.Color) {
+func Line(x1, y1, x2, y2 int, c color.Color) {
 	// Check bounds
 	if x1 < 0 || x1 > 319 || y1 < 0 || y1 > 239 || x2 < 0 || x2 > 319 || y2 < 0 || y2 > 239 {
 		log.Printf("DrawLine: (%d,%d) to (%d,%d) out of bounds", x1, y1, x2, y2)

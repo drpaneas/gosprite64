@@ -66,10 +66,10 @@ func (g *Game) Init() {
 // Update handles game logic each frame including input, AI, collisions and scoring
 func (g *Game) Update() {
 	// Player input
-	if Btn(BtnUp) && g.player.y > courtTop+1 {
+	if Btn(UP) && g.player.y > courtTop+1 {
 		g.player.y -= g.player.speed
 	}
-	if Btn(BtnDown) && g.player.y+g.player.height < courtBottom-1 {
+	if Btn(DOWN) && g.player.y+g.player.height < courtBottom-1 {
 		g.player.y += g.player.speed
 	}
 
@@ -100,7 +100,7 @@ func (g *Game) Update() {
 	}
 	if collide(g.ball, g.player) {
 		// adjust dy if player changes paddle angle
-		if Btn(BtnUp) || Btn(BtnDown) {
+		if Btn(UP) || Btn(DOWN) {
 			g.ball.dy += sign(g.ball.dy) * g.ball.boost * 2
 		}
 		g.ball.dx = -(g.ball.dx - g.ball.boost)
@@ -140,7 +140,7 @@ func (g *Game) Draw() {
 	// Center dashed line
 	for y := courtTop; y < courtBottom; y += lineLen * 2 {
 		// p8.Line(centerX, float64(y), centerX, float64(y+lineLen), 5)
-		DrawLine(centerX, y, centerX, y+lineLen, Pico8Palette[White])
+		Line(centerX, y, centerX, y+lineLen, Pico8Palette[White])
 		// Rectfill(centerX, y, centerX, y+lineLen, Pico8Palette[White])
 	}
 
@@ -150,8 +150,8 @@ func (g *Game) Draw() {
 	DrawRectFill(int(g.computer.x), int(g.computer.y), int(g.computer.x+g.computer.width), int(g.computer.y+g.computer.height), Pico8Palette[g.computer.color])
 
 	// Scores
-	PrintBitmap(fmt.Sprint(g.playerScore), centerX/2, 2, Yellow)
-	PrintBitmap(fmt.Sprint(g.computerScore), centerX+centerX/2, 2, Yellow)
+	Print(fmt.Sprint(g.playerScore), centerX/2, 2, Yellow)
+	Print(fmt.Sprint(g.computerScore), centerX+centerX/2, 2, Yellow)
 }
 
 // collide checks axis-aligned collision between ball and paddle

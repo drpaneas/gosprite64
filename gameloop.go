@@ -25,14 +25,29 @@ type Gamelooper interface {
 	Draw()
 }
 
-const targetFPS = 60
-const frameDuration = time.Second / targetFPS
+var TargetFPS = 60
 
-// Run starts the game loop with default video settings (NTSC 320x240, no interlacing).
+var frameDuration = time.Second / time.Duration(TargetFPS)
+
+// Run starts the game loop. It accepts a Gamelooper and an optional Config (from screen.go).
 // It will initialize the display, call Init() once, then repeatedly call Update() and Draw().
-func Run(g Gamelooper) {
-	// Initialize display with default settings
-	videoInit(LowRes)
+func Run(g Gamelooper, configs ...Config) {
+	chosenPreset := LowRes // Default preset
+
+	if len(configs) > 0 {
+		// If a Config object is provided, use its Preset.
+		// Note: VideoPreset is an int. If configs[0].Preset is not explicitly set by the user
+		// (e.g. pigo8.Run(game, pigo8.Config{})), it will have its zero value.
+		// The zero value for VideoPreset (LowRes = iota = 0) aligns with our default.
+		// So, we can directly use configs[0].Preset.
+		chosenPreset = configs[0].Preset
+		log.Printf("Config provided. Using VideoPreset: %v", chosenPreset)
+	} else {
+		log.Println("No Config provided, defaulting to LowRes video preset.")
+	}
+
+	// Initialize display with the determined preset
+	videoInit(chosenPreset)
 
 	// Initialize RDP viewport - ADD THESE LINES
 	rdp.RDP.SetScissor(image.Rect(0, 0, 640, 480), rdp.InterlaceNone)

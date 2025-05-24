@@ -139,7 +139,7 @@ func drawGlyph1BPP(ch rune, dstX, dstY int, col color.Color) {
 	}
 }
 
-func PrintBitmap(str string, x, y, colorIdx int) {
+func Print(str string, x, y, colorIdx int) {
 	if currentScreen == nil {
 		return
 	}

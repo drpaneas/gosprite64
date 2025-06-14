@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  workflow_dispatch:
+
   push:
     paths:
       - '**/*.go'
@@ -33,37 +35,48 @@ jobs:
           go-version: 'stable'
           cache: true
 
-      # On Linux/macOS, install direnv & load the hook
-      - name: Install & hook direnv
+      # Install direnv on Linux/macOS if it's missing
+      - name: Install direnv
         if: runner.os != 'Windows'
         run: |
-          # install direnv if missing
           if ! command -v direnv >/dev/null; then
             if command -v apt-get >/dev/null; then
               sudo apt-get update && sudo apt-get install -y direnv
             elif command -v brew >/dev/null; then
               brew install direnv
             else
-              echo "Please install direnv on $(uname)"
+              echo "Please install direnv on $(uname -s)"
               exit 1
             fi
           fi
 
-          # Inject direnv into this shell and allow the .envrc
-          eval "$(direnv hook bash)"
-          direnv allow
-
-      # Now run your mage targets in one step
-      - name: mage Setup & Test
+      # 1️⃣ Run mage Setup (writes the .envrc) on all except macOS ARM64
+      - name: Run mage Setup
+        if: runner.os != 'macos' || runner.arch != 'arm64'
         uses: magefile/mage-action@v3
         with:
           version: latest
-          # run both Setup and Test
-          args: Setup Test
+          args: Setup
 
-      # (optional) if you still need your build_examples.sh for some reason:
+      # --- macOS ARM64: Install mage via Homebrew then run Setup & Test ---
+      - name: Install mage using Homebrew (macOS ARM64) and run 
+        if: runner.os == 'macos' && runner.arch == 'arm64'
+        run: |
+          brew update
+          brew install mage
+          mage Setup
+
+      # 2️⃣ Hook & allow direnv in this shell (Linux & Intel macOS)
+      - name: Hook & allow direnv
+        if: runner.os != 'Windows'
+        run: |
+          eval "$(direnv hook bash)"
+          direnv allow
+
+      # 4️⃣ Legacy build script: export the direnv‐loaded env, then run it
       - name: Run build_examples.sh
-        if: runner.os != 'macOS'
+        if: runner.os != 'Windows'
         run: |
           chmod +x ./build_examples.sh
+          eval "$(direnv export bash)"
           ./build_examples.sh

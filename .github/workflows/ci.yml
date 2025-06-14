@@ -35,7 +35,9 @@ jobs:
         run: |
           brew update
           brew install mage
-          mage Setup Test
+          mage Setup
+          chmod +x ./build_examples.sh
+          ./build_examples.sh
 
       # --- Other platforms: Use mage-action ---
       - name: Run Mage Setup and Test targets with mage-action
@@ -43,5 +45,7 @@ jobs:
         uses: magefile/mage-action@v3
         with:
           version: latest
-          args: Setup Test
+          args: Setup
 
+      - name: Run build_examples script
+        run: ./build_examples.sh

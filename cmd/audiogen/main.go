@@ -97,7 +97,12 @@ func generateEmbedFile(dir string, audioFiles []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create output file: %w", err)
 	}
-	defer f.Close()
+	defer func() {
+		closeErr := f.Close()
+		if closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
 
 	// Get the package name from the current directory
 	pkgName := "main"

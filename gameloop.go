@@ -154,20 +154,20 @@ func (s *screen) ToScreen(x, y int) (int, int) {
 	return 2*BorderLeft + x, BorderTop + y
 }
 
-func drawPixel(x, y int, c color.Color) {
-	// x, y out of bounds check
-	// top left: [0,0]
-	// top right: [319,0]
-	// bottom left: [0,239]
-	// bottom right: [319,239]
-	if x < 0 || x > 319 || y < 0 || y > 239 {
-		log.Printf("drawPixel: x=%d, y=%d out of bounds", x, y)
-		return
-	}
+// func drawPixel(x, y int, c color.Color) {
+// 	// x, y out of bounds check
+// 	// top left: [0,0]
+// 	// top right: [319,0]
+// 	// bottom left: [0,239]
+// 	// bottom right: [319,239]
+// 	if x < 0 || x > 319 || y < 0 || y > 239 {
+// 		log.Printf("drawPixel: x=%d, y=%d out of bounds", x, y)
+// 		return
+// 	}
 
-	screenX, screenY := currentScreen.ToScreen(x, y)
-	Rectfill(screenX, screenY, screenX, screenY, c)
-}
+// 	screenX, screenY := currentScreen.ToScreen(x, y)
+// 	Rectfill(screenX, screenY, screenX, screenY, c)
+// }
 
 // DrawRectFill draws a rectangle on screen
 // x1, y1: Top-left corner (0-319, 0-239)

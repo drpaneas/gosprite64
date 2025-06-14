@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"embedded/arch/r4000/systim"
 	"embedded/rtos"
+	"fmt"
 	"log"
 	"os"
 	"syscall"
@@ -26,7 +27,10 @@ func init() {
 	}
 
 	devConsole := termfs.NewLight("termfs", nil, cart)
-	rtos.Mount(devConsole, "/dev/console")
+	err = rtos.Mount(devConsole, "/dev/console")
+	if err != nil {
+		panic(fmt.Sprintf("failed to mount console: %v", err))
+	}
 	os.Stdout, err = os.OpenFile("/dev/console", syscall.O_WRONLY, 0)
 	if err != nil {
 		panic(err)

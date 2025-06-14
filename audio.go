@@ -19,11 +19,6 @@ var (
 	musicFiles      map[int]string // Map track IDs to filenames
 )
 
-const (
-	// numMusicTracks defines the number of music tracks to load
-	numMusicTracks = 64 // Maximum number of music tracks (music0.raw to music63.raw)
-)
-
 var (
 	audioPlayerInstance *audioPlayer
 	audioOnce           sync.Once
@@ -43,13 +38,11 @@ type musicTrack struct {
 
 func getAudioPlayer() *audioPlayer {
 	audioOnce.Do(func() {
-		// log.Println("Initializing audio player with sample rate 48000Hz")
 		audio.SetSampleRate(48000)
 		audioPlayerInstance = &audioPlayer{
 			musicData:    make(map[int][]byte),
 			activeTracks: make(map[int]*musicTrack),
 		}
-		// log.Println("Audio player initialized successfully")
 	})
 	return audioPlayerInstance
 }
@@ -83,14 +76,10 @@ func (a *audioPlayer) update() {
 		}
 
 		chunk := track.data[track.position : track.position+chunkSize]
-		// log.Printf("Writing %d bytes to audio buffer for track %d (position: %d/%d)",
-		// chunkSize, id, track.position, len(track.data))
 
 		n, err := audio.Buffer.Write(chunk)
 		if err != nil {
 			log.Printf("Error writing to audio buffer: %v (wrote %d/%d bytes)", err, n, chunkSize)
-		} else {
-			// log.Printf("Successfully wrote %d bytes to audio buffer", n)
 		}
 
 		audio.Buffer.Flush()
@@ -123,10 +112,7 @@ func Music(n int, loop bool) {
 			return
 		}
 		// Store the loaded data
-		// log.Printf("Loaded track %d into memory (%d bytes)", n, len(data))
 		ap.musicData[n] = data
-	} else {
-		// log.Printf("Track %d already in memory, reusing", n)
 	}
 
 	ap.mutex.Lock()
@@ -175,7 +161,12 @@ func loadAudioData(id int) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open audio file %s: %w", filename, err)
 	}
-	defer f.Close()
+	defer func() {
+		closeErr := f.Close()
+		if closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
 
 	data, err := io.ReadAll(f)
 	if err != nil {
@@ -297,8 +288,6 @@ func SetAudioFS(fs embed.FS) {
 			_, err := file.Info()
 			if err != nil {
 				log.Printf("  - %s (error getting info: %v)", file.Name(), err)
-			} else {
-				// log.Printf("  - %s (dir: %v, size: %d)", file.Name(), file.IsDir(), info.Size())
 			}
 		}
 	}

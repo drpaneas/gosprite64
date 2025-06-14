@@ -3,12 +3,12 @@ name: CI
 on:
   push:
     paths:
-      - '**.go'
+      - '**/*.go'
       - 'go.mod'
       - 'go.sum'
   pull_request:
     paths:
-      - '**.go'
+      - '**/*.go'
       - 'go.mod'
       - 'go.sum'
 
@@ -19,6 +19,10 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    env:
+      # Force a POSIX shell so direnv hook detection works
+      SHELL: /bin/bash
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -29,23 +33,37 @@ jobs:
           go-version: 'stable'
           cache: true
 
-      # --- macOS ARM64: Install mage via Homebrew then run manually ---
-      - name: Install mage using Homebrew (macOS ARM64) and run 
-        if: runner.os == 'macos' && runner.arch == 'arm64'
+      # On Linux/macOS, install direnv & load the hook
+      - name: Install & hook direnv
+        if: runner.os != 'Windows'
         run: |
-          brew update
-          brew install mage
-          mage Setup
-          chmod +x ./build_examples.sh
-          ./build_examples.sh
+          # install direnv if missing
+          if ! command -v direnv >/dev/null; then
+            if command -v apt-get >/dev/null; then
+              sudo apt-get update && sudo apt-get install -y direnv
+            elif command -v brew >/dev/null; then
+              brew install direnv
+            else
+              echo "Please install direnv on $(uname)"
+              exit 1
+            fi
+          fi
 
-      # --- Other platforms: Use mage-action ---
-      - name: Run Mage Setup and Test targets with mage-action
-        if: runner.os != 'macos'
+          # Inject direnv into this shell and allow the .envrc
+          eval "$(direnv hook bash)"
+          direnv allow
+
+      # Now run your mage targets in one step
+      - name: mage Setup & Test
         uses: magefile/mage-action@v3
         with:
           version: latest
-          args: Setup
+          # run both Setup and Test
+          args: Setup Test
 
-      - name: Run build_examples script
-        run: ./build_examples.sh
+      # (optional) if you still need your build_examples.sh for some reason:
+      - name: Run build_examples.sh
+        if: runner.os != 'macOS'
+        run: |
+          chmod +x ./build_examples.sh
+          ./build_examples.sh

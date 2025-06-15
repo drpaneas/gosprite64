@@ -23,6 +23,10 @@ error_exit() {
     ls -l $(go env GOPATH)/bin
     echo 'ls -l $(go env GOBIN) >&2'
     echo "ERROR: $1" >&2
+    echo "cat .envrc"
+    cat .envrc
+    echo "direnv status"
+    direnv status
     exit 1
 }
 

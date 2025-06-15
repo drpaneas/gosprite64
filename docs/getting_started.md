@@ -1,6 +1,12 @@
 # Getting Started
 
+## Prerequisites
+
+You need to have `Go` installed on your system.
+
 ## Installation
+
+0. Install `mage`: `go install github.com/magefile/mage@latest` or `brew install mage`.
 
 1. Clone the repository:
 
@@ -18,10 +24,10 @@ mage Setup
 ```
 
 This is all you need.
-You can find the examples at `examples/` directory, load the rom `*.z64` with your favorite emulator (e.g. `ares`).
+
+You can find the examples at `examples/` directory, you can load the rom `*.z64` with your favorite emulator (e.g. `ares`).
 
 It has installed `direnv` and created a `.envrc` file in the root directory of the repository.
-You need to run `direnv allow` in the root directory of the repository.
 
 ## Create your own project
 
@@ -39,13 +45,25 @@ Create a `.envrc` file in the root directory of your project.
 cp $GOPATH/src/gosprite64/.envrc .
 ```
 
-2. Run `direnv allow` in the root directory of your project.
+e.g.:
+
+```bash
+drpaneas@m2:~/gocode/src/github.com/drpaneas/gosprite64 (main)% cat .envrc 
+export GOOS="noos"
+export GOARCH="mips64"
+export GOFLAGS="-tags=n64 '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'"
+export GOTOOLCHAIN="go1.22"
+```
+
+2. Run `direnv allow` in the root directory of your project only the very first time.
 
 ```bash
 direnv allow
 ```
 
-this will use the Go Nintendo everytime you use `go` in this directory.
+this will use the Go64 (from clktmr) everytime you use `go` in this directory.
+As soon as you leave this directory, your system will use your default Go version, instead of Go64.
+As soon as you `cd` back in the directory, it will use Go64 again.
 
 3. Create a new main.go file:
 
@@ -78,13 +96,15 @@ func main() {
 4. Create the ELF file:
 
 ```bash
-go build -o mygame .
+go build -o mygame.elf .
 ```
+
+This will create a `mygame.elf` file in the current directory.
 
 5. Create the ROM file:
 
 ```bash
-mkrom mygame
+mkrom mygame.elf
 ```
 
 6. Load the ROM file with your favorite emulator (e.g. `ares`).

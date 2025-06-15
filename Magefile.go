@@ -137,9 +137,11 @@ func Setup() error {
 	envrcPath := filepath.Join(projectDir, ".envrc")
 	content := fmt.Sprintf(`export GOOS="noos"
 export GOARCH="mips64"
+export GOPATH="%s"
+export GOBIN="%s"
 export GOFLAGS="-tags=n64 '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'"
 export GOTOOLCHAIN="%s"
-`, toolchain)
+`, gopath, gobin, toolchain)
 
 	if err := os.WriteFile(envrcPath, []byte(content), 0644); err != nil {
 		return fmt.Errorf("failed to write .envrc file: %w", err)
@@ -164,6 +166,16 @@ export GOTOOLCHAIN="%s"
 	fmt.Println("\n========== Setup Complete ==========\n")
 	fmt.Println("To build:      go build -o test.elf .")
 	fmt.Println("To create rom: mkrom test.elf\n\n")
+
+	// run this command: go env
+	fmt.Println("run this command: go env")
+	cmd := exec.Command("go", "env")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to run go env: %w", err)
+	}
+	fmt.Println(string(output))
+
 	return nil
 }
 
@@ -330,6 +342,14 @@ func getGOPATH() (string, error) {
 	gopath = os.Getenv("MAGE_GOPATH")
 	if gopath == "" {
 		gopath = filepath.Join(home, "gocode")
+	}
+
+	// check if gopath exists
+	if _, err := os.Stat(gopath); os.IsNotExist(err) {
+		gopath = filepath.Join(home, "go")
+		if _, err := os.Stat(gopath); os.IsNotExist(err) {
+			return "", fmt.Errorf("GOPATH %s does not exist", gopath)
+		}
 	}
 
 	return gopath, nil

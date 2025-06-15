@@ -70,6 +70,7 @@ jobs:
       - name: Hook & allow direnv
         if: runner.os != 'Windows'
         run: |
+          export PATH="$PATH:$(go env GOPATH)/bin"
           eval "$(direnv hook bash)"
           direnv allow
 

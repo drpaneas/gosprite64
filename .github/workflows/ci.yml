@@ -53,7 +53,7 @@ jobs:
       # 1️⃣ Run mage Setup (writes the .envrc) on all except macOS ARM64
       - name: Run mage Setup
         if: runner.os != 'macos' || runner.arch != 'arm64'
-        uses: magefile/mage-action@v3
+        uses: magefile/mage-action@v4
         with:
           version: latest
           args: Setup

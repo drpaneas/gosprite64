@@ -1,88 +1,78 @@
-#!/bin/bash
-# Cross-platform build script for GoSprite64 examples
-# Works on Windows (Git Bash), Linux, and macOS
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Exit immediately if a command exits with a non-zero status
-set -e
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Function to print error message and exit
-error_exit() {
-    echo "which go: $(which go)" >&2
-    echo "go version: $(go version)" >&2
-    echo "GOTOOLCHAIN: $GOTOOLCHAIN" >&2
-    echo "GOROOT: $GOROOT" >&2
-    echo "GOBIN: $GOBIN" >&2
-    echo "GOPATH: $GOPATH" >&2
-    echo "GO111MODULE: $GO111MODULE" >&2
-    echo "GOFLAGS: $GOFLAGS" >&2
-    echo "GOOS: $GOOS" >&2
-    echo "GOARCH: $GOARCH" >&2
-    echo 'ls -l $(go env GOROOT)/bin >&2'
-    ls -l $(go env GOROOT)/bin
-    echo 'ls -l $(go env GOPATH)/bin >&2'
-    ls -l $(go env GOPATH)/bin
-    echo 'ls -l $(go env GOBIN) >&2'
-    echo "ERROR: $1" >&2
-    echo "cat .envrc"
-    cat .envrc
-    echo "direnv status"
-    direnv status
-    exit 1
+clean_go_env() {
+  env -u GOENV -u GOOS -u GOARCH -u GOFLAGS -u GOTOOLCHAIN -u GOPATH -u GOBIN "$@"
 }
 
-# Function to build example in a directory
-build_example() {
-    local dir="$1"
-    echo "Building example in $dir"
-    
-    # Change to the directory
-    cd "$dir" || error_exit "Failed to change to directory $dir"
-    
-    # Run go build
-    echo "  Running go build -o game.elf ."
-    go build -o game.elf . || error_exit "Failed to build $dir"
-    
-    # Run n64go
-    echo "  Running n64go rom game.elf"
-    n64go rom game.elf || error_exit "Failed to create ROM for $dir"
-    
-    # Check if files exist
-    if [ ! -f "game.elf" ]; then
-        error_exit "game.elf not found in $dir"
-    fi
-    
-    if [ ! -f "game.z64" ]; then
-        error_exit "game.z64 not found in $dir"
-    fi
-    
-    echo "  Successfully built $dir"
-    
-    # Return to the original directory
-    cd - >/dev/null
+fallback_instructions() {
+  cat >&2 <<'EOF'
+Use the Linux fallback:
+  docker run --rm --platform linux/arm64 \
+    -v "$PWD:/workspace/gosprite64" \
+    -v gosprite64-gomod:/go/pkg/mod \
+    -v gosprite64-gobuild:/root/.cache/go-build \
+    -v gosprite64-sdk:/root/sdk \
+    -w /workspace/gosprite64 \
+    golang:1.26-bookworm \
+    bash ./scripts/dev-linux-build.sh
+EOF
 }
 
-# Store the starting directory
-start_dir=$(pwd)
+if [[ -f "$repo_root/.envrc" ]]; then
+  echo "error: stale .envrc detected; remove it and use go.env only" >&2
+  exit 1
+fi
 
-# Navigate to the examples directory
-cd "$(dirname "$0")/examples" || error_exit "Failed to navigate to examples directory"
+stale_example_modules="$(
+  find "$repo_root/examples" -mindepth 2 -maxdepth 2 \( -name go.mod -o -name go.sum \) -print | sort
+)"
 
-# Find all directories in the examples folder
-echo "Finding example directories..."
-for dir in */; do
-    # Remove trailing slash
-    dir=${dir%/}
-    
-    # Skip if not a directory
-    if [ ! -d "$dir" ]; then
-        continue
-    fi
-    
-    echo "Found example: $dir"
-    build_example "$dir"
+if [[ -n "$stale_example_modules" ]]; then
+  echo "error: remove nested example go.mod/go.sum files before building" >&2
+  printf '  %s\n' $stale_example_modules >&2
+  exit 1
+fi
+
+if ! command -v go1.24.5-embedded >/dev/null 2>&1; then
+  echo "error: go1.24.5-embedded not found" >&2
+  echo "install it with:" >&2
+  echo "  go install github.com/embeddedgo/dl/go1.24.5-embedded@latest" >&2
+  echo "  go1.24.5-embedded download" >&2
+  fallback_instructions
+  exit 1
+fi
+
+if ! clean_go_env go1.24.5-embedded version >/dev/null 2>&1; then
+  echo "error: go1.24.5-embedded is installed but failed to start on this host" >&2
+  fallback_instructions
+  exit 1
+fi
+
+if ! command -v n64go >/dev/null 2>&1; then
+  echo "error: n64go not found" >&2
+  echo "install it with:" >&2
+  echo "  go install github.com/clktmr/n64/tools/n64go@v0.1.2" >&2
+  exit 1
+fi
+
+cd "$repo_root"
+
+for example_dir in "$repo_root"/examples/*; do
+  [[ -d "$example_dir" ]] || continue
+  example_name="$(basename "$example_dir")"
+  elf="$example_dir/game.elf"
+  rom="$example_dir/game.z64"
+
+  rm -f "$elf" "$rom"
+
+  clean_go_env GOENV="$repo_root/go.env" go1.24.5-embedded build -o "$elf" "./examples/$example_name"
+  clean_go_env GOENV="$repo_root/go.env" n64go rom "$elf"
+
+  test -f "$elf"
+  test -f "$rom"
 done
-
-# Return to the starting directory
-cd "$start_dir" || error_exit "Failed to return to starting directory"
 
 echo "All examples built successfully!"

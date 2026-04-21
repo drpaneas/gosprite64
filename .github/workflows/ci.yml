@@ -8,22 +8,28 @@ on:
       - '**/*.go'
       - 'go.mod'
       - 'go.sum'
+      - '.gitignore'
+      - 'go.env'
+      - 'build_examples.sh'
+      - 'scripts/dev-linux-build.sh'
+      - '.github/workflows/ci.yml'
+      - 'docs/getting_started.md'
+
   pull_request:
     paths:
       - '**/*.go'
       - 'go.mod'
       - 'go.sum'
+      - '.gitignore'
+      - 'go.env'
+      - 'build_examples.sh'
+      - 'scripts/dev-linux-build.sh'
+      - '.github/workflows/ci.yml'
+      - 'docs/getting_started.md'
 
 jobs:
-  mage:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    env:
-      # Force a POSIX shell so direnv hook detection works
-      SHELL: /bin/bash
+  verified-linux-build:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
@@ -32,52 +38,10 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 'stable'
+          go-version: stable
           cache: true
 
-      # Install direnv on Linux/macOS if it's missing
-      - name: Install direnv
-        if: runner.os != 'Windows'
+      - name: Run verified Linux build
         run: |
-          if ! command -v direnv >/dev/null; then
-            if command -v apt-get >/dev/null; then
-              sudo apt-get update && sudo apt-get install -y direnv
-            elif command -v brew >/dev/null; then
-              brew install direnv
-            else
-              echo "Please install direnv on $(uname -s)"
-              exit 1
-            fi
-          fi
-
-      # 1️⃣ Run mage Setup (writes the .envrc) on all except macOS ARM64
-      - name: Run mage Setup
-        if: runner.os != 'macos' || runner.arch != 'arm64'
-        uses: magefile/mage-action@v3
-        with:
-          version: latest
-          args: Setup
-
-      # --- macOS ARM64: Install mage via Homebrew then run Setup & Test ---
-      - name: Install mage using Homebrew (macOS ARM64) and run 
-        if: runner.os == 'macos' && runner.arch == 'arm64'
-        run: |
-          brew update
-          brew install mage
-          mage Setup
-
-      # 2️⃣ Hook & allow direnv in this shell (Linux & Intel macOS)
-      - name: Hook & allow direnv
-        if: runner.os != 'Windows'
-        run: |
-          export PATH="$PATH:$(go env GOPATH)/bin"
-          eval "$(direnv hook bash)"
-          direnv allow
-
-      # 4️⃣ Legacy build script: export the direnv‐loaded env, then run it
-      - name: Run build_examples.sh
-        if: runner.os != 'Windows'
-        run: |
-          chmod +x ./build_examples.sh
-          eval "$(direnv export bash)"
-          ./build_examples.sh
+          chmod +x ./scripts/dev-linux-build.sh
+          ./scripts/dev-linux-build.sh

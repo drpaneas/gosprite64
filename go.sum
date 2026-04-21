@@ -1,10 +1,16 @@
 github.com/clktmr/n64 v0.0.0-20250514144408-7410fc26cec0 h1:E51W4SdnSevo/bYMMVqETKF02+GU7Qulzmn4VKK5lzY=
 github.com/clktmr/n64 v0.0.0-20250514144408-7410fc26cec0/go.mod h1:WZEm+7iYvDei+ie8OZFowNQg/bXX+tPtar1LIOq2yZI=
+github.com/clktmr/n64 v0.1.2 h1:1ASZT48vVAXQAInaUT3kRShVlvPocSha1BMRr8ctL10=
+github.com/clktmr/n64 v0.1.2/go.mod h1:9+cZbOc/SzwtaMK0jxRieBVhMdrdUXtJnijIL3RIbZo=
 github.com/embeddedgo/display v1.1.0 h1:jXlY6/FeaUV89hX+ANGpTKogZWjhgno7vrCh86WA8aY=
 github.com/embeddedgo/display v1.1.0/go.mod h1:0sxxBoklqMbA1uBqEAg8Plntmwvt7cNsgxaf7UaS4yw=
 github.com/embeddedgo/fs v0.1.3 h1:uKp26pruDzT/qi9K8HcV41JBdAgDTGIIagCZQ15GRzs=
 github.com/embeddedgo/fs v0.1.3/go.mod h1:iQRMLUL0YeL5Ou2ILYTlspw32A0BeoXs7O2fuTZoS1M=
 github.com/sigurn/crc8 v0.0.0-20220107193325-2243fe600f9f h1:1R9KdKjCNSd7F8iGTxIpoID9prlYH8nuNYKt0XvweHA=
 github.com/sigurn/crc8 v0.0.0-20220107193325-2243fe600f9f/go.mod h1:vQhwQ4meQEDfahT5kd61wLAF5AAeh5ZPLVI4JJ/tYo8=
+golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b h1:M2rDM6z3Fhozi9O7NWsxAkg/yqS/lQJ6PmkyIV3YP+o=
+golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b/go.mod h1:3//PLf8L/X+8b4vuAfHzxeRUl04Adcb341+IGKfnqS8=
 golang.org/x/text v0.13.0 h1:ablQoSUd0tRdKxZewP80B+BaqeKJuVhuRxj/dkrun3k=
 golang.org/x/text v0.13.0/go.mod h1:TvPlkZtksWOMsz7fbANvkp4WM8x/WCo/om8BMLbz+aE=
+golang.org/x/text v0.14.0 h1:ScX5w1eTa3QqT8oi6+ziP7dTV1S2+ALU0bI+0zXKWiQ=
+golang.org/x/text v0.14.0/go.mod h1:18ZOQIKpY8NJVqYksKHtTdi31H5itFRjB5/qKTNYzSU=

@@ -38,7 +38,7 @@ type musicTrack struct {
 
 func getAudioPlayer() *audioPlayer {
 	audioOnce.Do(func() {
-		audio.SetSampleRate(48000)
+		audio.Start(48000)
 		audioPlayerInstance = &audioPlayer{
 			musicData:    make(map[int][]byte),
 			activeTracks: make(map[int]*musicTrack),

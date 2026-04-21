@@ -4,7 +4,8 @@ import (
 	_ "embed"
 	"image"
 	"image/color"
-	"image/draw"
+
+	n64draw "github.com/clktmr/n64/drivers/draw"
 )
 
 // Font data: Each character is 8 bytes, 8x8 pixels, 1bpp
@@ -119,6 +120,9 @@ const (
 )
 
 func drawGlyph1BPP(ch rune, dstX, dstY int, col color.Color) {
+	if currentScreen == nil || currentScreen.Framebuffer == nil {
+		return
+	}
 	if ch < FontAsciiStart || ch >= FontAsciiEnd {
 		return
 	}
@@ -128,11 +132,11 @@ func drawGlyph1BPP(ch rune, dstX, dstY int, col color.Color) {
 		for c := 0; c < FontGlyphWidth; c++ {
 			// FIXED: Flip to (b & (1<<c))
 			if b&(1<<c) != 0 {
-				currentScreen.Renderer.Draw(
+				n64draw.Src.Draw(
+					currentScreen.Framebuffer,
 					image.Rect(dstX+c, dstY+row, dstX+c+1, dstY+row+1),
 					&image.Uniform{C: col},
 					image.Point{},
-					draw.Src,
 				)
 			}
 		}
@@ -140,7 +144,7 @@ func drawGlyph1BPP(ch rune, dstX, dstY int, col color.Color) {
 }
 
 func Print(str string, x, y, colorIdx int) {
-	if currentScreen == nil {
+	if currentScreen == nil || currentScreen.Framebuffer == nil {
 		return
 	}
 	dstX := x

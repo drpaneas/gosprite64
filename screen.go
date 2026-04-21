@@ -3,12 +3,12 @@ package gosprite64
 import (
 	"image"
 	"image/color"
-	"image/draw"
 	"log"
 
 	"github.com/clktmr/n64/drivers/display"
 	n64draw "github.com/clktmr/n64/drivers/draw"
 	"github.com/clktmr/n64/machine"
+	"github.com/clktmr/n64/rcp/texture"
 	"github.com/clktmr/n64/rcp/video"
 )
 
@@ -31,9 +31,9 @@ const (
 
 // screen holds all the display-related objects and state.
 type screen struct {
-	Display  *display.Display
-	Renderer *n64draw.Rdp
-	Bounds   image.Rectangle
+	Display     *display.Display
+	Framebuffer *texture.Texture
+	Bounds      image.Rectangle
 	// Cache of image.Uniform for each PICO-8 color
 	colorUniforms [16]*image.Uniform
 	width         int
@@ -41,13 +41,13 @@ type screen struct {
 }
 
 // newScreen creates a new screen instance with the given dimensions
-func newScreen(disp *display.Display, renderer *n64draw.Rdp, width, height int) *screen {
+func newScreen(disp *display.Display, framebuffer *texture.Texture, width, height int) *screen {
 	s := &screen{
-		Display:  disp,
-		Renderer: renderer,
-		Bounds:   image.Rect(0, 0, width, height),
-		width:    width,
-		height:   height,
+		Display:     disp,
+		Framebuffer: framebuffer,
+		Bounds:      image.Rect(0, 0, width, height),
+		width:       width,
+		height:      height,
 	}
 
 	// Initialize color uniforms for PICO-8 palette
@@ -95,17 +95,12 @@ func videoInit(preset VideoPreset) {
 	// Set the video mode and setup
 	video.Setup(isInterlaced)
 
-	// Create display and renderer
+	// Create display and seed the first framebuffer.
 	disp := display.NewDisplay(resolution, colorDepth)
-	renderer := n64draw.NewRdp()
-
-	// The antialiasing is automatically set to aaResampling in SetFramebuffer
-	if fb := disp.Swap(); fb != nil {
-		renderer.SetFramebuffer(fb)
-	}
+	fb := disp.Swap()
 
 	// Create screen with our custom implementation
-	currentScreen = newScreen(disp, renderer, resolution.X, resolution.Y)
+	currentScreen = newScreen(disp, fb, resolution.X, resolution.Y)
 }
 
 // beginDrawing prepares for a new frame by swapping the framebuffer.
@@ -115,29 +110,32 @@ func beginDrawing() {
 		log.Println("Warning: beginDrawing called before screen was ready.")
 		return
 	}
-	fb := currentScreen.Display.Swap()
-	currentScreen.Renderer.SetFramebuffer(fb)
+	currentScreen.Framebuffer = currentScreen.Display.Swap()
 }
 
 // endDrawing finalizes the frame by flushing the renderer.
 // This is an internal function used by the package.
 func endDrawing() {
-	if currentScreen != nil && currentScreen.Renderer != nil {
-		currentScreen.Renderer.Flush()
+	if currentScreen != nil && currentScreen.Framebuffer != nil {
+		n64draw.Flush()
 	}
 }
 
 // fill fills the entire screen with the specified color.
 func (s *screen) fill(c color.Color) {
+	if s == nil || s.Framebuffer == nil {
+		return
+	}
+
 	// Try to find the color in PICO-8 palette to use cached uniform
 	for i, picoColor := range Pico8Palette {
 		if picoColor == c {
-			s.Renderer.Draw(s.Renderer.Bounds(), s.colorUniforms[i], image.Point{}, draw.Src)
+			n64draw.Src.Draw(s.Framebuffer, s.Bounds, s.colorUniforms[i], image.Point{})
 			return
 		}
 	}
 	// Fallback for colors not in PICO-8 palette (shouldn't happen with public API)
-	s.Renderer.Draw(s.Renderer.Bounds(), &image.Uniform{c}, image.Point{}, draw.Src)
+	n64draw.Src.Draw(s.Framebuffer, s.Bounds, &image.Uniform{c}, image.Point{})
 }
 
 // ClearScreen clears the current drawing screen with a specified PICO-8 color index.

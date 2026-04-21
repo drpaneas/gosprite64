@@ -114,12 +114,12 @@ func Setup() error {
 		fmt.Println("Skipping symlink creation on Windows; please create a shortcut named", goVerName, "to gotip-embedded manually.")
 	}
 
-	// 4. Install mkrom
-	if err := runCommand("go", "install", "github.com/clktmr/n64/tools/mkrom"); err != nil {
-		return fmt.Errorf("failed to install mkrom: %w", err)
+	// 4. Install n64go
+	if err := runCommand("go", "install", "github.com/clktmr/n64/tools/n64go@v0.1.2"); err != nil {
+		return fmt.Errorf("failed to install n64go: %w", err)
 	}
-	if _, err := exec.LookPath("mkrom"); err != nil {
-		return fmt.Errorf("mkrom not found in PATH: %w", err)
+	if _, err := exec.LookPath("n64go"); err != nil {
+		return fmt.Errorf("n64go not found in PATH: %w", err)
 	}
 
 	// 5. Create .envrc file (correct name for direnv compatibility)
@@ -165,7 +165,7 @@ export GOTOOLCHAIN="%s"
 	// Final instructions
 	fmt.Println("\n========== Setup Complete ==========\n")
 	fmt.Println("To build:      go build -o test.elf .")
-	fmt.Println("To create rom: mkrom test.elf\n\n")
+	fmt.Println("To create rom: n64go rom test.elf\n\n")
 
 	// run this command: go env
 	fmt.Println("run this command: go env")

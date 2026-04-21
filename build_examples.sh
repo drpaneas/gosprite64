@@ -42,9 +42,9 @@ build_example() {
     echo "  Running go build -o game.elf ."
     go build -o game.elf . || error_exit "Failed to build $dir"
     
-    # Run mkrom
-    echo "  Running mkrom game.elf"
-    mkrom game.elf || error_exit "Failed to create ROM for $dir"
+    # Run n64go
+    echo "  Running n64go rom game.elf"
+    n64go rom game.elf || error_exit "Failed to create ROM for $dir"
     
     # Check if files exist
     if [ ! -f "game.elf" ]; then

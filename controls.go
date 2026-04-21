@@ -36,6 +36,8 @@ const (
 )
 
 var (
+	// Controller state buffer owned by this package.
+	states [4]controller.Controller
 	// Current button state (bitmask)
 	buttons joybus.ButtonMask
 	// Previous button state (for detecting button presses)
@@ -50,14 +52,14 @@ func updateControllerState() {
 	defer controllerMutex.Unlock()
 
 	// Poll all controllers
-	controller.Poll()
+	controller.Poll(&states)
 
 	// Save previous button state
 	prevButtons = buttons
 
 	// Get current button state from first connected controller
-	if controller.States[0].Present() {
-		buttons = controller.States[0].Down()
+	if states[0].Present() {
+		buttons = states[0].Down()
 	} else {
 		buttons = 0
 	}
@@ -85,12 +87,12 @@ func GetStick(deadzone float64) (float64, float64) {
 	controllerMutex.Lock()
 	defer controllerMutex.Unlock()
 
-	if !controller.States[0].Present() {
+	if !states[0].Present() {
 		return 0, 0
 	}
 
-	x := float64(controller.States[0].X()) / 128.0
-	y := -float64(controller.States[0].Y()) / 128.0 // Invert Y axis to match screen coordinates
+	x := float64(states[0].X()) / 128.0
+	y := -float64(states[0].Y()) / 128.0 // Invert Y axis to match screen coordinates
 
 	// Apply deadzone
 	if x < deadzone && x > -deadzone {

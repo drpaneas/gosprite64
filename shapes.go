@@ -3,8 +3,9 @@ package gosprite64
 import (
 	"image"
 	"image/color"
-	"image/draw"
 	"log"
+
+	n64draw "github.com/clktmr/n64/drivers/draw"
 )
 
 // DrawRect draws the outline of a rectangle using DrawLine.
@@ -106,7 +107,7 @@ func abs(x int) int {
 // x2, y2: Bottom-right corner (inclusive)
 // color: The color to fill the rectangle with
 func Rectfill(x1, y1, x2, y2 int, color color.Color) {
-	if currentScreen == nil || currentScreen.Renderer == nil {
+	if currentScreen == nil || currentScreen.Framebuffer == nil {
 		return
 	}
 
@@ -143,7 +144,7 @@ func Rectfill(x1, y1, x2, y2 int, color color.Color) {
 	// Note: image.Rect is half-open interval [Min, Max)
 	rect := image.Rect(x1, y1, x2+1, y2+1)
 	img := image.NewUniform(color)
-	currentScreen.Renderer.Draw(rect, img, image.Point{}, draw.Src)
+	n64draw.Src.Draw(currentScreen.Framebuffer, rect, img, image.Point{})
 }
 
 // // Rect draws an outlined rectangle with the specified color index.

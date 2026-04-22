@@ -82,7 +82,9 @@ ensure_embeddedgo_native() {
 
 ensure_embeddedgo_linux() {
   ensure_host_go
-  export PATH="$(clean_go_env go env GOPATH)/bin:$PATH"
+  local gopath_bin
+  gopath_bin="$(clean_go_env go env GOPATH)/bin"
+  export PATH="$gopath_bin:$PATH"
 
   if ! command -v go1.24.5-embedded >/dev/null 2>&1; then
     clean_go_env go install github.com/embeddedgo/dl/go1.24.5-embedded@latest
@@ -135,7 +137,7 @@ ensure_n64_module_version() {
 build_all_examples() {
   local repo_root="$1"
 
-  cd "$repo_root"
+  cd "$repo_root" || return 1
 
   for example_dir in "$repo_root"/examples/*; do
     [[ -d "$example_dir" ]] || continue

@@ -17,6 +17,18 @@ a 2D retro gamedev library for Nintendo64 using Go!
 <p align="center">visit <a href="https://gosprite64.dev" target="_blank">gosprite64.dev</a> for the full documentation,
 examples and guides.</p>
 
+## Quick Start
+
+GoSprite64 supports one setup path:
+
+1. Install `go1.24.5-embedded`
+2. Install `n64go@v0.1.2`
+3. Run `./build_examples.sh`
+
+The repository tracks toolchain settings in `go.env`, and `./build_examples.sh` is the primary entrypoint for building the examples.
+
+For the full setup details read [`docs/getting_started.md`](./docs/getting_started.md).
+
 ## ✨ Features
 
 GoSprite64 embraces the flat world of tilemaps, palettes, and framebuffers — without the complexity of 3D pipelines.

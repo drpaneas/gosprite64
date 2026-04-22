@@ -17,7 +17,7 @@ if ensure_no_stale_envrc "$tmpdir" >"$tmpdir/envrc.out" 2>&1; then
   echo "expected ensure_no_stale_envrc to fail" >&2
   exit 1
 fi
-rg 'stale \.envrc detected' "$tmpdir/envrc.out" >/dev/null
+grep -q 'stale \.envrc detected' "$tmpdir/envrc.out"
 rm -f "$tmpdir/.envrc"
 
 printf 'module stale.example\n\ngo 1.24.3\n' >"$tmpdir/examples/demo/go.mod"
@@ -25,8 +25,8 @@ if ensure_no_nested_example_modules "$tmpdir" >"$tmpdir/nested.out" 2>&1; then
   echo "expected ensure_no_nested_example_modules to fail" >&2
   exit 1
 fi
-rg 'remove nested example go\.mod/go\.sum files before building' "$tmpdir/nested.out" >/dev/null
-rg 'examples/demo/go\.mod' "$tmpdir/nested.out" >/dev/null
+grep -q 'remove nested example go\.mod/go\.sum files before building' "$tmpdir/nested.out"
+grep -q 'examples/demo/go\.mod' "$tmpdir/nested.out"
 rm -f "$tmpdir/examples/demo/go.mod"
 
 cat >"$tmpdir/bin/uname" <<'EOF'
@@ -70,8 +70,8 @@ WORKFLOW_TEST_LOG="$tmpdir/retry.log" \
 WORKFLOW_TEST_STATE="$tmpdir/state" \
 ensure_embeddedgo_native
 
-test "$(rg -c 'cmd=download boot=-w' "$tmpdir/retry.log")" -eq 1
-rg 'cmd=version boot=' "$tmpdir/retry.log" >/dev/null
+test "$(grep -c 'cmd=download boot=-w' "$tmpdir/retry.log")" -eq 1
+grep -q 'cmd=version boot=' "$tmpdir/retry.log"
 
 PATH="$tmpdir/bin:$PATH" ensure_n64go_native
 

@@ -31,8 +31,6 @@ go.work.sum
 *.tar.gz
 .idea
 .vscode
-go.work
-go.work.sum
 *.elf
 *.z64
 *.n64

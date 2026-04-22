@@ -7,7 +7,6 @@ This repository supports one setup path: build natively with `go1.24.5-embedded`
 1. Clone the repository:
 
 ```bash
-cd $GOPATH/src
 git clone https://github.com/drpaneas/gosprite64.git
 cd gosprite64
 ```

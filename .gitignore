@@ -34,3 +34,4 @@ go.work.sum
 *.elf
 *.z64
 *.n64
+docs/superpowers/

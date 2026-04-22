@@ -46,7 +46,13 @@ GOARCH=mips64
 GOFLAGS='-tags=n64' '-trimpath' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
 ```
 
-If that retry still fails on your macOS host, `./build_examples.sh` prints Linux fallback instructions and exits. Run the Linux fallback yourself:
+### Windows
+
+On Windows, install [Git for Windows](https://gitforwindows.org/) and run all commands from a Git Bash terminal. The same steps above apply - Git Bash provides the bash environment the build scripts require.
+
+### Linux Fallback
+
+If the native bootstrap fails on your macOS host, `./build_examples.sh` prints Linux fallback instructions and exits. Run the Linux fallback yourself:
 
 ```bash
 docker run --rm --platform linux/arm64 \

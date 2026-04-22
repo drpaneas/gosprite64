@@ -1,0 +1,2 @@
+*.sh     text eol=lf
+n64.env  text eol=lf

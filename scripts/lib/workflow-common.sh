@@ -21,7 +21,7 @@ EOF
 ensure_no_stale_envrc() {
   local repo_root="$1"
   if [[ -f "$repo_root/.envrc" ]]; then
-    echo "error: stale .envrc detected; remove it and use go.env only" >&2
+    echo "error: stale .envrc detected; remove it and use n64.env only" >&2
     return 1
   fi
 }
@@ -149,8 +149,8 @@ build_all_examples() {
 
     rm -f "$elf" "$rom"
 
-    clean_go_env GOENV="$repo_root/go.env" go1.24.5-embedded build -o "$elf" "./examples/$example_name"
-    clean_go_env GOENV="$repo_root/go.env" n64go rom "$elf"
+    clean_go_env GOENV="$repo_root/n64.env" go1.24.5-embedded build -o "$elf" "./examples/$example_name"
+    clean_go_env GOENV="$repo_root/n64.env" n64go rom "$elf"
 
     test -f "$elf"
     test -f "$rom"

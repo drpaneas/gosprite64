@@ -25,7 +25,7 @@ GoSprite64 supports one setup path:
 2. Install `n64go@v0.1.2`
 3. Run `./build_examples.sh`
 
-The repository tracks toolchain settings in `go.env`, and `./build_examples.sh` is the primary entrypoint for building the examples.
+The repository tracks toolchain settings in `n64.env`, and `./build_examples.sh` is the primary entrypoint for building the examples.
 
 For the full setup details read [`docs/getting_started.md`](./docs/getting_started.md).
 

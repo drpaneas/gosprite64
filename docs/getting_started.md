@@ -37,7 +37,7 @@ chmod +x ./build_examples.sh
 ./build_examples.sh
 ```
 
-`go.env` is the only tracked toolchain configuration file:
+`n64.env` is the only tracked toolchain configuration file:
 
 ```bash
 GOTOOLCHAIN=go1.24.5-embedded

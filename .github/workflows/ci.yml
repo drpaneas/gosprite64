@@ -12,6 +12,8 @@ on:
       - 'go.env'
       - 'build_examples.sh'
       - 'scripts/dev-linux-build.sh'
+      - 'scripts/lib/workflow-common.sh'
+      - 'scripts/test-workflow-guards.sh'
       - '.github/workflows/ci.yml'
       - 'docs/getting_started.md'
 
@@ -24,6 +26,8 @@ on:
       - 'go.env'
       - 'build_examples.sh'
       - 'scripts/dev-linux-build.sh'
+      - 'scripts/lib/workflow-common.sh'
+      - 'scripts/test-workflow-guards.sh'
       - '.github/workflows/ci.yml'
       - 'docs/getting_started.md'
 
@@ -40,6 +44,9 @@ jobs:
         with:
           go-version: stable
           cache: true
+
+      - name: Run workflow guard checks
+        run: bash ./scripts/test-workflow-guards.sh
 
       - name: Run verified Linux build
         run: |

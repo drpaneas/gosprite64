@@ -52,3 +52,29 @@ jobs:
         run: |
           chmod +x ./scripts/dev-linux-build.sh
           ./scripts/dev-linux-build.sh
+
+  verified-macos-build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: true
+
+      - name: Install EmbeddedGo toolchain
+        run: |
+          go install github.com/embeddedgo/dl/go1.24.5-embedded@latest
+          BOOT_GO_LDFLAGS=-w go1.24.5-embedded download
+
+      - name: Install n64go
+        run: go install github.com/clktmr/n64/tools/n64go@v0.1.2
+
+      - name: Build examples
+        run: |
+          chmod +x ./build_examples.sh
+          ./build_examples.sh

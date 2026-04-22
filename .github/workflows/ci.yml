@@ -32,29 +32,11 @@ on:
       - 'docs/getting_started.md'
 
 jobs:
-  verified-linux-build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: stable
-          cache: true
-
-      - name: Run workflow guard checks
-        run: bash ./scripts/test-workflow-guards.sh
-
-      - name: Run verified Linux build
-        run: |
-          chmod +x ./scripts/dev-linux-build.sh
-          ./scripts/dev-linux-build.sh
-
-  verified-macos-build:
-    runs-on: macos-latest
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
@@ -73,6 +55,10 @@ jobs:
 
       - name: Install n64go
         run: go install github.com/clktmr/n64/tools/n64go@v0.1.2
+
+      - name: Run workflow guard checks
+        if: runner.os == 'Linux'
+        run: bash ./scripts/test-workflow-guards.sh
 
       - name: Build examples
         run: |

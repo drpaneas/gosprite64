@@ -29,7 +29,9 @@ ensure_no_stale_envrc() {
 ensure_no_nested_example_modules() {
   local repo_root="$1"
   local -a nested_example_modules=()
-  mapfile -t nested_example_modules < <(
+  while IFS= read -r f; do
+    [[ -n "$f" ]] && nested_example_modules+=("$f")
+  done < <(
     find "$repo_root/examples" -mindepth 2 -maxdepth 2 \( -name go.mod -o -name go.sum \) -print | sort
   )
 

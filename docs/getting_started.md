@@ -4,41 +4,41 @@ This repository supports one setup path: build natively with `go1.24.5-embedded`
 
 ## Installation
 
-You need a working `go` command on your host so you can install the embedded toolchain launcher and the ROM tool.
-
 1. Clone the repository:
 
 ```bash
+cd $GOPATH/src
 git clone https://github.com/drpaneas/gosprite64.git
 cd gosprite64
 ```
 
-2. Install the embedded Go toolchain launcher and download the toolchain:
+2. Install the EmbeddedGo toolchain:
 
 ```bash
 go install github.com/embeddedgo/dl/go1.24.5-embedded@latest
 go1.24.5-embedded download
 ```
 
-On macOS, if `go1.24.5-embedded` installs but does not start yet, retry the download once with:
+3. If macOS aborts with the `__DATA` / `__DWARF` dyld error, retry once with:
 
 ```bash
 BOOT_GO_LDFLAGS=-w go1.24.5-embedded download
 ```
 
-3. Install `n64go`:
+4. Install `n64go`:
 
 ```bash
 go install github.com/clktmr/n64/tools/n64go@v0.1.2
 ```
 
-4. Build the examples:
+5. Build all examples with the supported native-first workflow:
 
 ```bash
+chmod +x ./build_examples.sh
 ./build_examples.sh
 ```
 
-The repository tracks toolchain settings in exactly one committed config file, `go.env`:
+`go.env` is the only tracked toolchain configuration file:
 
 ```bash
 GOTOOLCHAIN=go1.24.5-embedded
@@ -47,11 +47,7 @@ GOARCH=mips64
 GOFLAGS='-tags=n64' '-trimpath' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
 ```
 
-`./build_examples.sh` uses that file to build every example and generate ROMs under `examples/`, such as `examples/clearscreen/game.z64`.
-
-## Linux Fallback
-
-If `go1.24.5-embedded` cannot run natively on your host, run the verified Linux fallback from the repository root:
+If that retry still fails on your macOS host, `./build_examples.sh` prints Linux fallback instructions and exits. Run the Linux fallback yourself:
 
 ```bash
 docker run --rm --platform linux/arm64 \
@@ -64,4 +60,4 @@ docker run --rm --platform linux/arm64 \
   bash ./scripts/dev-linux-build.sh
 ```
 
-This fallback produces the same `game.z64` files under `examples/`.
+The generated `*.z64` ROMs are written under `examples/` and can be run with your emulator, for example `ares`.

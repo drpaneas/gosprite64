@@ -26,13 +26,18 @@ if [[ -f "$repo_root/.envrc" ]]; then
   exit 1
 fi
 
-stale_example_modules="$(
+mapfile -t nested_example_modules < <(
   find "$repo_root/examples" -mindepth 2 -maxdepth 2 \( -name go.mod -o -name go.sum \) -print | sort
-)"
+)
 
-if [[ -n "$stale_example_modules" ]]; then
+if (( ${#nested_example_modules[@]} > 0 )); then
   echo "error: remove nested example go.mod/go.sum files before building" >&2
-  printf '  %s\n' $stale_example_modules >&2
+  printf '  %s\n' "${nested_example_modules[@]}" >&2
+  exit 1
+fi
+
+if ! command -v go >/dev/null 2>&1; then
+  echo "error: host go command not found" >&2
   exit 1
 fi
 
@@ -46,15 +51,28 @@ if ! command -v go1.24.5-embedded >/dev/null 2>&1; then
 fi
 
 if ! clean_go_env go1.24.5-embedded version >/dev/null 2>&1; then
-  echo "error: go1.24.5-embedded is installed but failed to start on this host" >&2
-  fallback_instructions
-  exit 1
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    if ! clean_go_env env BOOT_GO_LDFLAGS=-w go1.24.5-embedded download >/dev/null 2>&1; then
+      :
+    fi
+  fi
+
+  if ! clean_go_env go1.24.5-embedded version >/dev/null 2>&1; then
+    echo "error: go1.24.5-embedded is installed but failed to start on this host" >&2
+    fallback_instructions
+    exit 1
+  fi
 fi
 
 if ! command -v n64go >/dev/null 2>&1; then
   echo "error: n64go not found" >&2
   echo "install it with:" >&2
   echo "  go install github.com/clktmr/n64/tools/n64go@v0.1.2" >&2
+  exit 1
+fi
+
+if ! clean_go_env n64go -h >/dev/null 2>&1; then
+  echo "error: n64go is installed but failed to start on this host" >&2
   exit 1
 fi
 

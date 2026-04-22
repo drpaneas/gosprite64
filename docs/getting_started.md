@@ -20,6 +20,12 @@ go install github.com/embeddedgo/dl/go1.24.5-embedded@latest
 go1.24.5-embedded download
 ```
 
+On macOS, if `go1.24.5-embedded` installs but does not start yet, retry the download once with:
+
+```bash
+BOOT_GO_LDFLAGS=-w go1.24.5-embedded download
+```
+
 3. Install `n64go`:
 
 ```bash
@@ -32,7 +38,7 @@ go install github.com/clktmr/n64/tools/n64go@v0.1.2
 ./build_examples.sh
 ```
 
-The repository tracks toolchain settings only in `go.env`:
+The repository tracks toolchain settings in exactly one committed config file, `go.env`:
 
 ```bash
 GOTOOLCHAIN=go1.24.5-embedded

@@ -18,23 +18,27 @@ if [[ -f "$repo_root/.envrc" ]]; then
   exit 1
 fi
 
-stale_example_modules="$(
+mapfile -t nested_example_modules < <(
   find "$repo_root/examples" -mindepth 2 -maxdepth 2 \( -name go.mod -o -name go.sum \) -print | sort
-)"
+)
 
-if [[ -n "$stale_example_modules" ]]; then
+if ((${#nested_example_modules[@]} > 0)); then
   echo "error: remove nested example go.mod/go.sum files before building" >&2
-  printf '  %s\n' $stale_example_modules >&2
+  printf '  %q\n' "${nested_example_modules[@]}" >&2
   exit 1
 fi
 
-export PATH="/usr/local/go/bin:$PATH"
-export PATH="$(clean_go_env /usr/local/go/bin/go env GOPATH)/bin:$PATH"
+if ! command -v go >/dev/null 2>&1; then
+  echo "error: host go toolchain not found in PATH" >&2
+  exit 1
+fi
+
+export PATH="$(clean_go_env go env GOPATH)/bin:$PATH"
 
 cd "$repo_root"
 
 current_n64_version="$(
-  clean_go_env /usr/local/go/bin/go list -m -f '{{.Version}}' github.com/clktmr/n64
+  clean_go_env go list -m -f '{{.Version}}' github.com/clktmr/n64
 )"
 
 if [[ "$current_n64_version" != "$required_n64_version" ]]; then
@@ -44,7 +48,7 @@ if [[ "$current_n64_version" != "$required_n64_version" ]]; then
 fi
 
 if ! command -v go1.24.5-embedded >/dev/null 2>&1; then
-  clean_go_env /usr/local/go/bin/go install github.com/embeddedgo/dl/go1.24.5-embedded@latest
+  clean_go_env go install github.com/embeddedgo/dl/go1.24.5-embedded@latest
   hash -r
 fi
 
@@ -53,7 +57,7 @@ if ! clean_go_env go1.24.5-embedded version >/dev/null 2>&1; then
 fi
 
 if ! command -v n64go >/dev/null 2>&1; then
-  clean_go_env /usr/local/go/bin/go install github.com/clktmr/n64/tools/n64go@v0.1.2
+  clean_go_env go install github.com/clktmr/n64/tools/n64go@v0.1.2
   hash -r
 fi
 

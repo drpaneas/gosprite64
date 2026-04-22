@@ -7,6 +7,16 @@ clean_go_env() {
   env -u GOENV -u GOOS -u GOARCH -u GOFLAGS -u GOTOOLCHAIN -u GOPATH -u GOBIN "$@"
 }
 
+retry_macos_bootstrap() {
+  if [[ "$(uname -s)" != "Darwin" ]]; then
+    return 1
+  fi
+
+  echo "go1.24.5-embedded failed to start; retrying download with BOOT_GO_LDFLAGS=-w" >&2
+  clean_go_env env BOOT_GO_LDFLAGS=-w go1.24.5-embedded download || return 1
+  clean_go_env go1.24.5-embedded version >/dev/null 2>&1
+}
+
 fallback_instructions() {
   cat >&2 <<'EOF'
 Use the Linux fallback:
@@ -46,19 +56,17 @@ if ! command -v go1.24.5-embedded >/dev/null 2>&1; then
   echo "install it with:" >&2
   echo "  go install github.com/embeddedgo/dl/go1.24.5-embedded@latest" >&2
   echo "  go1.24.5-embedded download" >&2
+  echo "on macOS, if download aborts with the __DATA / __DWARF dyld error, retry with:" >&2
+  echo "  BOOT_GO_LDFLAGS=-w go1.24.5-embedded download" >&2
   fallback_instructions
   exit 1
 fi
 
 if ! clean_go_env go1.24.5-embedded version >/dev/null 2>&1; then
-  if [[ "$(uname -s)" == "Darwin" ]]; then
-    if ! clean_go_env env BOOT_GO_LDFLAGS=-w go1.24.5-embedded download >/dev/null 2>&1; then
-      :
-    fi
-  fi
-
-  if ! clean_go_env go1.24.5-embedded version >/dev/null 2>&1; then
+  if ! retry_macos_bootstrap; then
     echo "error: go1.24.5-embedded is installed but failed to start on this host" >&2
+    echo "if macOS failed during toolchain bootstrap, retry manually with:" >&2
+    echo "  BOOT_GO_LDFLAGS=-w go1.24.5-embedded download" >&2
     fallback_instructions
     exit 1
   fi

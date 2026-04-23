@@ -20,15 +20,14 @@ type screen struct {
 	uniformCache map[color.Color]*image.Uniform
 }
 
-var knownColors = []color.Color{
-	Black, DarkBlue, DarkPurple, DarkGreen, Brown, DarkGray,
-	LightGray, White, Red, Orange, Yellow, Green, Blue, Indigo, Pink, Peach,
-}
-
 func newScreen(disp *display.Display, framebuffer *texture.Texture) *screen {
 	bounds := rendergeom.FramebufferBounds()
-	cache := make(map[color.Color]*image.Uniform, len(knownColors))
-	for _, c := range knownColors {
+	defaults := []color.Color{
+		Black, DarkBlue, DarkPurple, DarkGreen, Brown, DarkGray,
+		LightGray, White, Red, Orange, Yellow, Green, Blue, Indigo, Pink, Peach,
+	}
+	cache := make(map[color.Color]*image.Uniform, len(defaults))
+	for _, c := range defaults {
 		cache[c] = &image.Uniform{C: c}
 	}
 	s := &screen{
@@ -92,16 +91,20 @@ func (s *screen) uniform(c color.Color) image.Image {
 	return &image.Uniform{C: c}
 }
 
-// ClearScreen fills the screen with the given color.
-// If no color is provided, it defaults to Black.
-func ClearScreen(colors ...color.Color) {
+// ClearScreen fills the screen with Black.
+func ClearScreen() {
 	if currentScreen == nil {
 		log.Println("Warning: ClearScreen() called before screen was ready.")
 		return
 	}
-	c := Black
-	if len(colors) > 0 {
-		c = colors[0]
+	currentScreen.fill(Black)
+}
+
+// ClearScreenWith fills the screen with the given color.
+func ClearScreenWith(c color.Color) {
+	if currentScreen == nil {
+		log.Println("Warning: ClearScreenWith() called before screen was ready.")
+		return
 	}
 	currentScreen.fill(c)
 }

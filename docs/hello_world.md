@@ -36,7 +36,7 @@ type Game struct{}
 
 func (g *Game) Init()   {}
 func (g *Game) Update() {}
-func (g *Game) Draw()   { ClearScreen(Blue) }
+func (g *Game) Draw()   { ClearScreenWith(Blue) }
 
 func main() { Run(&Game{}) }
 ```
@@ -109,4 +109,4 @@ mygame/
 
 ## Next steps
 
-Now that your toolchain works, try changing `ClearScreen(Blue)` to another color like `Red`, `Green`, or `DarkPurple` and rebuild. Then explore the [examples](https://github.com/drpaneas/gosprite64/tree/main/examples) in the GoSprite64 repository to learn about input handling, drawing shapes, text rendering, and audio.
+Now that your toolchain works, try changing `ClearScreenWith(Blue)` to another color like `Red`, `Green`, or `DarkPurple` and rebuild. Then explore the [examples](https://github.com/drpaneas/gosprite64/tree/main/examples) in the GoSprite64 repository to learn about input handling, drawing shapes, text rendering, and audio.

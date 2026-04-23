@@ -25,7 +25,7 @@ func (g *Game) Init() {}
 func (g *Game) Update() {}
 
 func (g *Game) Draw() {
-	ClearScreen(DarkBlue)
+	ClearScreenWith(DarkBlue)
 
 	// Outline the public 288x216 canvas so the surrounding gutters stay obvious.
 	DrawRect(0, 0, logicalWidth-1, logicalHeight-1, White)

@@ -120,24 +120,29 @@ func drawGlyph1BPP(ch rune, dstX, dstY int, src image.Image) {
 	offset := int(ch-32) * 8
 	for row := 0; row < 8; row++ {
 		b := font8x8[offset+row]
-		for c := 0; c < 8; c++ {
-			if b&(1<<c) != 0 {
-				framebufferPixel, ok := rendergeom.MapPoint(image.Pt(dstX+c, dstY+row))
-				if !ok {
-					continue
-				}
-				n64draw.Src.Draw(
-					currentScreen.Framebuffer,
-					image.Rect(
-						framebufferPixel.X,
-						framebufferPixel.Y,
-						framebufferPixel.X+1,
-						framebufferPixel.Y+1,
-					),
-					src,
-					image.Point{},
-				)
+		if b == 0 {
+			continue
+		}
+		col := 0
+		for col < 8 {
+			if b&(1<<col) == 0 {
+				col++
+				continue
 			}
+			spanStart := col
+			for col < 8 && b&(1<<col) != 0 {
+				col++
+			}
+			startPt, ok := rendergeom.MapPoint(image.Pt(dstX+spanStart, dstY+row))
+			if !ok {
+				continue
+			}
+			n64draw.Src.Draw(
+				currentScreen.Framebuffer,
+				image.Rect(startPt.X, startPt.Y, startPt.X+(col-spanStart), startPt.Y+1),
+				src,
+				image.Point{},
+			)
 		}
 	}
 }

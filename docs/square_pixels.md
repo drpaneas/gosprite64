@@ -5,10 +5,10 @@
 When I started building GoSprite64, one of the first things I tried was drawing a square. A simple 40x40 filled rectangle. The code was obvious:
 
 ```go
-Rectfill(100, 80, 139, 119, Pico8Palette[Red])
+Rectfill(100, 80, 139, 119, Red)
 ```
 
-Forty pixels wide, forty pixels tall. It should be a square.
+That is a 40x40 filled rectangle. It should be a square.
 
 It was not a square. On screen it looked stretched - wider than it was tall, or taller than it was wide, depending on which resolution I was testing with. I changed the resolution constants to compensate, and that fixed it for one video mode but broke it for another. No matter what I tried, I could not get a square to look like a square across both NTSC and PAL without adding aspect-ratio correction math into my game code.
 
@@ -168,7 +168,7 @@ Let's trace a single drawing call through the entire rendering pipeline, step by
 Your game code calls:
 
 ```go
-Rectfill(10, 10, 50, 50, Pico8Palette[Red])
+Rectfill(10, 10, 50, 50, Red)
 ```
 
 These are **logical coordinates**. The game only thinks in terms of the 288x216 canvas. It does not know or care about the framebuffer, the video interface, or the display standard. X=10, Y=10, width=40, height=40. That is a square.

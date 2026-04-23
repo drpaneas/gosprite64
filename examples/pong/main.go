@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 
 	. "github.com/drpaneas/gosprite64"
 )
@@ -22,14 +23,14 @@ const (
 // Paddle represents a player or computer paddle
 type Paddle struct {
 	x, y, width, height, speed float64
-	color                      int
+	color                      color.Color
 }
 
 // Ball holds position, velocity, and rendering info
 type Ball struct {
 	x, y, size           float64
 	dx, dy, speed, boost float64
-	color                int
+	color                color.Color
 }
 
 // Game encapsulates all game state
@@ -132,20 +133,20 @@ func (g *Game) Update() {
 
 // Draw renders the game elements to the screen each frame
 func (g *Game) Draw() {
-	ClearScreen(0)
+	ClearScreen()
 
 	// Court outline
-	DrawRect(courtLeft, courtTop, courtRight, courtBottom, Pico8Palette[White])
+	DrawRect(courtLeft, courtTop, courtRight, courtBottom, White)
 
 	// Center dashed line
 	for y := courtTop; y < courtBottom; y += lineLen * 2 {
-		Line(centerX, y, centerX, y+lineLen, Pico8Palette[White])
+		Line(centerX, y, centerX, y+lineLen, White)
 	}
 
 	// Ball and paddles
-	DrawRectFill(int(g.ball.x), int(g.ball.y), int(g.ball.x+g.ball.size), int(g.ball.y+g.ball.size), Pico8Palette[g.ball.color])
-	DrawRectFill(int(g.player.x), int(g.player.y), int(g.player.x+g.player.width), int(g.player.y+g.player.height), Pico8Palette[g.player.color])
-	DrawRectFill(int(g.computer.x), int(g.computer.y), int(g.computer.x+g.computer.width), int(g.computer.y+g.computer.height), Pico8Palette[g.computer.color])
+	DrawRectFill(int(g.ball.x), int(g.ball.y), int(g.ball.x+g.ball.size), int(g.ball.y+g.ball.size), g.ball.color)
+	DrawRectFill(int(g.player.x), int(g.player.y), int(g.player.x+g.player.width), int(g.player.y+g.player.height), g.player.color)
+	DrawRectFill(int(g.computer.x), int(g.computer.y), int(g.computer.x+g.computer.width), int(g.computer.y+g.computer.height), g.computer.color)
 
 	// Scores
 	Print(fmt.Sprint(g.playerScore), centerX-24, 4, Yellow)

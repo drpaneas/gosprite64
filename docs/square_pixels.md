@@ -24,9 +24,9 @@ Every pixel on a display has a physical shape. On a modern LCD monitor, each pix
 
 The **pixel aspect ratio** (PAR) is the physical width of one pixel divided by its physical height:
 
-\[
-\text{PAR} = \frac{\text{physical width of one pixel}}{\text{physical height of one pixel}}
-\]
+```text
+PAR = physical width of one pixel / physical height of one pixel
+```
 
 - PAR = 1.0 means the pixel is square. A 40x40 rect looks like a square.
 - PAR < 1.0 means the pixel is taller than it is wide. A 40x40 rect looks like a tall column.
@@ -38,21 +38,21 @@ Let's start with the simplest case. The N64 outputs 320 horizontal pixels and 24
 
 The **display aspect ratio** (DAR) is the physical shape of the screen:
 
-\[
-\text{DAR} = \frac{4}{3} \approx 1.333
-\]
+```text
+DAR = 4 / 3 = 1.333
+```
 
 The **image aspect ratio** is the shape of the pixel grid itself:
 
-\[
-\text{Image AR} = \frac{320}{240} = \frac{4}{3} \approx 1.333
-\]
+```text
+Image AR = 320 / 240 = 4 / 3 = 1.333
+```
 
 The pixel aspect ratio is the relationship between these two:
 
-\[
-\text{PAR} = \frac{\text{DAR}}{\text{Image AR}} = \frac{4/3}{320/240} = \frac{4/3}{4/3} = 1.0
-\]
+```text
+PAR = DAR / Image AR = (4/3) / (320/240) = (4/3) / (4/3) = 1.0
+```
 
 The numbers happen to line up perfectly. 320x240 on a 4:3 display gives square pixels. A 40x40 rect looks like a square. Everything is fine.
 
@@ -68,13 +68,13 @@ Let's work through a concrete example.
 
 Suppose the N64 outputs 640 horizontal pixels and 240 vertical lines (non-interlaced) onto the same 4:3 NTSC display.
 
-\[
-\text{Image AR} = \frac{640}{240} = \frac{8}{3} \approx 2.667
-\]
+```text
+Image AR = 640 / 240 = 8 / 3 = 2.667
+```
 
-\[
-\text{PAR} = \frac{\text{DAR}}{\text{Image AR}} = \frac{4/3}{8/3} = \frac{4}{8} = 0.5
-\]
+```text
+PAR = DAR / Image AR = (4/3) / (8/3) = 4 / 8 = 0.5
+```
 
 Each pixel is now half as wide as it is tall. If you draw a 40x40 rectangle in this mode, it has 40 pixels of width but each pixel is only half as wide as it is tall. On screen, it looks like a tall narrow column - not a square.
 
@@ -82,9 +82,9 @@ Each pixel is now half as wide as it is tall. If you draw a 40x40 rectangle in t
 
 PAL televisions use 576 visible lines instead of NTSC's 480. A typical PAL field for the N64 uses 288 visible lines with 320 horizontal pixels.
 
-\[
-\text{PAR} = \frac{4/3}{320/288} = \frac{4/3}{10/9} = \frac{4}{3} \times \frac{9}{10} = \frac{36}{30} = 1.2
-\]
+```text
+PAR = (4/3) / (320/288) = (4/3) / (10/9) = (4/3) * (9/10) = 36/30 = 1.2
+```
 
 Each pixel is 20% wider than it is tall. A 40x40 rect now looks like a wide, squat bar instead of a square.
 
@@ -129,9 +129,9 @@ The internal framebuffer is 320x240 pixels. That is a hardware-friendly size for
 
 That leaves a 16-pixel border on each side horizontally and a 12-pixel border top and bottom. The remaining canvas has an aspect ratio of:
 
-\[
-\frac{288}{216} = \frac{4}{3}
-\]
+```text
+288 / 216 = 4 / 3
+```
 
 That matches the display aspect ratio exactly. Since the framebuffer is presented at the correct physical size for a 4:3 display, and the canvas aspect ratio matches 4:3, each logical pixel in the 288x216 canvas is square.
 

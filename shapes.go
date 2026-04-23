@@ -25,12 +25,9 @@ func DrawRect(x1, y1, x2, y2 int, c color.Color) {
 	Line(x1, y1, x2, y1, c)
 	// Draw bottom line
 	Line(x1, y2, x2, y2, c)
-	// Draw left line (offset by 1 to avoid double-drawing corners)
-	if y2-y1 > 1 {
+	// Draw left and right side lines (offset by 1 to avoid double-drawing corners)
+	if y2-y1 >= 1 {
 		Line(x1, y1+1, x1, y2-1, c)
-	}
-	// Draw right line (offset by 1 to avoid double-drawing corners)
-	if y2-y1 > 1 {
 		Line(x2, y1+1, x2, y2-1, c)
 	}
 }

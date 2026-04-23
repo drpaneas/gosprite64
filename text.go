@@ -111,11 +111,11 @@ var font8x8 = []byte{
 
 const (
 	FontAsciiStart   = 32
-	FontAsciiEnd     = 127 // inclusive; 127-32+1 = 96 glyphs
+	FontAsciiEnd     = 128 // exclusive upper bound; printable range is 32..127 (96 glyphs)
 	FontGlyphWidth   = 8
 	FontGlyphHeight  = 8
 	FontGlyphBytes   = 8
-	FontGlyphCount   = FontAsciiEnd - FontAsciiStart + 1 // 96 glyphs
+	FontGlyphCount   = FontAsciiEnd - FontAsciiStart // 96 glyphs
 	Pico8PaletteSize = 16
 )
 

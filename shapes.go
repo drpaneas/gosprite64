@@ -96,8 +96,8 @@ func abs(x int) int {
 // Rectfill draws a filled rectangle on screen
 // x1, y1: Top-left corner (0-287, 0-215)
 // x2, y2: Bottom-right corner (inclusive)
-// color: The color to fill the rectangle with
-func Rectfill(x1, y1, x2, y2 int, color color.Color) {
+// c: The color to fill the rectangle with
+func Rectfill(x1, y1, x2, y2 int, c color.Color) {
 	framebufferRect, ok := rendergeom.MapRectInclusive(image.Rectangle{
 		Min: image.Pt(x1, y1),
 		Max: image.Pt(x2, y2),
@@ -111,11 +111,11 @@ func Rectfill(x1, y1, x2, y2 int, color color.Color) {
 		framebufferRect.Min.Y,
 		framebufferRect.Max.X,
 		framebufferRect.Max.Y,
-		color,
+		c,
 	)
 }
 
-func drawFramebufferRect(x1, y1, x2, y2 int, color color.Color) {
+func drawFramebufferRect(x1, y1, x2, y2 int, c color.Color) {
 	if currentScreen == nil || currentScreen.Framebuffer == nil {
 		return
 	}
@@ -150,6 +150,6 @@ func drawFramebufferRect(x1, y1, x2, y2 int, color color.Color) {
 	// Create and draw the rectangle
 	// Note: image.Rect is half-open interval [Min, Max)
 	rect := image.Rect(x1, y1, x2+1, y2+1)
-	img := currentScreen.uniform(color)
+	img := currentScreen.uniform(c)
 	n64draw.Src.Draw(currentScreen.Framebuffer, rect, img, image.Point{})
 }

@@ -85,8 +85,14 @@ func (s *screen) fill(c color.Color) {
 }
 
 func (s *screen) uniform(c color.Color) image.Image {
-	if u, ok := s.uniformCache[c]; ok {
-		return u
+	if c == nil {
+		c = Black
+	}
+	switch c.(type) {
+	case color.RGBA, color.NRGBA, color.Gray, color.Alpha, color.Gray16, color.NRGBA64, color.RGBA64:
+		if u, ok := s.uniformCache[c]; ok {
+			return u
+		}
 	}
 	return &image.Uniform{C: c}
 }

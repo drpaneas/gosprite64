@@ -9,8 +9,16 @@ AudioGen is a tool for embedding audio files into your gosprite64 application. I
 
 ## Installation
 
+AudioGen is a host-only tool that runs on your development machine (macOS, Linux, Windows), not on the N64. Build it with your regular Go toolchain, not with `go1.24.5-embedded`:
+
 ```bash
 go install github.com/drpaneas/gosprite64/cmd/audiogen@latest
+```
+
+Or build it locally from the repository:
+
+```bash
+go build -o audiogen ./cmd/audiogen
 ```
 
 ## Usage

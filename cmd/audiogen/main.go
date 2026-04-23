@@ -1,4 +1,7 @@
+//go:build !noos
+
 // Command audiogen generates an audio_embed.go file with embedded audio files for gosprite64.
+// This is a host-only tool that runs on your development machine, not on the N64.
 package main
 
 import (

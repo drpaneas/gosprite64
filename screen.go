@@ -13,53 +13,47 @@ import (
 	"github.com/drpaneas/gosprite64/internal/rendergeom"
 )
 
-// screen holds all the display-related objects and state.
 type screen struct {
-	Display     *display.Display
-	Framebuffer *texture.Texture
-	Bounds      image.Rectangle
-	// Cache of image.Uniform for each PICO-8 color
-	colorUniforms [16]*image.Uniform
+	Display      *display.Display
+	Framebuffer  *texture.Texture
+	Bounds       image.Rectangle
+	uniformCache map[color.Color]*image.Uniform
 }
 
-// newScreen creates a new screen instance for the fixed framebuffer profile.
+var knownColors = []color.Color{
+	Black, DarkBlue, DarkPurple, DarkGreen, Brown, DarkGray,
+	LightGray, White, Red, Orange, Yellow, Green, Blue, Indigo, Pink, Peach,
+}
+
 func newScreen(disp *display.Display, framebuffer *texture.Texture) *screen {
 	bounds := rendergeom.FramebufferBounds()
+	cache := make(map[color.Color]*image.Uniform, len(knownColors))
+	for _, c := range knownColors {
+		cache[c] = &image.Uniform{C: c}
+	}
 	s := &screen{
-		Display:     disp,
-		Framebuffer: framebuffer,
-		Bounds:      bounds,
+		Display:      disp,
+		Framebuffer:  framebuffer,
+		Bounds:       bounds,
+		uniformCache: cache,
 	}
-
-	// Initialize color uniforms for PICO-8 palette
-	for i := range s.colorUniforms {
-		s.colorUniforms[i] = &image.Uniform{C: Pico8Palette[i]}
-	}
-
 	log.Printf("Screen initialized with %d x %d pixels", bounds.Dx(), bounds.Dy())
 	return s
 }
 
-// currentScreen holds the active screen instance.
 var currentScreen *screen
 
 func videoInit() {
 	resolution := rendergeom.FramebufferBounds().Size()
-
-	// The square-pixel reset uses one 320x240 progressive framebuffer path.
 	video.Setup(false)
 	video.SetScale(squarePixelPresentationRect())
-
-	// Create display and seed the first framebuffer.
 	disp := display.NewDisplay(resolution, video.BPP16)
 	fb := disp.Swap()
-
 	currentScreen = newScreen(disp, fb)
 }
 
 func squarePixelPresentationRect() image.Rectangle {
 	outputSize := rendergeom.FramebufferBounds().Size().Mul(2)
-
 	switch machine.VideoType {
 	case machine.VideoPAL:
 		return rendergeom.CenteredRect(image.Rect(128, 45, 128+640, 45+576), outputSize)
@@ -70,8 +64,6 @@ func squarePixelPresentationRect() image.Rectangle {
 	}
 }
 
-// beginDrawing prepares for a new frame by swapping the framebuffer.
-// This is an internal function used by the package.
 func beginDrawing() {
 	if currentScreen == nil || currentScreen.Display == nil {
 		log.Println("Warning: beginDrawing called before screen was ready.")
@@ -80,50 +72,36 @@ func beginDrawing() {
 	currentScreen.Framebuffer = currentScreen.Display.Swap()
 }
 
-// endDrawing finalizes the frame by flushing the renderer.
-// This is an internal function used by the package.
 func endDrawing() {
 	if currentScreen != nil && currentScreen.Framebuffer != nil {
 		n64draw.Flush()
 	}
 }
 
-// fill fills the entire screen with the specified color.
 func (s *screen) fill(c color.Color) {
 	if s == nil || s.Framebuffer == nil {
 		return
 	}
-
 	n64draw.Src.Draw(s.Framebuffer, s.Bounds, s.uniform(c), image.Point{})
 }
 
 func (s *screen) uniform(c color.Color) image.Image {
-	for i, picoColor := range Pico8Palette {
-		if picoColor == c {
-			return s.colorUniforms[i]
-		}
+	if u, ok := s.uniformCache[c]; ok {
+		return u
 	}
-	return &image.Uniform{c}
+	return &image.Uniform{C: c}
 }
 
-// ClearScreen clears the current drawing screen with a specified PICO-8 color index.
-// If no colorIndex is provided, it defaults to Pico8Black (0).
-func ClearScreen(colorIndex ...int) {
+// ClearScreen fills the screen with the given color.
+// If no color is provided, it defaults to Black.
+func ClearScreen(colors ...color.Color) {
 	if currentScreen == nil {
 		log.Println("Warning: ClearScreen() called before screen was ready.")
 		return
 	}
-
-	idx := defaultColorIndex
-	if len(colorIndex) > 0 {
-		idx = colorIndex[0]
+	c := Black
+	if len(colors) > 0 {
+		c = colors[0]
 	}
-
-	if idx < 0 || idx >= len(Pico8Palette) {
-		log.Printf("Warning: ClearScreen() called with invalid color index %d. Defaulting to %d.", idx, defaultColorIndex)
-		idx = defaultColorIndex
-	}
-
-	// Clear the screen
-	currentScreen.fill(Pico8Palette[idx])
+	currentScreen.fill(c)
 }

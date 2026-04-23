@@ -10,10 +10,10 @@ import (
 
 // Court boundaries
 const (
-	courtLeft   = 15
-	courtRight  = 296
-	courtTop    = 10
-	courtBottom = 229
+	courtLeft   = 12
+	courtRight  = 275
+	courtTop    = 16
+	courtBottom = 199
 	centerX     = (courtRight + courtLeft) / 2
 	centerY     = (courtBottom + courtTop) / 2
 	lineLen     = 4
@@ -139,9 +139,7 @@ func (g *Game) Draw() {
 
 	// Center dashed line
 	for y := courtTop; y < courtBottom; y += lineLen * 2 {
-		// p8.Line(centerX, float64(y), centerX, float64(y+lineLen), 5)
 		Line(centerX, y, centerX, y+lineLen, Pico8Palette[White])
-		// Rectfill(centerX, y, centerX, y+lineLen, Pico8Palette[White])
 	}
 
 	// Ball and paddles
@@ -150,8 +148,8 @@ func (g *Game) Draw() {
 	DrawRectFill(int(g.computer.x), int(g.computer.y), int(g.computer.x+g.computer.width), int(g.computer.y+g.computer.height), Pico8Palette[g.computer.color])
 
 	// Scores
-	Print(fmt.Sprint(g.playerScore), centerX/2, 2, Yellow)
-	Print(fmt.Sprint(g.computerScore), centerX+centerX/2, 2, Yellow)
+	Print(fmt.Sprint(g.playerScore), centerX-24, 4, Yellow)
+	Print(fmt.Sprint(g.computerScore), centerX+16, 4, Yellow)
 }
 
 // collide checks axis-aligned collision between ball and paddle

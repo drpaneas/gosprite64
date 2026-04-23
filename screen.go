@@ -10,23 +10,7 @@ import (
 	"github.com/clktmr/n64/machine"
 	"github.com/clktmr/n64/rcp/texture"
 	"github.com/clktmr/n64/rcp/video"
-)
-
-// VideoPreset represents a predefined video configuration.
-type VideoPreset int
-
-const (
-	// LowRes is the most common setup: 320x240 without interlacing.
-	LowRes VideoPreset = iota
-	// HighRes is 640x480 with interlacing.
-	HighRes
-)
-
-const (
-	lowResWidth   = 320
-	lowResHeight  = 240
-	highResWidth  = 640
-	highResHeight = 480
+	"github.com/drpaneas/gosprite64/internal/rendergeom"
 )
 
 // screen holds all the display-related objects and state.
@@ -36,18 +20,15 @@ type screen struct {
 	Bounds      image.Rectangle
 	// Cache of image.Uniform for each PICO-8 color
 	colorUniforms [16]*image.Uniform
-	width         int
-	height        int
 }
 
-// newScreen creates a new screen instance with the given dimensions
-func newScreen(disp *display.Display, framebuffer *texture.Texture, width, height int) *screen {
+// newScreen creates a new screen instance for the fixed framebuffer profile.
+func newScreen(disp *display.Display, framebuffer *texture.Texture) *screen {
+	bounds := rendergeom.FramebufferBounds()
 	s := &screen{
 		Display:     disp,
 		Framebuffer: framebuffer,
-		Bounds:      image.Rect(0, 0, width, height),
-		width:       width,
-		height:      height,
+		Bounds:      bounds,
 	}
 
 	// Initialize color uniforms for PICO-8 palette
@@ -55,52 +36,38 @@ func newScreen(disp *display.Display, framebuffer *texture.Texture, width, heigh
 		s.colorUniforms[i] = &image.Uniform{C: Pico8Palette[i]}
 	}
 
-	log.Printf("Screen initialized with %d x %d pixels", width, height)
+	log.Printf("Screen initialized with %d x %d pixels", bounds.Dx(), bounds.Dy())
 	return s
 }
 
 // currentScreen holds the active screen instance.
 var currentScreen *screen
 
-// Config holds the configuration for initializing the display.
-type Config struct {
-	Preset VideoPreset
-}
+func videoInit() {
+	resolution := rendergeom.FramebufferBounds().Size()
 
-// DefaultConfig returns a default configuration.
-func DefaultConfig() Config {
-	return Config{
-		Preset: LowRes,
-	}
-}
-
-func getPresetConfig(preset VideoPreset) (image.Point, video.ColorDepth, uint32, bool) {
-	switch preset {
-	case HighRes:
-		return image.Point{X: highResWidth, Y: highResHeight},
-			video.BPP32,
-			uint32(machine.VideoNTSC), // This is a uint32 value
-			true // Interlaced for high resolution
-	default: // LowRes or unknown
-		return image.Point{X: lowResWidth, Y: lowResHeight},
-			video.BPP16,
-			uint32(machine.VideoNTSC), // This is a uint32 value
-			false // Non-interlaced for low resolution
-	}
-}
-
-func videoInit(preset VideoPreset) {
-	resolution, colorDepth, _, isInterlaced := getPresetConfig(preset)
-
-	// Set the video mode and setup
-	video.Setup(isInterlaced)
+	// The square-pixel reset uses one 320x240 progressive framebuffer path.
+	video.Setup(false)
+	video.SetScale(squarePixelPresentationRect())
 
 	// Create display and seed the first framebuffer.
-	disp := display.NewDisplay(resolution, colorDepth)
+	disp := display.NewDisplay(resolution, video.BPP16)
 	fb := disp.Swap()
 
-	// Create screen with our custom implementation
-	currentScreen = newScreen(disp, fb, resolution.X, resolution.Y)
+	currentScreen = newScreen(disp, fb)
+}
+
+func squarePixelPresentationRect() image.Rectangle {
+	outputSize := rendergeom.FramebufferBounds().Size().Mul(2)
+
+	switch machine.VideoType {
+	case machine.VideoPAL:
+		return rendergeom.CenteredRect(image.Rect(128, 45, 128+640, 45+576), outputSize)
+	case machine.VideoMPAL, machine.VideoNTSC:
+		return rendergeom.CenteredRect(image.Rect(108, 35, 108+640, 35+480), outputSize)
+	default:
+		return rendergeom.CenteredRect(video.Scale(), outputSize)
+	}
 }
 
 // beginDrawing prepares for a new frame by swapping the framebuffer.
@@ -127,15 +94,16 @@ func (s *screen) fill(c color.Color) {
 		return
 	}
 
-	// Try to find the color in PICO-8 palette to use cached uniform
+	n64draw.Src.Draw(s.Framebuffer, s.Bounds, s.uniform(c), image.Point{})
+}
+
+func (s *screen) uniform(c color.Color) image.Image {
 	for i, picoColor := range Pico8Palette {
 		if picoColor == c {
-			n64draw.Src.Draw(s.Framebuffer, s.Bounds, s.colorUniforms[i], image.Point{})
-			return
+			return s.colorUniforms[i]
 		}
 	}
-	// Fallback for colors not in PICO-8 palette (shouldn't happen with public API)
-	n64draw.Src.Draw(s.Framebuffer, s.Bounds, &image.Uniform{c}, image.Point{})
+	return &image.Uniform{c}
 }
 
 // ClearScreen clears the current drawing screen with a specified PICO-8 color index.

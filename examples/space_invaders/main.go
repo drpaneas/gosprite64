@@ -1,24 +1,22 @@
-// Package space_invaders is a simple implementation of the classic Space Invaders game
-// using the PIGO8 game engine. This example demonstrates basic game mechanics
-// including player movement, shooting, collision detection, and sprite rendering.
-//
 //go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir .
 package main
 
 import (
 	"fmt"
-	"log"
 
-	// Copy paste the code from PIGO8 and rename the pkg pigo8
-	// instead of gosprite64, now you can just build the same code
-	// in Nintendo64
 	pigo8 "github.com/drpaneas/gosprite64"
 )
 
-// ---- Constants for game configuration ----
 const (
-	screenW          = 128
-	screenH          = 128
+	// The library canvas is 288x216, but this example keeps a smaller centered
+	// 128x128 gameplay field to show that games can choose a tighter play area.
+	logicalCanvasWidth  = 288
+	logicalCanvasHeight = 216
+	screenW             = 128
+	screenH             = 128
+	playfieldOffsetX    = (logicalCanvasWidth - screenW) / 2
+	playfieldOffsetY    = (logicalCanvasHeight - screenH) / 2
+
 	playerStartX     = 64
 	playerStartY     = 120
 	playerSpeed      = 2
@@ -67,18 +65,6 @@ type (
 		menuItem int // 0 = resume, 1 = quit
 	}
 )
-
-// NewGame creates a new game instance
-func NewGame() *Game {
-	g := &Game{
-		playerX: playerStartX,
-		playerY: playerStartY,
-		lives:   initialLives,
-		score:   0,
-	}
-	g.initAliens()
-	return g
-}
 
 // Init initializes the game state
 func (g *Game) Init() {
@@ -141,7 +127,6 @@ func (g *Game) handlePlayerMovement() {
 
 func (g *Game) handlePlayerShooting() {
 	if pigo8.Btnp(pigo8.O) {
-		log.Println("Shooting")
 		g.bullets = append(g.bullets, bullet{
 			x:     g.playerX,
 			y:     g.playerY - 8,
@@ -251,6 +236,13 @@ func (g *Game) handleCollisions() {
 // Draw renders the game elements to the screen each frame
 func (g *Game) Draw() {
 	pigo8.ClearScreen(0)
+	pigo8.DrawRect(
+		playfieldOffsetX,
+		playfieldOffsetY,
+		playfieldOffsetX+screenW-1,
+		playfieldOffsetY+screenH-1,
+		pigo8.Pico8Palette[pigo8.DarkGray],
+	)
 	g.drawPlayer()
 	g.drawBullets()
 	g.drawAliens()
@@ -261,18 +253,33 @@ func (g *Game) Draw() {
 }
 
 func (g *Game) drawPlayer() {
+	drawX := playfieldOffsetX + g.playerX
+	drawY := playfieldOffsetY + g.playerY
+
 	// Triangle shape
-	pigo8.Line(g.playerX+4, g.playerY-8, g.playerX, g.playerY, pigo8.Pico8Palette[7])
-	pigo8.Line(g.playerX+4, g.playerY-8, g.playerX+8, g.playerY, pigo8.Pico8Palette[7])
-	pigo8.Line(g.playerX, g.playerY, g.playerX+8, g.playerY, pigo8.Pico8Palette[7])
+	pigo8.Line(drawX+4, drawY-8, drawX, drawY, pigo8.Pico8Palette[7])
+	pigo8.Line(drawX+4, drawY-8, drawX+8, drawY, pigo8.Pico8Palette[7])
+	pigo8.Line(drawX, drawY, drawX+8, drawY, pigo8.Pico8Palette[7])
 }
 
 func (g *Game) drawBullets() {
 	for _, b := range g.bullets {
-		pigo8.Rectfill(b.x, b.y, b.x+2, b.y+4, pigo8.Pico8Palette[7])
+		pigo8.Rectfill(
+			playfieldOffsetX+b.x,
+			playfieldOffsetY+b.y,
+			playfieldOffsetX+b.x+2,
+			playfieldOffsetY+b.y+4,
+			pigo8.Pico8Palette[7],
+		)
 	}
 	for _, b := range g.alienBullets {
-		pigo8.Rectfill(b.x, b.y, b.x+2, b.y+4, pigo8.Pico8Palette[8])
+		pigo8.Rectfill(
+			playfieldOffsetX+b.x,
+			playfieldOffsetY+b.y,
+			playfieldOffsetX+b.x+2,
+			playfieldOffsetY+b.y+4,
+			pigo8.Pico8Palette[8],
+		)
 	}
 }
 
@@ -282,19 +289,21 @@ func (g *Game) drawAliens() {
 			continue
 		}
 		color := 2 + a.sprite
-		pigo8.Rectfill(a.x, a.y, a.x+alienW, a.y+alienH, pigo8.Pico8Palette[color])
-		pigo8.Rectfill(a.x+2, a.y+2, a.x+6, a.y+6, pigo8.Pico8Palette[color])
+		drawX := playfieldOffsetX + a.x
+		drawY := playfieldOffsetY + a.y
+		pigo8.Rectfill(drawX, drawY, drawX+alienW, drawY+alienH, pigo8.Pico8Palette[color])
+		pigo8.Rectfill(drawX+2, drawY+2, drawX+6, drawY+6, pigo8.Pico8Palette[color])
 	}
 }
 
 func (g *Game) drawUI() {
-	pigo8.Print(fmt.Sprintf("score: %d", g.score), 4, 4, 7)
-	pigo8.Print(fmt.Sprintf("lives: %d", g.lives), 80, 4, 7)
+	pigo8.Print(fmt.Sprintf("score: %d", g.score), playfieldOffsetX, 12, 7)
+	pigo8.Print(fmt.Sprintf("lives: %d", g.lives), playfieldOffsetX+72, 12, 7)
 }
 
 func (g *Game) drawGameOver() {
-	pigo8.Print("GAME OVER", 60, 60, 7)
-	pigo8.Print("PRESS O TO RESTART", 60, 80, 7)
+	pigo8.Print("GAME OVER", playfieldOffsetX+24, playfieldOffsetY+44, 7)
+	pigo8.Print("PRESS O TO RESTART", playfieldOffsetX+8, playfieldOffsetY+64, 7)
 }
 
 func main() {

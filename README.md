@@ -29,9 +29,19 @@ The repository tracks toolchain settings in `n64.env`, and `./build_examples.sh`
 
 For the full setup details read [`docs/getting_started.md`](./docs/getting_started.md).
 
+## Rendering Model
+
+GoSprite64 exposes one official fixed resolution and drawing canvas: `288x216` logical pixels.
+
+That is the supported public rendering contract. The runtime centers the canvas inside the internal framebuffer and presents it for you with square pixels, so game code should treat `Rectfill`, `DrawRect`, `DrawRectFill`, `Line`, and `Print` as logical-coordinate APIs. You do not need to manage borders, safe areas, or video-mode presets yourself.
+
+![Calibration scene showing the fixed 288x216 logical canvas](docs/fixed-resolution-calibration.png)
+
+If you want a visual sanity check after building the examples, start with `examples/calibration`.
+
 ## ✨ Features
 
-GoSprite64 embraces the flat world of tilemaps, palettes, and framebuffers — without the complexity of 3D pipelines.
+GoSprite64 embraces the flat world of tilemaps, palettes, and pixel-art game scenes without the complexity of 3D pipelines.
 
 > "You only need X and Y."
 

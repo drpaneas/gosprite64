@@ -49,6 +49,8 @@ Every GoSprite64 game implements three methods on a struct:
 
 `Run()` starts the game loop and never returns.
 
+GoSprite64 exposes one official fixed resolution and drawing space: `288x216` logical pixels. `ClearScreen()` is the frame-start background clear, while drawing helpers such as `Rectfill`, `DrawRect`, `Line`, and `Print` use logical coordinates inside that fixed canvas.
+
 ## Add the n64.env file
 
 Create `n64.env` in the project root:
@@ -85,7 +87,7 @@ The first command cross-compiles your code for the N64 (MIPS64, no OS) using the
 
 ## Run
 
-Load `game.z64` in an emulator like [ares](https://ares-emu.net/) to see a blue screen.
+Load `game.z64` in an emulator like [ares](https://ares-emu.net/) to see a blue screen. When you want to inspect the canvas boundaries and square-pixel presentation, compare it with the repository's `examples/calibration` ROM.
 
 ## Editor support
 

@@ -46,6 +46,12 @@ GOARCH=mips64
 GOFLAGS='-tags=n64' '-trimpath' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
 ```
 
+GoSprite64 exposes one official fixed resolution and drawing canvas: `288x216` logical pixels. The runtime centers that canvas and handles presentation scaling for you, so gameplay code should not manage borders, safe areas, or video-mode presets directly.
+
+If you want to verify the fixed-resolution presentation visually, run `examples/calibration/game.z64` in `ares` after the build. The expected calibration frame looks like this:
+
+![Calibration scene showing the fixed 288x216 logical canvas](fixed-resolution-calibration.png)
+
 ### Windows
 
 On Windows, install [Git for Windows](https://gitforwindows.org/) and run all commands from a Git Bash terminal. The same steps above apply - Git Bash provides the bash environment the build scripts require.
@@ -65,4 +71,4 @@ docker run --rm --platform linux/arm64 \
   bash ./scripts/dev-linux-build.sh
 ```
 
-The generated `*.z64` ROMs are written under `examples/` and can be run with your emulator, for example `ares`.
+The generated `*.z64` ROMs are written under `examples/` and can be run with your emulator, for example `ares`. If you want to verify the square-pixel layout visually, start with `examples/calibration/game.z64`.

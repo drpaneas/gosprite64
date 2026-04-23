@@ -20,6 +20,16 @@ you can:
 * 🚀 A friendly API built on top of `clktmr/n64` and `embedded-go`
 * 💾 Builds real N64 ROMs you can flash and play (yes, on real hardware!)
 
+## Fixed Resolution
+
+GoSprite64 exposes one official fixed resolution and drawing space: `288x216` logical pixels.
+
+That is the public rendering contract for gameplay code. The runtime centers the canvas inside the framebuffer and presents it with square pixels, while public drawing APIs such as `Rectfill`, `DrawRect`, `DrawRectFill`, `Line`, and `Print` all operate in that same logical space.
+
+If you build and run `examples/calibration`, you should see this reference frame:
+
+![Calibration scene showing the fixed 288x216 logical canvas](fixed-resolution-calibration.png)
+
 ## Why Go?
 
 Go is a clean, fast, pragmatic and efficient language.

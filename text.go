@@ -3,9 +3,9 @@ package gosprite64
 import (
 	_ "embed"
 	"image"
-	"image/color"
 
 	n64draw "github.com/clktmr/n64/drivers/draw"
+	"github.com/drpaneas/gosprite64/internal/rendergeom"
 )
 
 // Font data: Each character is 8 bytes, 8x8 pixels, 1bpp
@@ -119,7 +119,7 @@ const (
 	Pico8PaletteSize = 16
 )
 
-func drawGlyph1BPP(ch rune, dstX, dstY int, col color.Color) {
+func drawGlyph1BPP(ch rune, dstX, dstY int, src image.Image) {
 	if currentScreen == nil || currentScreen.Framebuffer == nil {
 		return
 	}
@@ -130,12 +130,20 @@ func drawGlyph1BPP(ch rune, dstX, dstY int, col color.Color) {
 	for row := 0; row < FontGlyphHeight; row++ {
 		b := font8x8[offset+row]
 		for c := 0; c < FontGlyphWidth; c++ {
-			// FIXED: Flip to (b & (1<<c))
 			if b&(1<<c) != 0 {
+				framebufferPixel, ok := rendergeom.MapPoint(image.Pt(dstX+c, dstY+row))
+				if !ok {
+					continue
+				}
 				n64draw.Src.Draw(
 					currentScreen.Framebuffer,
-					image.Rect(dstX+c, dstY+row, dstX+c+1, dstY+row+1),
-					&image.Uniform{C: col},
+					image.Rect(
+						framebufferPixel.X,
+						framebufferPixel.Y,
+						framebufferPixel.X+1,
+						framebufferPixel.Y+1,
+					),
+					src,
 					image.Point{},
 				)
 			}
@@ -147,8 +155,11 @@ func Print(str string, x, y, colorIdx int) {
 	if currentScreen == nil || currentScreen.Framebuffer == nil {
 		return
 	}
+	if colorIdx < 0 || colorIdx >= Pico8PaletteSize {
+		colorIdx = defaultColorIndex
+	}
 	dstX := x
-	textColor := Pico8Palette[colorIdx]
+	textColor := currentScreen.colorUniforms[colorIdx]
 	for _, r := range str {
 		if r < FontAsciiStart || r >= FontAsciiEnd {
 			dstX += FontGlyphWidth // skip unknown chars

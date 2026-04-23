@@ -30,6 +30,8 @@ If you build and run `examples/calibration`, you should see this reference frame
 
 ![Calibration scene showing the fixed 288x216 logical canvas](fixed-resolution-calibration.png)
 
+For a deep dive into why pixels on the N64 are not always square and how GoSprite64 solves this, read the [Square Pixels and the Fixed Canvas](square_pixels.md) chapter.
+
 ## Why Go?
 
 Go is a clean, fast, pragmatic and efficient language.

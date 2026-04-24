@@ -19,10 +19,10 @@ func main() {
 	flag.BoolVar(&verbose, "verbose", false, "Enable verbose output")
 	flag.Parse()
 
-	// Find all audio files (music*.raw and sfx_*.raw)
-	audioFiles, err := findAudioFiles(outputDir)
+	// Prepare all runtime audio files, preferring WAV sources when present.
+	audioFiles, err := prepareAudioFiles(outputDir)
 	if err != nil {
-		fmt.Printf("Error searching for audio files: %v\n", err)
+		fmt.Printf("Error preparing audio files: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -58,7 +58,7 @@ func main() {
 	}
 
 	// Generate the embed.go file
-	err = generateEmbedFile(outputDir, audioRelPaths)
+	err = generateEmbedFile(outputDir, audioFiles)
 	if err != nil {
 		fmt.Printf("Error generating audio_embed.go: %v\n", err)
 		os.Exit(1)
@@ -67,31 +67,19 @@ func main() {
 	fmt.Printf("Generated audio_embed.go with %d audio files\n", len(audioRelPaths))
 }
 
-// findAudioFiles searches for audio files in the given directory
-func findAudioFiles(dir string) ([]string, error) {
-	var files []string
-
-	// Find music*.raw files
-	musicFiles, err := filepath.Glob(filepath.Join(dir, "music*.raw"))
-	if err != nil {
-		return nil, fmt.Errorf("error searching for music*.raw files: %w", err)
-	}
-	files = append(files, musicFiles...)
-
-	// Find sfx_*.raw files
-	sfxFiles, err := filepath.Glob(filepath.Join(dir, "sfx_*.raw"))
-	if err != nil {
-		return nil, fmt.Errorf("error searching for sfx_*.raw files: %w", err)
-	}
-	files = append(files, sfxFiles...)
-
-	return files, nil
-}
-
 // generateEmbedFile creates the audio_embed.go file with the embedded audio files
 func generateEmbedFile(dir string, audioFiles []string) error {
 	if len(audioFiles) == 0 {
 		return nil
+	}
+
+	audioRelPaths := make([]string, 0, len(audioFiles))
+	for _, file := range audioFiles {
+		relPath, err := filepath.Rel(dir, file)
+		if err != nil {
+			return fmt.Errorf("failed to resolve relative audio path for %s: %w", file, err)
+		}
+		audioRelPaths = append(audioRelPaths, relPath)
 	}
 
 	// Create the output file
@@ -131,7 +119,7 @@ func init() {
 	// Initialize the audio filesystem with embedded audio files
 	gosprite64.SetAudioFS(audioFS)
 }
-`, pkgName, strings.Join(audioFiles, " "))
+`, pkgName, strings.Join(audioRelPaths, " "))
 
 	// Write the content to the file
 	_, err = f.WriteString(content)
@@ -148,10 +136,7 @@ func init() {
 // fileExists checks if a file exists and is not a directory
 func fileExists(filename string) bool {
 	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return !info.IsDir()
+	return err == nil && !info.IsDir()
 }
 
 // Global variable for verbose output

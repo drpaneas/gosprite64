@@ -1,22 +1,29 @@
 package gosprite64
 
 import (
+	"bytes"
 	"embed"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"sync"
+	"sync/atomic"
 
+	"github.com/clktmr/n64/drivers/rspq"
+	"github.com/clktmr/n64/drivers/rspq/mixer"
 	"github.com/clktmr/n64/rcp/audio"
+	"github.com/drpaneas/gosprite64/internal/audioengine"
 )
 
-// audioFS is the global embedded filesystem for audio files
-// This is set by the generated audio_embed.go file in each game
+// audioFS is the global embedded filesystem for runtime audio assets.
+// Runtime audio data is signed 16-bit stereo PCM at 48 kHz, stored as
+// big-endian interleaved left/right samples.
+// This is set by the generated audio_embed.go file in each game.
 var (
 	audioFS         embed.FS
-	audioFSInit     bool           // Flag to track if audioFS has been initialized
-	initializedOnce sync.Once      // Ensures initialization happens only once
-	musicFiles      map[int]string // Map track IDs to filenames
+	audioFSInit     bool      // Flag to track if audioFS has been initialized
+	initializedOnce sync.Once // Ensures initialization happens only once
 )
 
 var (
@@ -25,24 +32,54 @@ var (
 )
 
 type audioPlayer struct {
-	musicData    map[int][]byte
-	activeTracks map[int]*musicTrack
-	mutex        sync.Mutex
+	registry *audioengine.Registry
+	playback *audioengine.PlaybackState
+	sources  map[int]*playbackSource
+	mutex    sync.Mutex
 }
 
-type musicTrack struct {
-	data     []byte
-	position int
+type playbackSource struct {
+	channel  int
 	loop     bool
+	finished atomic.Bool
+}
+
+type trackedReadSeeker struct {
+	io.ReadSeeker
+	finished *atomic.Bool
+}
+
+func (t *trackedReadSeeker) Read(p []byte) (int, error) {
+	n, err := t.ReadSeeker.Read(p)
+	if errors.Is(err, io.EOF) {
+		t.finished.Store(true)
+	}
+	return n, err
 }
 
 func getAudioPlayer() *audioPlayer {
 	audioOnce.Do(func() {
-		audio.Start(48000)
 		audioPlayerInstance = &audioPlayer{
-			musicData:    make(map[int][]byte),
-			activeTracks: make(map[int]*musicTrack),
+			registry: audioengine.NewRegistry(),
+			playback: audioengine.NewPlaybackState(),
+			sources:  make(map[int]*playbackSource),
 		}
+
+		audioengine.StartMixerRuntime(audioengine.MixerRuntimeHooks{
+			ResetQueue: rspq.Reset,
+			InitMixer:  mixer.Init,
+			StartDAC:   audio.Start,
+			SetMixerRate: func(rate uint) {
+				mixer.SetSampleRate(rate)
+			},
+			StartFeeder: func() {
+				go func() {
+					if _, err := audio.Buffer.ReadFrom(mixer.Output); err != nil && !errors.Is(err, audio.ErrStop) {
+						log.Printf("audio feeder stopped: %v", err)
+					}
+				}()
+			},
+		})
 	})
 	return audioPlayerInstance
 }
@@ -51,122 +88,99 @@ func (a *audioPlayer) update() {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 
-	for id, track := range a.activeTracks {
-		if track == nil || len(track.data) == 0 {
-			log.Printf("Removing empty or nil track %d", id)
-			delete(a.activeTracks, id)
+	for trackID, source := range a.sources {
+		if source.loop || !source.finished.Load() {
 			continue
 		}
 
-		remaining := len(track.data) - track.position
-		if remaining <= 0 {
-			if track.loop {
-				track.position = 0
-				remaining = len(track.data)
-			} else {
-				// log.Printf("Track %d finished playing", id)
-				delete(a.activeTracks, id)
-				continue
-			}
+		channel, ok := a.playback.Release(trackID)
+		if ok {
+			mixer.SetSource(channel, nil)
 		}
-
-		chunkSize := 4096
-		if remaining < chunkSize {
-			chunkSize = remaining
-		}
-
-		chunk := track.data[track.position : track.position+chunkSize]
-
-		n, err := audio.Buffer.Write(chunk)
-		if err != nil {
-			log.Printf("Error writing to audio buffer: %v (wrote %d/%d bytes)", err, n, chunkSize)
-		}
-
-		audio.Buffer.Flush()
-		track.position += chunkSize
+		delete(a.sources, trackID)
 	}
 }
 
 // Music plays or stops music
 // If n is -1, stops all music
 func Music(n int, loop bool) {
-	// log.Printf("Music(%d, loop=%v) called", n, loop)
 	ap := getAudioPlayer()
 
 	if n == -1 {
-		// log.Println("Stopping all music")
 		ap.mutex.Lock()
-		ap.activeTracks = make(map[int]*musicTrack)
-		ap.mutex.Unlock()
-		return
-	}
+		defer ap.mutex.Unlock()
 
-	// Check if we already have this track loaded
-	_, exists := ap.musicData[n]
-	if !exists {
-		// log.Printf("Track %d not in memory, attempting to load...", n)
-		// Try to load the track
-		data, err := loadAudioData(n)
-		if err != nil {
-			log.Printf("Failed to load audio track %d: %v", n, err)
-			return
+		channels := ap.playback.StopAll()
+		clear(ap.sources)
+		for _, channel := range channels {
+			mixer.SetSource(channel, nil)
 		}
-		// Store the loaded data
-		ap.musicData[n] = data
+		return
 	}
 
 	ap.mutex.Lock()
 	defer ap.mutex.Unlock()
 
-	ap.activeTracks[n] = &musicTrack{
-		data: ap.musicData[n],
-		loop: loop,
+	data, err := ap.registry.Load(n, loadAudioDataByFilename)
+	if err != nil {
+		log.Printf("Failed to load audio track %d: %v", n, err)
+		return
 	}
-	// log.Printf("Added track %d to active tracks (total active: %d)", n, len(ap.activeTracks))
+
+	playback, err := ap.playback.Activate(n, loop)
+	if err != nil {
+		log.Printf("Failed to activate audio track %d: %v", n, err)
+		return
+	}
+
+	playSource := &playbackSource{
+		channel: playback.Channel,
+		loop:    loop,
+	}
+	var reader io.ReadSeeker = bytes.NewReader(data)
+	if loop {
+		reader = mixer.Loop(reader)
+	} else {
+		reader = &trackedReadSeeker{ReadSeeker: reader, finished: &playSource.finished}
+	}
+
+	source := mixer.NewSource(reader, uint(audioengine.RuntimeSampleRate))
+	ap.sources[n] = playSource
+	mixer.SetSource(playback.Channel, source)
 }
 
-// LoadAudio loads raw PCM audio data for a track
-// pcmData: Raw PCM audio data (16-bit stereo, 48kHz)
+// LoadAudio loads raw runtime PCM audio data for a track.
+// pcmData must be signed 16-bit stereo PCM at 48 kHz, stored as big-endian
+// interleaved left/right samples.
 func LoadAudio(id int, pcmData []byte) {
 	ap := getAudioPlayer()
 	ap.mutex.Lock()
 	defer ap.mutex.Unlock()
-	ap.musicData[id] = pcmData
+	ap.registry.StorePCM(id, pcmData)
 }
 
 // LoadAudioFile registers an audio file to be loaded on demand
 func LoadAudioFile(id int, filename string) error {
-	// log.Printf("Registering audio file: %s as track ID: %d", filename, id)
-
 	// Check if the audio filesystem is properly initialized
 	if !audioFSInit {
 		log.Printf("ERROR: audioFS has not been initialized when trying to register %s", filename)
 		return fmt.Errorf("audio filesystem not initialized")
 	}
 
-	// Just store the filename, we'll load it when needed
-	musicFiles[id] = filename
-	// log.Printf("Registered audio file %s as track ID %d", filename, id)
+	ap := getAudioPlayer()
+	ap.mutex.Lock()
+	defer ap.mutex.Unlock()
+	ap.registry.RegisterFile(id, filename)
 	return nil
 }
 
-// loadAudioData loads the actual audio data for a track
-func loadAudioData(id int) ([]byte, error) {
-	filename, exists := musicFiles[id]
-	if !exists {
-		return nil, fmt.Errorf("no audio file registered for track ID %d", id)
-	}
-
+// loadAudioDataByFilename loads the actual audio data for a track.
+func loadAudioDataByFilename(filename string) ([]byte, error) {
 	f, err := audioFS.Open(filename)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open audio file %s: %w", filename, err)
 	}
-	defer func() {
-		closeErr := f.Close()
-		if closeErr != nil && err == nil {
-			err = closeErr
-		}
-	}()
+	defer f.Close()
 
 	data, err := io.ReadAll(f)
 	if err != nil {
@@ -177,28 +191,26 @@ func loadAudioData(id int) ([]byte, error) {
 		return nil, fmt.Errorf("audio file %s is empty", filename)
 	}
 
-	// log.Printf("Loaded audio file %s as track ID %d (%d bytes)", filename, id, len(data))
 	return data, nil
 }
 
 // PlaySFX plays a sound effect by name (without the "sfx_" prefix and ".raw" extension)
 // Example: PlaySFX("jump") will play "sfx_jump.raw" if it exists
 func PlaySFX(name string) {
-	if name == "" {
+	cue, ok := audioengine.ResolveSFX(name)
+	if !ok {
 		return
 	}
 
-	filename := "sfx_" + name + ".raw"
-	id := -int(hashString(name)) // Generate the same ID as in initAudio
+	filename := cue.Filename
+	id := cue.TrackID
 
-	// Check if the sound effect is already loaded
 	player := getAudioPlayer()
 	player.mutex.Lock()
-	_, exists := player.musicData[id]
+	registered := player.registry.Has(id)
 	player.mutex.Unlock()
 
-	if !exists {
-		// Try to load the SFX if it hasn't been loaded yet
+	if !registered {
 		if err := LoadAudioFile(id, filename); err != nil {
 			log.Printf("Failed to play SFX %s: %v", name, err)
 			return
@@ -209,10 +221,11 @@ func PlaySFX(name string) {
 	Music(id, false)
 }
 
-// UpdateAudio updates the audio system (call in game loop)
+// UpdateAudio performs lightweight audio housekeeping.
+// Playback itself is driven by the mixer feeder goroutine once the runtime
+// audio engine has been initialized.
 func UpdateAudio() {
 	ap := getAudioPlayer()
-	// log.Printf("UpdateAudio called (active tracks: %d)", len(ap.activeTracks))
 	ap.update()
 }
 
@@ -226,9 +239,6 @@ func initAudio() {
 			log.Println("ERROR: Cannot initialize audio - audioFS has not been set up")
 			return
 		}
-
-		// Initialize music files map
-		musicFiles = make(map[int]string)
 
 		// List all files in the audio directory
 		// log.Println("Scanning for audio files...")
@@ -260,15 +270,6 @@ func initAudio() {
 
 		log.Printf("Audio initialization complete. Successfully loaded %d music tracks.", loadedCount)
 	})
-}
-
-// hashString generates a simple hash from a string
-func hashString(s string) uint32 {
-	var h uint32 = 5381
-	for i := 0; i < len(s); i++ {
-		h = ((h << 5) + h) + uint32(s[i])
-	}
-	return h
 }
 
 // SetAudioFS sets the audio filesystem instance

@@ -42,14 +42,12 @@ func Run(g Gamelooper) {
 	// Call Init before starting the game loop
 	g.Init()
 
-	// Initialize audio
+	// Initialize audio registration as a defensive fallback in case a consumer
+	// wires SetAudioFS later than the generated init path.
 	initAudio()
 
 	lastTime := rtos.Nanotime()
 	accumulator := time.Duration(0)
-
-	// Update audio
-	UpdateAudio()
 
 	// Main game loop
 	for {
@@ -64,7 +62,7 @@ func Run(g Gamelooper) {
 			accumulator -= frameDuration
 		}
 
-		// Update audio
+		// Perform lightweight audio housekeeping for completed one-shot cues.
 		UpdateAudio()
 
 		// Draw game

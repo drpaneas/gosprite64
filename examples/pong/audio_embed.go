@@ -8,7 +8,7 @@ import (
 	"github.com/drpaneas/gosprite64"
 )
 
-//go:embed music0.raw music1.raw music2.raw music3.raw music4.raw music5.raw music6.raw
+//go:embed sfx_paddle_computer.raw sfx_paddle_player.raw sfx_score_computer.raw sfx_score_player.raw sfx_start.raw sfx_wall.raw
 var audioFS embed.FS
 
 func init() {

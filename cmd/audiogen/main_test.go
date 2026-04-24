@@ -62,6 +62,34 @@ func TestGenerateEmbedFileIncludesPreparedRawOutputs(t *testing.T) {
 	}
 }
 
+func TestPrepareAudioFilesSupportsSFXOnlyExampleLayouts(t *testing.T) {
+	dir := t.TempDir()
+
+	mustWriteFile(t, filepath.Join(dir, "sfx_start.wav"), encodePCM16WAV(t, 48000, 1, []int16{0x0102}))
+	mustWriteFile(t, filepath.Join(dir, "sfx_paddle.wav"), encodePCM16WAV(t, 48000, 1, []int16{0x0203}))
+	mustWriteFile(t, filepath.Join(dir, "sfx_wall.wav"), encodePCM16WAV(t, 48000, 1, []int16{0x0304}))
+
+	audioFiles, err := prepareAudioFiles(dir)
+	if err != nil {
+		t.Fatalf("prepareAudioFiles returned error: %v", err)
+	}
+
+	want := []string{
+		filepath.Join(dir, "sfx_paddle.raw"),
+		filepath.Join(dir, "sfx_start.raw"),
+		filepath.Join(dir, "sfx_wall.raw"),
+	}
+	if !slices.Equal(audioFiles, want) {
+		t.Fatalf("prepareAudioFiles = %v, want %v", audioFiles, want)
+	}
+
+	for _, rawPath := range want {
+		if _, err := os.Stat(rawPath); err != nil {
+			t.Fatalf("expected generated raw file %s: %v", rawPath, err)
+		}
+	}
+}
+
 func mustWriteFile(t *testing.T, path string, data []byte) {
 	t.Helper()
 	if err := os.WriteFile(path, data, 0o644); err != nil {

@@ -1,4 +1,4 @@
-//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir .
+//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -v1 -dir .
 
 package main
 
@@ -7,6 +7,7 @@ import (
 	"image/color"
 
 	. "github.com/drpaneas/gosprite64"
+	"github.com/drpaneas/gosprite64/examples/pong/sfx"
 )
 
 // Court boundaries
@@ -18,15 +19,6 @@ const (
 	centerX     = (courtRight + courtLeft) / 2
 	centerY     = (courtBottom + courtTop) / 2
 	lineLen     = 4
-)
-
-const (
-	sfxStart          = "start"
-	sfxPlayerScore    = "score_player"
-	sfxComputerScore  = "score_computer"
-	sfxPaddlePlayer   = "paddle_player"
-	sfxPaddleComputer = "paddle_computer"
-	sfxWall           = "wall"
 )
 
 // Paddle represents a player or computer paddle
@@ -65,11 +57,11 @@ func (g *Game) Init() {
 	// sound
 	switch g.Scored {
 	case "Player":
-		PlaySFX(sfxPlayerScore)
+		PlayEffect(sfx.ScorePlayer)
 	case "Computer":
-		PlaySFX(sfxComputerScore)
+		PlayEffect(sfx.ScoreComputer)
 	default:
-		PlaySFX(sfxStart)
+		PlayEffect(sfx.Start)
 	}
 }
 
@@ -106,7 +98,7 @@ func (g *Game) Update() {
 	// 1. Ball vs paddles
 	if collide(g.ball, g.computer) {
 		g.ball.dx = -(g.ball.dx + g.ball.boost)
-		PlaySFX(sfxPaddleComputer)
+		PlayEffect(sfx.PaddleComputer)
 	}
 	if collide(g.ball, g.player) {
 		// adjust dy if player changes paddle angle
@@ -114,13 +106,13 @@ func (g *Game) Update() {
 			g.ball.dy += sign(g.ball.dy) * g.ball.boost * 2
 		}
 		g.ball.dx = -(g.ball.dx - g.ball.boost)
-		PlaySFX(sfxPaddlePlayer)
+		PlayEffect(sfx.PaddlePlayer)
 	}
 
 	// 2. Ball vs top/bottom
 	if g.ball.y <= courtTop+1 || g.ball.y+g.ball.size >= courtBottom-1 {
 		g.ball.dy = -g.ball.dy
-		PlaySFX(sfxWall)
+		PlayEffect(sfx.Wall)
 	}
 
 	// 3. Ball vs Walls (aka scoring)

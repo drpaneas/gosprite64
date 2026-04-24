@@ -3,15 +3,43 @@
 package main
 
 import (
-	"embed"
+	_ "embed"
 
 	"github.com/drpaneas/gosprite64"
 )
 
-//go:embed sfx_paddle_computer.raw sfx_paddle_player.raw sfx_score_computer.raw sfx_score_player.raw sfx_start.raw sfx_wall.raw
-var audioFS embed.FS
+//go:embed build/audio_v1.bin
+var audioV1Data []byte
+
+//go:embed build/audio_v1_aux.bin
+var audioV1Aux []byte
 
 func init() {
-	// Initialize the audio filesystem with embedded audio files
-	gosprite64.SetAudioFS(audioFS)
+	gosprite64.RegisterAudioV1([]gosprite64.AudioAsset{
+		{ID: 0, Class: 0, Flags: 1, Rate: 16000, AudibleFrames: 4249, EncodedFrames: 4256, LoopStart: 0, LoopLen: 0, DataOffset: 0, DataBytes: 2394, AuxOffset: 0, AuxBytes: 128, MaxInstances: 4},
+		{ID: 1, Class: 0, Flags: 1, Rate: 16000, AudibleFrames: 4249, EncodedFrames: 4256, LoopStart: 0, LoopLen: 0, DataOffset: 2394, DataBytes: 2394, AuxOffset: 128, AuxBytes: 128, MaxInstances: 4},
+		{ID: 2, Class: 0, Flags: 1, Rate: 16000, AudibleFrames: 12748, EncodedFrames: 12752, LoopStart: 0, LoopLen: 0, DataOffset: 4788, DataBytes: 7173, AuxOffset: 256, AuxBytes: 128, MaxInstances: 4},
+		{ID: 3, Class: 0, Flags: 1, Rate: 16000, AudibleFrames: 12748, EncodedFrames: 12752, LoopStart: 0, LoopLen: 0, DataOffset: 11961, DataBytes: 7173, AuxOffset: 384, AuxBytes: 128, MaxInstances: 4},
+		{ID: 4, Class: 0, Flags: 1, Rate: 16000, AudibleFrames: 16997, EncodedFrames: 17008, LoopStart: 0, LoopLen: 0, DataOffset: 19134, DataBytes: 9567, AuxOffset: 512, AuxBytes: 128, MaxInstances: 4},
+		{ID: 5, Class: 0, Flags: 1, Rate: 16000, AudibleFrames: 4249, EncodedFrames: 4256, LoopStart: 0, LoopLen: 0, DataOffset: 28701, DataBytes: 2394, AuxOffset: 640, AuxBytes: 128, MaxInstances: 4},
+	}, audioV1Data, audioV1Aux)
+
+	gosprite64.RegisterSFXNameResolver(func(name string) (uint16, bool) {
+		switch name {
+		case "paddle_computer":
+			return 0, true
+		case "paddle_player":
+			return 1, true
+		case "score_computer":
+			return 2, true
+		case "score_player":
+			return 3, true
+		case "start":
+			return 4, true
+		case "wall":
+			return 5, true
+		default:
+			return 0, false
+		}
+	})
 }

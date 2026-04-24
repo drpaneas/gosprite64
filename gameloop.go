@@ -42,9 +42,13 @@ func Run(g Gamelooper) {
 	// Call Init before starting the game loop
 	g.Init()
 
-	// Initialize audio registration as a defensive fallback in case a consumer
-	// wires SetAudioFS later than the generated init path.
-	initAudio()
+	// Audio init runs after g.Init() so that pre-init PlayEffect/PlayTrack
+	// calls from g.Init() are silent no-ops, matching the spec (section 3.3).
+	if v1engine != nil {
+		initAudioV1()
+	} else {
+		initAudio()
+	}
 
 	lastTime := rtos.Nanotime()
 	accumulator := time.Duration(0)
@@ -62,8 +66,10 @@ func Run(g Gamelooper) {
 			accumulator -= frameDuration
 		}
 
-		// Perform lightweight audio housekeeping for completed one-shot cues.
-		UpdateAudio()
+		if v1engine == nil {
+			// Perform lightweight audio housekeeping for completed one-shot cues.
+			UpdateAudio()
+		}
 
 		// Draw game
 		beginDrawing()

@@ -178,6 +178,78 @@ func decodePCM16Frames(format wavFormat, pcmData []byte) ([]stereoFrame, error) 
 	return frames, nil
 }
 
+func readWAVMono(r io.Reader) ([]int16, int, error) {
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return nil, 0, fmt.Errorf("read wav: %w", err)
+	}
+	if len(data) < 12 || string(data[:4]) != "RIFF" || string(data[8:12]) != "WAVE" {
+		return nil, 0, fmt.Errorf("unsupported wav header")
+	}
+
+	format, pcmData, err := parseWAVChunks(data[12:])
+	if err != nil {
+		return nil, 0, err
+	}
+	if format.audioFormat != 1 {
+		return nil, 0, fmt.Errorf("unsupported wav audio format %d", format.audioFormat)
+	}
+	if format.bitsPerSample != 16 {
+		return nil, 0, fmt.Errorf("unsupported wav bit depth %d", format.bitsPerSample)
+	}
+	if format.channels != 1 && format.channels != 2 {
+		return nil, 0, fmt.Errorf("unsupported wav channel count %d", format.channels)
+	}
+	if format.sampleRate == 0 {
+		return nil, 0, fmt.Errorf("unsupported wav sample rate 0")
+	}
+
+	frameSize := int(format.channels) * 2
+	if len(pcmData)%frameSize != 0 {
+		return nil, 0, fmt.Errorf("wav data size %d is not aligned to frame size %d", len(pcmData), frameSize)
+	}
+
+	mono := make([]int16, 0, len(pcmData)/frameSize)
+	for i := 0; i < len(pcmData); i += frameSize {
+		left := int32(int16(binary.LittleEndian.Uint16(pcmData[i : i+2])))
+		sample := left
+		if format.channels == 2 {
+			right := int32(int16(binary.LittleEndian.Uint16(pcmData[i+2 : i+4])))
+			sample = (left + right) / 2
+		}
+		mono = append(mono, int16(sample))
+	}
+
+	return mono, int(format.sampleRate), nil
+}
+
+func resampleMono(samples []int16, srcRate, dstRate int) []int16 {
+	if len(samples) == 0 || srcRate == dstRate {
+		return samples
+	}
+
+	outCount := int(math.Round(float64(len(samples)) * float64(dstRate) / float64(srcRate)))
+	if outCount < 1 {
+		outCount = 1
+	}
+
+	out := make([]int16, 0, outCount)
+	for i := 0; i < outCount; i++ {
+		srcPos := float64(i) * float64(srcRate) / float64(dstRate)
+		lo := int(math.Floor(srcPos))
+		if lo >= len(samples) {
+			lo = len(samples) - 1
+		}
+		hi := lo + 1
+		if hi >= len(samples) {
+			hi = len(samples) - 1
+		}
+		frac := srcPos - float64(lo)
+		out = append(out, interpolateSample(samples[lo], samples[hi], frac))
+	}
+	return out
+}
+
 func resampleFrames(frames []stereoFrame, srcRate, dstRate int) []stereoFrame {
 	if len(frames) == 0 || srcRate == dstRate {
 		return frames

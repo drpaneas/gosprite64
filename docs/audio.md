@@ -49,7 +49,7 @@ The `.wav` files are your source assets. Everything in `build/`, `sfx/`, `music/
 Add a `go:generate` line to your `main.go`:
 
 ```go
-//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -v1 -dir .
+//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir .
 ```
 
 Then run:
@@ -130,7 +130,7 @@ Volume is a `float32` from 0.0 (silent) to 1.0 (full). Values outside that range
 Here is how the Pong example uses audio:
 
 ```go
-//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -v1 -dir .
+//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir .
 
 package main
 
@@ -165,16 +165,12 @@ func (g *Game) Update() {
 
 The generated `sfx/ids.go` provides typed constants like `sfx.PaddleComputer`, `sfx.Wall`, etc. No strings, no maps, no runtime lookups.
 
-### Legacy API
-
-The older `Music(int, bool)` and `PlaySFX(string)` functions still work for backward compatibility but are deprecated. They internally route through the new system when V1 audio is active. New code should use `PlayEffect` and `PlayTrack` with generated IDs.
-
 ### Build budget flags
 
 `audiogen` enforces size budgets by default. If your audio exceeds the limits, the build fails with a clear message. You can override the defaults:
 
 ```go
-//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -v1 -dir . -rom-budget=1048576 -sfx-resident-budget=65536
+//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir . -rom-budget=1048576 -sfx-resident-budget=65536
 ```
 
 | Flag | Default | Description |

@@ -1,190 +1,319 @@
 # Using Audio in GoSprite64
 
-This chapter explains how audio works in GoSprite64 today, what files you should keep in your game project, and which APIs you should call from gameplay code.
+This chapter covers how to add audio to your game and how the audio system works behind the scenes.
 
-## The mental model
+## Part 1: Adding audio to your game
 
-GoSprite64 uses a two-step audio pipeline:
+### Quick start
 
-1. You author or keep your source assets as `.wav` files.
-2. The build-time `audiogen` tool converts those assets into runtime `.raw` files and generates `audio_embed.go`.
+GoSprite64 uses a build-time pipeline. You provide `.wav` files, the `audiogen` tool compresses them into a compact format, and the engine plays them at runtime. You never deal with codecs, sample rates, or streaming in your gameplay code.
 
-At runtime, GoSprite64 does **not** decode WAV containers. It plays raw PCM audio that has already been converted into the one format the engine expects.
+Three steps:
 
-## The runtime audio format
+1. Put your `.wav` files in the right directories.
+2. Run `go generate`.
+3. Call `PlayEffect` or `PlayTrack` from your game.
 
-Runtime audio assets must be:
+### Project layout
 
-- signed 16-bit PCM
-- stereo
-- 48 kHz
-- big-endian
-- interleaved left/right samples
+Organize audio files under `assets/audio/` with separate subdirectories for sound effects and music:
 
-That is the format stored in `music*.raw` and `sfx_*.raw` after conversion.
-
-If you load raw audio yourself with `LoadAudio`, the byte slice you provide must already follow that exact format.
-
-## The normal workflow
-
-The intended workflow looks like this:
-
-1. Add source audio files to your game directory using names like `music0.wav` for numbered music tracks or `sfx_jump.wav` for named one-shot effects.
-2. Add a `go:generate` line to your game:
-
-```go
-//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir .
+```text
+mygame/
+  main.go
+  audio_embed.go        (generated)
+  assets/
+    audio/
+      sfx/
+        jump.wav
+        coin.wav
+        hit.wav
+      music/
+        overworld.wav
+        boss.wav
+  sfx/
+    ids.go              (generated)
+  music/
+    ids.go              (generated)
+  build/
+    audio_v1.bin         (generated)
+    audio_v1_aux.bin     (generated)
+    audio_report.json    (generated)
+  n64.env
 ```
 
-3. Run:
+The `.wav` files are your source assets. Everything in `build/`, `sfx/`, `music/`, and `audio_embed.go` is generated and should not be edited by hand.
+
+### Setting up audiogen
+
+Add a `go:generate` line to your `main.go`:
+
+```go
+//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -v1 -dir .
+```
+
+Then run:
 
 ```bash
 go generate ./...
 ```
 
-4. Build your game as usual.
+This will:
 
-`audiogen` will:
+- scan `assets/audio/sfx/` and `assets/audio/music/` for `.wav` files
+- convert each WAV to mono, resample to the target rate, and compress with VADPCM
+- generate typed ID constants in `sfx/ids.go` and `music/ids.go`
+- generate `audio_embed.go` which registers all assets with the engine at startup
+- write a size and performance report to `build/audio_report.json`
 
-- discover your audio files
-- convert supported WAV sources into runtime `.raw`
-- generate `audio_embed.go`
-- call `gosprite64.SetAudioFS(...)` from the generated file so the runtime can find the embedded assets
+### WAV file requirements
 
-## Which files matter
+`audiogen` accepts:
 
-GoSprite64 currently recognizes these filename patterns in the selected directory:
-
-- `music*.wav`
-- `music*.raw`
-- `sfx_*.wav`
-- `sfx_*.raw`
-
-The current tool scans the directory you pass with `-dir`. It does not recursively walk subdirectories, so keep your audio files directly in that directory if you want them included.
-
-When both a `.wav` and a `.raw` exist for the same logical asset, the `.wav` is treated as the source and the `.raw` is regenerated from it.
-
-In practice, this means:
-
-- `.wav` is the editable source asset
-- `.raw` is the runtime asset the N64 code actually embeds and plays
-
-## What `audiogen` converts
-
-The current WAV conversion path supports:
-
-- PCM WAV
+- PCM WAV files
 - 16-bit samples
-- mono or stereo input
+- mono or stereo input (stereo is downmixed to mono automatically)
+- any sample rate (resampled automatically to the target rate)
 
-During conversion:
+If the file is not PCM 16-bit, `audiogen` rejects it with a clear error message.
 
-- mono input is duplicated to stereo
-- non-48 kHz input is resampled to 48 kHz
-- samples are written out as big-endian runtime PCM
+### Playing sound effects
 
-If the WAV file is not PCM 16-bit, `audiogen` rejects it instead of guessing.
-
-## Music tracks
-
-Background music and numbered cues use the `Music` API:
+Import the generated `sfx` package and call `PlayEffect`:
 
 ```go
-gosprite64.Music(0, true)  // play music0.raw in a loop
-gosprite64.Music(3, false) // play music3.raw once
-gosprite64.Music(-1, false) // stop all active audio
+import "github.com/drpaneas/gosprite64/examples/pong/sfx"
+
+func (g *Game) Update() {
+    if playerScored {
+        gosprite64.PlayEffect(sfx.ScorePlayer)
+    }
+    if ballHitWall {
+        gosprite64.PlayEffect(sfx.Wall)
+    }
+}
 ```
 
-Track IDs come from filenames:
+`PlayEffect` returns `true` if the sound was accepted, `false` if it was dropped (engine not ready or command ring full). Sound effects are one-shot and can overlap. The same effect can play up to 4 times simultaneously. If you trigger a 5th instance, the oldest one is evicted.
 
-- `music0.raw` -> `Music(0, ...)`
-- `music1.raw` -> `Music(1, ...)`
-- and so on
+### Playing background music
 
-Embedded `music*.raw` files are registered during audio initialization and loaded on first use.
-
-## Sound effects
-
-Named sound effects use `PlaySFX`:
+Import the generated `music` package and call `PlayTrack`:
 
 ```go
-gosprite64.PlaySFX("jump")
+import "github.com/drpaneas/gosprite64/examples/mygame/music"
+
+func (g *Game) Init() {
+    gosprite64.PlayTrack(music.Overworld)
+}
 ```
 
-That looks for:
+Music always loops. If a different track is already playing, it stops and the new one starts. Calling `PlayTrack` with the same track that is already playing does nothing.
+
+To stop music:
+
+```go
+gosprite64.StopTrack()
+```
+
+### Volume control
+
+```go
+gosprite64.SetEffectVolume(0.5)  // SFX at half volume
+gosprite64.SetTrackVolume(0.8)   // music at 80%
+```
+
+Volume is a `float32` from 0.0 (silent) to 1.0 (full). Values outside that range are clamped. Music and SFX volumes are independent.
+
+### Complete example: Pong
+
+Here is how the Pong example uses audio:
+
+```go
+//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -v1 -dir .
+
+package main
+
+import (
+    . "github.com/drpaneas/gosprite64"
+    "github.com/drpaneas/gosprite64/examples/pong/sfx"
+)
+
+func (g *Game) Init() {
+    switch g.Scored {
+    case "Player":
+        PlayEffect(sfx.ScorePlayer)
+    case "Computer":
+        PlayEffect(sfx.ScoreComputer)
+    default:
+        PlayEffect(sfx.Start)
+    }
+}
+
+func (g *Game) Update() {
+    if collide(g.ball, g.computer) {
+        PlayEffect(sfx.PaddleComputer)
+    }
+    if collide(g.ball, g.player) {
+        PlayEffect(sfx.PaddlePlayer)
+    }
+    if g.ball.y <= courtTop || g.ball.y >= courtBottom {
+        PlayEffect(sfx.Wall)
+    }
+}
+```
+
+The generated `sfx/ids.go` provides typed constants like `sfx.PaddleComputer`, `sfx.Wall`, etc. No strings, no maps, no runtime lookups.
+
+### Legacy API
+
+The older `Music(int, bool)` and `PlaySFX(string)` functions still work for backward compatibility but are deprecated. They internally route through the new system when V1 audio is active. New code should use `PlayEffect` and `PlayTrack` with generated IDs.
+
+### Build budget flags
+
+`audiogen` enforces size budgets by default. If your audio exceeds the limits, the build fails with a clear message. You can override the defaults:
+
+```go
+//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -v1 -dir . -rom-budget=1048576 -sfx-resident-budget=65536
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `-rom-budget` | 524,288 bytes (512 KB) | Maximum total size for all audio data in ROM |
+| `-sfx-resident-budget` | 32,768 bytes (32 KB) | Maximum compressed SFX data resident in memory |
+
+The budget report at `build/audio_report.json` shows exactly where your audio bytes are going.
+
+## Part 2: How it works behind the scenes
+
+### The pipeline at a glance
 
 ```text
-sfx_jump.raw
+                   BUILD TIME                          RUNTIME
+  .wav files --> audiogen --> VADPCM compressed --> embedded in ROM
+                                                        |
+                                                   pure Go mixer
+                                                        |
+                                                   48 kHz stereo
+                                                        |
+                                                    N64 DAC out
 ```
 
-and loads it on demand the first time it is used.
+At build time, `audiogen` converts WAV files into 4-bit VADPCM compressed mono audio. At runtime, a pure Go software mixer decodes, resamples, mixes, and writes stereo output to the N64 DAC at 48 kHz.
 
-If you are choosing between the two styles:
+### VADPCM compression
 
-- use `Music(id, loop)` for numbered music tracks and fixed cue slots
-- use `PlaySFX(name)` for named one-shot effects
+GoSprite64 uses 4-bit VADPCM (Vector Adaptive Differential Pulse Code Modulation), the same compression family used by Nintendo for N64 audio. Each 9-byte compressed block decodes to 16 mono samples.
 
-The Pong example uses named `PlaySFX(...)` calls for its one-shot cues. That is the recommended style when you are thinking in terms of gameplay events rather than numbered track slots.
+The codec achieves roughly 3.5:1 compression on the raw PCM data. Combined with mono downmix (2x) and lower sample rates (up to 3x), the total size reduction compared to the old 48 kHz stereo raw format is typically around 20x.
 
-## What happens inside `Run()`
+For the Pong example with 6 sound effects:
 
-If your game uses `Run(&Game{})`, you do not need to manually initialize the audio engine.
+| | Old system | New system |
+|---|-----------|-----------|
+| Format | 48 kHz stereo raw PCM | 16 kHz mono VADPCM |
+| Total audio ROM | 662,896 bytes | 31,863 bytes |
+| Reduction | - | 20.8x smaller (95.2%) |
 
-At startup, GoSprite64:
+### Sample rates
 
-- sets up the embedded audio filesystem via generated `audio_embed.go`
-- initializes the mixer runtime once
-- starts a background feeder that streams mixed audio to the N64 audio hardware
+Assets are resampled at build time. Gameplay code never sees sample rates.
 
-During the game loop, `UpdateAudio()` is still called, but it is now only lightweight housekeeping. It cleans up finished one-shot sounds and frees mixer channels. It does not manually push PCM chunks every frame anymore.
+| Asset class | Native rate | Rationale |
+|-------------|------------|-----------|
+| SFX | 16,000 Hz | Short effects do not need high fidelity. 16 kHz is clean 3x resampling to 48 kHz. |
+| Music | 22,050 Hz | Longer tracks benefit from slightly higher quality. |
+| DAC output | 48,000 Hz | Hardware output rate, unchanged from previous versions. |
 
-## Build requirements
+### Voice model
 
-Audio playback now depends on upstream mixer assets that are packaged through `n64go toolexec`, so your N64 build environment must include the current `GOFLAGS` setup.
+The engine pre-allocates a fixed set of voices at startup:
 
-The repository's `n64.env` uses:
+- **1 music voice** - reserved, never stolen by sound effects
+- **8 SFX voices** - shared pool with priority-based stealing
 
-```text
-GOTOOLCHAIN=go1.24.5-embedded
-GOOS=noos
-GOARCH=mips64
-GOFLAGS='-tags=n64' '-trimpath' '-toolexec=n64go toolexec' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
-```
+When all 8 SFX voices are busy and a new effect is triggered, the oldest playing SFX is evicted. Music is never a victim.
 
-If that `-toolexec=n64go toolexec` part is missing, ROMs that depend on mixer cart assets can fail at startup.
+The same SFX can overlap up to 4 times. If a 5th instance is triggered, the oldest instance of that specific effect is evicted first.
 
-## Recommended project layout
+### Memory usage
 
-For a small game package, a practical layout is:
+The engine uses a fixed memory budget that does not grow after initialization:
 
-```text
-mygame/
-  main.go
-  audio_embed.go
-  music0.wav
-  music0.raw
-  sfx_jump.wav
-  sfx_jump.raw
-  n64.env
-```
+| Component | Size |
+|-----------|------|
+| Voice states | 144 bytes |
+| Source decode buffers | 288 bytes |
+| Source structs | 2,304 bytes |
+| Mixer accumulator | 2,048 bytes |
+| Output buffer | 2,048 bytes |
+| Command ring | 96 bytes |
+| **Fixed runtime total** | **6,928 bytes** |
 
-The `.wav` files are your source-of-truth assets. The `.raw` files are generated runtime artifacts.
+SFX data stays resident in compressed form. For the Pong example, that is 31 KB of compressed audio in ROM versus 663 KB of raw PCM that the old system loaded into RDRAM.
 
-## Troubleshooting
+### Zero allocations after init
+
+Every hot-path operation runs with zero heap allocations:
+
+| Operation | Time (Apple M2 Pro) | Allocations |
+|-----------|-------------------|-------------|
+| Decode one VADPCM block (16 samples) | 135 ns | 0 |
+| Mix 9 voices, 512 output frames | 9.0 us | 0 |
+| Fill 256 decoded samples from source | 2.4 us | 0 |
+| Command ring push + pop | 15 ns | 0 |
+
+The old system allocated memory on the first play of every SFX (about 114 KB per 50 KB asset for the read + cache copy).
+
+### Concurrency
+
+Gameplay code and the audio feeder run in separate goroutines. They communicate through a lock-free single-producer single-consumer command ring. Gameplay calls like `PlayEffect` push a small command struct into the ring. The feeder drains all pending commands at the top of each fill cycle before touching any voice state. No mutexes are used in the audio hot path.
+
+### The feeder loop
+
+A background goroutine runs continuously:
+
+1. Drain all pending commands from the ring (play, stop, volume changes).
+2. For each active voice, decode enough VADPCM blocks to fill the source buffer.
+3. The mixer resamples each voice from its native rate to 48 kHz using linear interpolation, applies bus gain, and mixes into a stereo output buffer.
+4. Write the output buffer to the N64 DAC. The hardware write blocks until the DAC is ready for more data, which naturally paces the loop at the output sample rate.
+
+### Anti-click ramp
+
+When music is stopped via `StopTrack()`, the engine applies a short linear ramp to zero over 1-2 ms (about 22-44 samples) before releasing the voice. This prevents the audible click that would otherwise occur from abruptly zeroing a playing waveform.
+
+### Loop handling
+
+Music assets always loop. Loop boundaries are enforced at build time by `audiogen`:
+
+- Only forward loops are supported
+- Loop start and length must be aligned to 16 decoded samples (one VADPCM block)
+- The decoder state at the loop start is captured and saved during encoding
+- At runtime, when the source reaches the loop end, it restores the saved decoder state and jumps to the loop start
+
+This avoids any "decode from the beginning" logic or runtime loop repair.
+
+### Build-time budget report
+
+Every `audiogen` run produces `build/audio_report.json` with metrics including:
+
+- Total ROM bytes used by audio
+- SFX resident vs music streamed breakdown
+- Estimated streaming bandwidth for active music (about 12.4 KB/sec at 22,050 Hz VADPCM)
+- Estimated decode CPU cost per 10 ms of audio
+- Fixed runtime RAM breakdown by component
+
+If any hard budget limit is exceeded, `audiogen` exits with a non-zero status so CI catches the problem.
+
+### Troubleshooting
 
 If audio does not work, check these first:
 
-- `audio_embed.go` exists and is generated from your current assets
-- your filenames match the expected patterns exactly
-- your audio files are in the directory passed to `audiogen`
-- your generated `.raw` files are non-empty
+- `audio_embed.go` exists and was generated from your current assets
+- your `.wav` files are in `assets/audio/sfx/` or `assets/audio/music/`
+- your `.wav` files are 16-bit PCM (not 24-bit, not float, not compressed)
+- the `build/` directory contains `audio_v1.bin` and `audio_v1_aux.bin`
 - your build uses the current `n64.env` with `n64go toolexec`
+- check `build/audio_report.json` for budget violations
 
-If you are loading raw PCM manually, make sure it is already:
-
-- stereo
-- 48 kHz
-- signed 16-bit
-- big-endian
-
-If any of those are wrong, the result will usually sound distorted rather than quietly failing.
+If you hear distortion or clicking, verify that `go generate` ran successfully after your last asset change.

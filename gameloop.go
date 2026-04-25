@@ -44,11 +44,7 @@ func Run(g Gamelooper) {
 
 	// Audio init runs after g.Init() so that pre-init PlayEffect/PlayTrack
 	// calls from g.Init() are silent no-ops, matching the spec (section 3.3).
-	if v1engine != nil {
-		initAudioV1()
-	} else {
-		initAudio()
-	}
+	initAudioV1()
 
 	lastTime := rtos.Nanotime()
 	accumulator := time.Duration(0)
@@ -64,11 +60,6 @@ func Run(g Gamelooper) {
 			updateControllerState()
 			g.Update()
 			accumulator -= frameDuration
-		}
-
-		if v1engine == nil {
-			// Perform lightweight audio housekeeping for completed one-shot cues.
-			UpdateAudio()
 		}
 
 		// Draw game

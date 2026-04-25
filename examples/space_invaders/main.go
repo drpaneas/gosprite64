@@ -1,4 +1,3 @@
-//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir .
 package main
 
 import (
@@ -188,7 +187,6 @@ func (g *Game) updateAliensAndBullets() {
 		if b.x > g.playerX-4 && b.x < g.playerX+8 &&
 			b.y > g.playerY-8 && b.y < g.playerY+8 {
 			g.lives--
-			pigo8.Music(1, false)
 			if g.lives <= 0 {
 				g.gameOver = true
 			}
@@ -211,7 +209,6 @@ func (g *Game) handleCollisions() {
 				b.y > a.y-8 && b.y < a.y+alienH {
 				a.alive = false
 				g.score += 10
-				pigo8.Music(0, false)
 				hit = true
 				break
 			}

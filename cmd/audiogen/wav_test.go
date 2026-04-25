@@ -6,64 +6,80 @@ import (
 	"testing"
 )
 
-func TestConvertWAVToRawDuplicatesMonoSamplesIntoStereoBigEndianPCM(t *testing.T) {
+func TestReadWAVMonoFromMonoInput(t *testing.T) {
 	wavData := encodePCM16WAV(t, 48000, 1, []int16{0x0102, -2})
 
-	rawData, err := convertWAVToRaw(bytes.NewReader(wavData))
+	mono, rate, err := readWAVMono(bytes.NewReader(wavData))
 	if err != nil {
-		t.Fatalf("convertWAVToRaw returned error: %v", err)
+		t.Fatalf("readWAVMono returned error: %v", err)
 	}
-
-	want := []byte{
-		0x01, 0x02, 0x01, 0x02,
-		0xff, 0xfe, 0xff, 0xfe,
+	if rate != 48000 {
+		t.Fatalf("rate = %d, want 48000", rate)
 	}
-	if !bytes.Equal(rawData, want) {
-		t.Fatalf("convertWAVToRaw = %v, want %v", rawData, want)
+	want := []int16{0x0102, -2}
+	if len(mono) != len(want) {
+		t.Fatalf("len(mono) = %d, want %d", len(mono), len(want))
+	}
+	for i := range want {
+		if mono[i] != want[i] {
+			t.Fatalf("mono[%d] = %d, want %d", i, mono[i], want[i])
+		}
 	}
 }
 
-func TestConvertWAVToRawResamplesToRuntimeSampleRate(t *testing.T) {
-	wavData := encodePCM16WAV(t, 24000, 1, []int16{1000, 1000})
-
-	rawData, err := convertWAVToRaw(bytes.NewReader(wavData))
-	if err != nil {
-		t.Fatalf("convertWAVToRaw returned error: %v", err)
-	}
-
-	wantFrame := []byte{0x03, 0xe8, 0x03, 0xe8}
-	want := bytes.Repeat(wantFrame, 4)
-	if !bytes.Equal(rawData, want) {
-		t.Fatalf("convertWAVToRaw resampled bytes = %v, want %v", rawData, want)
-	}
-}
-
-func TestConvertWAVToRawPreservesStereoChannels(t *testing.T) {
+func TestReadWAVMonoDownmixesStereo(t *testing.T) {
 	wavData := encodePCM16StereoWAV(t, 48000, [][2]int16{
-		{0x0102, -2},
-		{0x0304, -4},
+		{1000, 3000},
+		{-2000, -4000},
 	})
 
-	rawData, err := convertWAVToRaw(bytes.NewReader(wavData))
+	mono, rate, err := readWAVMono(bytes.NewReader(wavData))
 	if err != nil {
-		t.Fatalf("convertWAVToRaw returned error: %v", err)
+		t.Fatalf("readWAVMono returned error: %v", err)
 	}
-
-	want := []byte{
-		0x01, 0x02, 0xff, 0xfe,
-		0x03, 0x04, 0xff, 0xfc,
+	if rate != 48000 {
+		t.Fatalf("rate = %d, want 48000", rate)
 	}
-	if !bytes.Equal(rawData, want) {
-		t.Fatalf("convertWAVToRaw stereo bytes = %v, want %v", rawData, want)
+	if mono[0] != 2000 {
+		t.Fatalf("mono[0] = %d, want 2000 ((1000+3000)/2)", mono[0])
+	}
+	if mono[1] != -3000 {
+		t.Fatalf("mono[1] = %d, want -3000 ((-2000+-4000)/2)", mono[1])
 	}
 }
 
-func TestConvertWAVToRawRejectsNonPCMInput(t *testing.T) {
+func TestReadWAVMonoRejectsNonPCM(t *testing.T) {
 	wavData := encodeWAV(t, 3, 48000, 1, 16, []byte{0x00, 0x00})
 
-	_, err := convertWAVToRaw(bytes.NewReader(wavData))
+	_, _, err := readWAVMono(bytes.NewReader(wavData))
 	if err == nil {
-		t.Fatal("convertWAVToRaw error = nil, want unsupported format error")
+		t.Fatal("readWAVMono error = nil, want unsupported format error")
+	}
+}
+
+func TestResampleMonoIdentityRate(t *testing.T) {
+	input := []int16{100, 200, 300}
+	out := resampleMono(input, 16000, 16000)
+	if len(out) != len(input) {
+		t.Fatalf("len = %d, want %d", len(out), len(input))
+	}
+	for i := range input {
+		if out[i] != input[i] {
+			t.Fatalf("out[%d] = %d, want %d", i, out[i], input[i])
+		}
+	}
+}
+
+func TestResampleMonoDownsample(t *testing.T) {
+	input := []int16{1000, 1000, 1000, 1000}
+	out := resampleMono(input, 48000, 16000)
+	if len(out) == 0 {
+		t.Fatal("resampleMono returned empty")
+	}
+	for i, s := range out {
+		if s != 1000 {
+			t.Fatalf("out[%d] = %d, want 1000", i, s)
+		}
 	}
 }
 

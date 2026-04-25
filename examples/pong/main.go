@@ -1,4 +1,4 @@
-//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -v1 -dir .
+//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir .
 
 package main
 

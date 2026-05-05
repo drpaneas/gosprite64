@@ -141,6 +141,8 @@ build_all_examples() {
 
   cd "$repo_root" || return 1
 
+  clean_go_env go generate ./examples/...
+
   for example_dir in "$repo_root"/examples/*; do
     [[ -d "$example_dir" ]] || continue
 

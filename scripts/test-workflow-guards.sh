@@ -144,4 +144,73 @@ test "${linux_wrapper_calls[3]}" = "ensure_n64go_linux"
 test "${linux_wrapper_calls[4]}" = "ensure_n64_module_version|$wrapper_root|v0.1.2"
 test "${linux_wrapper_calls[5]}" = "build_all_examples|$wrapper_root"
 
+# Verify build_all_examples refreshes generated example assets before embedded builds.
+build_root="$tmpdir/build-root"
+build_bin="$tmpdir/build-bin"
+mkdir -p "$build_root/examples/demo" "$build_root/state" "$build_bin"
+: >"$build_root/n64.env"
+
+cat >"$build_bin/go" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+log_file="${WORKFLOW_BUILD_LOG:?}"
+state_dir="${WORKFLOW_BUILD_STATE:?}"
+printf 'go|%s\n' "$*" >>"$log_file"
+if [[ "${1:-}" == "generate" ]]; then
+  touch "$state_dir/generated"
+fi
+EOF
+chmod +x "$build_bin/go"
+
+cat >"$build_bin/go1.24.5-embedded" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+log_file="${WORKFLOW_BUILD_LOG:?}"
+state_dir="${WORKFLOW_BUILD_STATE:?}"
+printf 'embedded|%s\n' "$*" >>"$log_file"
+[[ -f "$state_dir/generated" ]] || {
+  echo "missing generated assets" >&2
+  exit 1
+}
+
+output=""
+while (($# > 0)); do
+  case "$1" in
+  -o)
+    output="$2"
+    shift 2
+    ;;
+  *)
+    shift
+    ;;
+  esac
+done
+
+test -n "$output"
+touch "$output"
+EOF
+chmod +x "$build_bin/go1.24.5-embedded"
+
+cat >"$build_bin/n64go" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+log_file="${WORKFLOW_BUILD_LOG:?}"
+printf 'n64go|%s\n' "$*" >>"$log_file"
+test "${1:-}" = "rom"
+touch "${2%.elf}.z64"
+EOF
+chmod +x "$build_bin/n64go"
+
+build_log="$tmpdir/build-all.log"
+PATH="$build_bin:$PATH" \
+WORKFLOW_BUILD_LOG="$build_log" \
+WORKFLOW_BUILD_STATE="$build_root/state" \
+build_all_examples "$build_root"
+
+mapfile -t build_calls <"$build_log"
+test "${#build_calls[@]}" -eq 3
+test "${build_calls[0]}" = "go|generate ./examples/..."
+test "${build_calls[1]}" = "embedded|build -o $build_root/examples/demo/game.elf ./examples/demo"
+test "${build_calls[2]}" = "n64go|rom $build_root/examples/demo/game.elf"
+
 echo "workflow guard tests passed"

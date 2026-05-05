@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"math/rand/v2"
 
-	pigo8 "github.com/drpaneas/gosprite64"
+	"github.com/drpaneas/gosprite64"
 )
 
 const (
@@ -110,23 +111,23 @@ func (g *Game) processInputs() bool {
 }
 
 func (g *Game) handleGameOverInput() bool {
-	if pigo8.Btnp(pigo8.O) {
+	if gosprite64.IsButtonJustPressed(gosprite64.ButtonB) {
 		g.resetGame()
 	}
 	return false
 }
 
 func (g *Game) handlePlayerMovement() {
-	if pigo8.Btn(pigo8.LEFT) && g.playerX > 8 {
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadLeft) && g.playerX > 8 {
 		g.playerX -= playerSpeed
 	}
-	if pigo8.Btn(pigo8.RIGHT) && g.playerX < screenW-8 {
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadRight) && g.playerX < screenW-8 {
 		g.playerX += playerSpeed
 	}
 }
 
 func (g *Game) handlePlayerShooting() {
-	if pigo8.Btnp(pigo8.O) {
+	if gosprite64.IsButtonJustPressed(gosprite64.ButtonB) {
 		g.bullets = append(g.bullets, bullet{
 			x:     g.playerX,
 			y:     g.playerY - 8,
@@ -165,7 +166,7 @@ func (g *Game) updateAliensAndBullets() {
 		if !a.alive {
 			continue
 		}
-		if pigo8.Rnd(100) == 0 {
+		if rand.IntN(100) == 0 {
 			g.alienBullets = append(g.alienBullets, bullet{
 				x:     a.x,
 				y:     a.y + alienH,
@@ -233,13 +234,13 @@ func (g *Game) handleCollisions() {
 
 // Draw renders the game elements to the screen each frame
 func (g *Game) Draw() {
-	pigo8.ClearScreen()
-	pigo8.DrawRect(
+	gosprite64.ClearScreen()
+	gosprite64.DrawRect(
 		playfieldOffsetX,
 		playfieldOffsetY,
 		playfieldOffsetX+screenW-1,
 		playfieldOffsetY+screenH-1,
-		pigo8.DarkGray,
+		gosprite64.DarkGray,
 	)
 	g.drawPlayer()
 	g.drawBullets()
@@ -255,36 +256,36 @@ func (g *Game) drawPlayer() {
 	drawY := playfieldOffsetY + g.playerY
 
 	// Triangle shape
-	pigo8.Line(drawX+4, drawY-8, drawX, drawY, pigo8.White)
-	pigo8.Line(drawX+4, drawY-8, drawX+8, drawY, pigo8.White)
-	pigo8.Line(drawX, drawY, drawX+8, drawY, pigo8.White)
+	gosprite64.DrawLine(drawX+4, drawY-8, drawX, drawY, gosprite64.White)
+	gosprite64.DrawLine(drawX+4, drawY-8, drawX+8, drawY, gosprite64.White)
+	gosprite64.DrawLine(drawX, drawY, drawX+8, drawY, gosprite64.White)
 }
 
 func (g *Game) drawBullets() {
 	for _, b := range g.bullets {
-		pigo8.Rectfill(
+		gosprite64.FillRect(
 			playfieldOffsetX+b.x,
 			playfieldOffsetY+b.y,
 			playfieldOffsetX+b.x+2,
 			playfieldOffsetY+b.y+4,
-			pigo8.White,
+			gosprite64.White,
 		)
 	}
 	for _, b := range g.alienBullets {
-		pigo8.Rectfill(
+		gosprite64.FillRect(
 			playfieldOffsetX+b.x,
 			playfieldOffsetY+b.y,
 			playfieldOffsetX+b.x+2,
 			playfieldOffsetY+b.y+4,
-			pigo8.Red,
+			gosprite64.Red,
 		)
 	}
 }
 
 var alienColors = []color.Color{
-	pigo8.DarkPurple, // sprite 1
-	pigo8.DarkGreen,  // sprite 2
-	pigo8.Brown,      // sprite 3
+	gosprite64.DarkPurple, // sprite 1
+	gosprite64.DarkGreen,  // sprite 2
+	gosprite64.Brown,      // sprite 3
 }
 
 func (g *Game) drawAliens() {
@@ -295,21 +296,21 @@ func (g *Game) drawAliens() {
 		c := alienColors[(a.sprite-1)%len(alienColors)]
 		drawX := playfieldOffsetX + a.x
 		drawY := playfieldOffsetY + a.y
-		pigo8.Rectfill(drawX, drawY, drawX+alienW, drawY+alienH, c)
-		pigo8.Rectfill(drawX+2, drawY+2, drawX+6, drawY+6, c)
+		gosprite64.FillRect(drawX, drawY, drawX+alienW, drawY+alienH, c)
+		gosprite64.FillRect(drawX+2, drawY+2, drawX+6, drawY+6, c)
 	}
 }
 
 func (g *Game) drawUI() {
-	pigo8.Print(fmt.Sprintf("score: %d", g.score), playfieldOffsetX, 12, pigo8.White)
-	pigo8.Print(fmt.Sprintf("lives: %d", g.lives), playfieldOffsetX+72, 12, pigo8.White)
+	gosprite64.DrawText(fmt.Sprintf("score: %d", g.score), playfieldOffsetX, 12, gosprite64.White)
+	gosprite64.DrawText(fmt.Sprintf("lives: %d", g.lives), playfieldOffsetX+72, 12, gosprite64.White)
 }
 
 func (g *Game) drawGameOver() {
-	pigo8.Print("GAME OVER", playfieldOffsetX+24, playfieldOffsetY+44, pigo8.White)
-	pigo8.Print("PRESS O TO RESTART", playfieldOffsetX+8, playfieldOffsetY+64, pigo8.White)
+	gosprite64.DrawText("GAME OVER", playfieldOffsetX+24, playfieldOffsetY+44, gosprite64.White)
+	gosprite64.DrawText("PRESS B TO RESTART", playfieldOffsetX+8, playfieldOffsetY+64, gosprite64.White)
 }
 
 func main() {
-	pigo8.Run(&Game{})
+	gosprite64.Run(&Game{})
 }

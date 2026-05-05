@@ -5,8 +5,9 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"math/rand/v2"
 
-	. "github.com/drpaneas/gosprite64"
+	"github.com/drpaneas/gosprite64"
 	"github.com/drpaneas/gosprite64/examples/pong/sfx"
 )
 
@@ -49,29 +50,29 @@ func (g *Game) Init() {
 	difficulty := 1.5
 	paddleHeight := 20.0
 	paddleWidth := 4.0
-	g.player = Paddle{courtLeft + paddleWidth*2, centerY + paddleHeight/2, paddleWidth, paddleHeight, 1.0 * difficulty, Blue}
-	g.computer = Paddle{courtRight - paddleWidth*3, centerY + paddleHeight/2, paddleWidth, paddleHeight, 0.75 * difficulty, Red}
-	ballDy := float64(Flr(Rnd(2))) - 0.5
-	g.ball = Ball{x: centerX, y: centerY, size: 2, color: White, dx: 1.0 * difficulty, dy: ballDy, speed: 1.0 * difficulty, boost: 0.05 * difficulty}
+	g.player = Paddle{courtLeft + paddleWidth*2, centerY + paddleHeight/2, paddleWidth, paddleHeight, 1.0 * difficulty, gosprite64.Blue}
+	g.computer = Paddle{courtRight - paddleWidth*3, centerY + paddleHeight/2, paddleWidth, paddleHeight, 0.75 * difficulty, gosprite64.Red}
+	ballDy := float64(rand.IntN(2)) - 0.5
+	g.ball = Ball{x: centerX, y: centerY, size: 2, color: gosprite64.White, dx: 1.0 * difficulty, dy: ballDy, speed: 1.0 * difficulty, boost: 0.05 * difficulty}
 
 	// sound
 	switch g.Scored {
 	case "Player":
-		PlayEffect(sfx.ScorePlayer)
+		gosprite64.PlaySoundEffect(sfx.ScorePlayer)
 	case "Computer":
-		PlayEffect(sfx.ScoreComputer)
+		gosprite64.PlaySoundEffect(sfx.ScoreComputer)
 	default:
-		PlayEffect(sfx.Start)
+		gosprite64.PlaySoundEffect(sfx.Start)
 	}
 }
 
 // Update handles game logic each frame including input, AI, collisions and scoring
 func (g *Game) Update() {
 	// Player input
-	if Btn(UP) && g.player.y > courtTop+1 {
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadUp) && g.player.y > courtTop+1 {
 		g.player.y -= g.player.speed
 	}
-	if Btn(DOWN) && g.player.y+g.player.height < courtBottom-1 {
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadDown) && g.player.y+g.player.height < courtBottom-1 {
 		g.player.y += g.player.speed
 	}
 
@@ -98,21 +99,21 @@ func (g *Game) Update() {
 	// 1. Ball vs paddles
 	if collide(g.ball, g.computer) {
 		g.ball.dx = -(g.ball.dx + g.ball.boost)
-		PlayEffect(sfx.PaddleComputer)
+		gosprite64.PlaySoundEffect(sfx.PaddleComputer)
 	}
 	if collide(g.ball, g.player) {
 		// adjust dy if player changes paddle angle
-		if Btn(UP) || Btn(DOWN) {
+		if gosprite64.IsButtonDown(gosprite64.ButtonDPadUp) || gosprite64.IsButtonDown(gosprite64.ButtonDPadDown) {
 			g.ball.dy += sign(g.ball.dy) * g.ball.boost * 2
 		}
 		g.ball.dx = -(g.ball.dx - g.ball.boost)
-		PlayEffect(sfx.PaddlePlayer)
+		gosprite64.PlaySoundEffect(sfx.PaddlePlayer)
 	}
 
 	// 2. Ball vs top/bottom
 	if g.ball.y <= courtTop+1 || g.ball.y+g.ball.size >= courtBottom-1 {
 		g.ball.dy = -g.ball.dy
-		PlayEffect(sfx.Wall)
+		gosprite64.PlaySoundEffect(sfx.Wall)
 	}
 
 	// 3. Ball vs Walls (aka scoring)
@@ -134,24 +135,24 @@ func (g *Game) Update() {
 
 // Draw renders the game elements to the screen each frame
 func (g *Game) Draw() {
-	ClearScreen()
+	gosprite64.ClearScreen()
 
 	// Court outline
-	DrawRect(courtLeft, courtTop, courtRight, courtBottom, White)
+	gosprite64.DrawRect(courtLeft, courtTop, courtRight, courtBottom, gosprite64.White)
 
 	// Center dashed line
 	for y := courtTop; y < courtBottom; y += lineLen * 2 {
-		Line(centerX, y, centerX, y+lineLen, White)
+		gosprite64.DrawLine(centerX, y, centerX, y+lineLen, gosprite64.White)
 	}
 
 	// Ball and paddles
-	DrawRectFill(int(g.ball.x), int(g.ball.y), int(g.ball.x+g.ball.size), int(g.ball.y+g.ball.size), g.ball.color)
-	DrawRectFill(int(g.player.x), int(g.player.y), int(g.player.x+g.player.width), int(g.player.y+g.player.height), g.player.color)
-	DrawRectFill(int(g.computer.x), int(g.computer.y), int(g.computer.x+g.computer.width), int(g.computer.y+g.computer.height), g.computer.color)
+	gosprite64.FillRect(int(g.ball.x), int(g.ball.y), int(g.ball.x+g.ball.size), int(g.ball.y+g.ball.size), g.ball.color)
+	gosprite64.FillRect(int(g.player.x), int(g.player.y), int(g.player.x+g.player.width), int(g.player.y+g.player.height), g.player.color)
+	gosprite64.FillRect(int(g.computer.x), int(g.computer.y), int(g.computer.x+g.computer.width), int(g.computer.y+g.computer.height), g.computer.color)
 
 	// Scores
-	Print(fmt.Sprint(g.playerScore), centerX-24, 4, Yellow)
-	Print(fmt.Sprint(g.computerScore), centerX+16, 4, Yellow)
+	gosprite64.DrawText(fmt.Sprint(g.playerScore), centerX-24, 4, gosprite64.Yellow)
+	gosprite64.DrawText(fmt.Sprint(g.computerScore), centerX+16, 4, gosprite64.Yellow)
 }
 
 // collide checks axis-aligned collision between ball and paddle
@@ -169,5 +170,5 @@ func sign(v float64) float64 {
 }
 
 func main() {
-	Run(&Game{})
+	gosprite64.Run(&Game{})
 }

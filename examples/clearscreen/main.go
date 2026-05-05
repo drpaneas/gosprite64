@@ -1,7 +1,7 @@
 package main
 
 import (
-	. "github.com/drpaneas/gosprite64"
+	"github.com/drpaneas/gosprite64"
 )
 
 // Game instances to store game state
@@ -16,9 +16,9 @@ func (g *Game) Update() {}
 // ClearScreen is the simplest render sanity check. Other drawing APIs use the
 // fixed 288x216 logical canvas described in the docs and calibration example.
 func (g *Game) Draw() {
-	ClearScreenWith(Red)
+	gosprite64.ClearScreenWith(gosprite64.Red)
 }
 
 func main() {
-	Run(&Game{})
+	gosprite64.Run(&Game{})
 }

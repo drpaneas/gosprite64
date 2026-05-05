@@ -30,15 +30,15 @@ Create `main.go` with the following content:
 ```go
 package main
 
-import . "github.com/drpaneas/gosprite64"
+import "github.com/drpaneas/gosprite64"
 
 type Game struct{}
 
 func (g *Game) Init()   {}
 func (g *Game) Update() {}
-func (g *Game) Draw()   { ClearScreenWith(Blue) }
+func (g *Game) Draw()   { gosprite64.ClearScreenWith(gosprite64.Blue) }
 
-func main() { Run(&Game{}) }
+func main() { gosprite64.Run(&Game{}) }
 ```
 
 Every GoSprite64 game implements three methods on a struct:
@@ -47,9 +47,9 @@ Every GoSprite64 game implements three methods on a struct:
 - `Update()` runs every frame for game logic
 - `Draw()` runs every frame for rendering
 
-`Run()` starts the game loop and never returns.
+`gosprite64.Run()` starts the game loop and never returns.
 
-GoSprite64 exposes one official fixed resolution and drawing space: `288x216` logical pixels. `ClearScreen()` is the frame-start background clear, while drawing helpers such as `Rectfill`, `DrawRect`, `Line`, and `Print` use logical coordinates inside that fixed canvas.
+GoSprite64 exposes one official fixed resolution and drawing space: `288x216` logical pixels. `gosprite64.ClearScreen()` is the frame-start background clear, while drawing helpers such as `gosprite64.FillRect`, `gosprite64.DrawRect`, `gosprite64.DrawLine`, and `gosprite64.DrawText` use logical coordinates inside that fixed canvas.
 
 ## Add the n64.env file
 
@@ -109,4 +109,4 @@ mygame/
 
 ## Next steps
 
-Now that your toolchain works, try changing `ClearScreenWith(Blue)` to another color like `Red`, `Green`, or `DarkPurple` and rebuild. Then explore the [examples](https://github.com/drpaneas/gosprite64/tree/main/examples) in the GoSprite64 repository to learn about input handling, drawing shapes, text rendering, and audio.
+Now that your toolchain works, try changing `gosprite64.ClearScreenWith(gosprite64.Blue)` to another color like `gosprite64.Red`, `gosprite64.Green`, or `gosprite64.DarkPurple` and rebuild. Then explore the [examples](https://github.com/drpaneas/gosprite64/tree/main/examples) in the GoSprite64 repository to learn about input handling, drawing shapes, text rendering, and audio.

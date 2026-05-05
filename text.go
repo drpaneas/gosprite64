@@ -142,8 +142,8 @@ func drawGlyph1BPP(video *videoState, ch rune, dstX, dstY int, src image.Image) 
 	}
 }
 
-// Print draws a string at the given logical coordinates using the built-in 8x8 font.
-func Print(str string, x, y int, c color.Color) {
+// DrawText draws a string at the given logical coordinates using the built-in 8x8 font.
+func DrawText(str string, x, y int, c color.Color) {
 	video := currentVideo()
 	if video == nil || video.Framebuffer == nil {
 		return

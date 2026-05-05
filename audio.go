@@ -28,6 +28,13 @@ type AudioAsset struct {
 	MaxInstances  uint8
 }
 
+type AudioBundle struct {
+	Assets                 []AudioAsset
+	Data                   []byte
+	Aux                    []byte
+	ResolveSoundEffectName func(string) (uint16, bool)
+}
+
 type audioConfig struct {
 	manifest        []audiov1.AssetEntry
 	data            []byte
@@ -60,9 +67,9 @@ const defaultAudioDACBufFrames = 512
 
 var pendingAudioConfig audioConfig
 
-func RegisterAudioV1(assets []AudioAsset, data, aux []byte) {
-	entries := make([]audiov1.AssetEntry, len(assets))
-	for i, a := range assets {
+func RegisterAudioBundle(bundle AudioBundle) {
+	entries := make([]audiov1.AssetEntry, len(bundle.Assets))
+	for i, a := range bundle.Assets {
 		entries[i] = audiov1.AssetEntry{
 			ID:            audiov1.AssetID(a.ID),
 			Class:         audiov1.AssetClass(a.Class),
@@ -82,12 +89,9 @@ func RegisterAudioV1(assets []AudioAsset, data, aux []byte) {
 	}
 
 	pendingAudioConfig.manifest = entries
-	pendingAudioConfig.data = data
-	pendingAudioConfig.aux = aux
-}
-
-func RegisterSFXNameResolver(fn func(string) (uint16, bool)) {
-	pendingAudioConfig.sfxNameResolver = fn
+	pendingAudioConfig.data = bundle.Data
+	pendingAudioConfig.aux = bundle.Aux
+	pendingAudioConfig.sfxNameResolver = bundle.ResolveSoundEffectName
 }
 
 func newAudioState(cfg audioConfig) *audioState {
@@ -120,7 +124,7 @@ func (a *audioState) ready() bool {
 	return a != nil && a.engine != nil && a.engine.IsReady()
 }
 
-func PlayEffect(id sfx.ID) bool {
+func PlaySoundEffect(id sfx.ID) bool {
 	audio := currentAudio()
 	if !audio.ready() {
 		return false
@@ -128,7 +132,7 @@ func PlayEffect(id sfx.ID) bool {
 	return audio.engine.Ring.Push(audiov1.Command{Kind: audiov1.CmdPlaySFX, ID: uint16(id)})
 }
 
-func PlayTrack(id music.ID) bool {
+func PlayMusic(id music.ID) bool {
 	audio := currentAudio()
 	if !audio.ready() {
 		return false
@@ -136,7 +140,7 @@ func PlayTrack(id music.ID) bool {
 	return audio.engine.Ring.Push(audiov1.Command{Kind: audiov1.CmdPlayMusic, ID: uint16(id)})
 }
 
-func StopTrack() {
+func StopMusic() {
 	audio := currentAudio()
 	if !audio.ready() {
 		return
@@ -144,7 +148,7 @@ func StopTrack() {
 	audio.engine.Ring.Push(audiov1.Command{Kind: audiov1.CmdStopMusic})
 }
 
-func SetEffectVolume(v float32) {
+func SetSoundEffectVolume(v float32) {
 	audio := currentAudio()
 	if !audio.ready() {
 		return
@@ -152,7 +156,7 @@ func SetEffectVolume(v float32) {
 	audio.engine.Ring.Push(audiov1.Command{Kind: audiov1.CmdSetSFXGain, Gain: floatToGain(v)})
 }
 
-func SetTrackVolume(v float32) {
+func SetMusicVolume(v float32) {
 	audio := currentAudio()
 	if !audio.ready() {
 		return

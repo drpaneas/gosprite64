@@ -24,7 +24,7 @@ you can:
 
 GoSprite64 exposes one official fixed resolution and drawing space: `288x216` logical pixels.
 
-That is the public rendering contract for gameplay code. The runtime centers the canvas inside the framebuffer and presents it with square pixels, while public drawing APIs such as `Rectfill`, `DrawRect`, `DrawRectFill`, `Line`, and `Print` all operate in that same logical space.
+That is the public rendering contract for gameplay code. The runtime centers the canvas inside the framebuffer and presents it with square pixels, while public drawing APIs such as `gosprite64.FillRect`, `gosprite64.DrawRect`, `gosprite64.DrawLine`, and `gosprite64.DrawText` all operate in that same logical space.
 
 If you build and run `examples/calibration`, you should see this reference frame:
 

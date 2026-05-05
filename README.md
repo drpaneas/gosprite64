@@ -33,7 +33,7 @@ For the full setup details read [`docs/getting_started.md`](./docs/getting_start
 
 GoSprite64 exposes one official fixed resolution and drawing canvas: `288x216` logical pixels.
 
-That is the supported public rendering contract. The runtime centers the canvas inside the internal framebuffer and presents it for you with square pixels, so game code should treat `Rectfill`, `DrawRect`, `DrawRectFill`, `Line`, and `Print` as logical-coordinate APIs. You do not need to manage borders, safe areas, or video-mode presets yourself.
+That is the supported public rendering contract. The runtime centers the canvas inside the internal framebuffer and presents it for you with square pixels, so game code should treat `gosprite64.FillRect`, `gosprite64.DrawRect`, `gosprite64.DrawLine`, and `gosprite64.DrawText` as logical-coordinate APIs. You do not need to manage borders, safe areas, or video-mode presets yourself.
 
 ![Calibration scene showing the fixed 288x216 logical canvas](docs/fixed-resolution-calibration.png)
 

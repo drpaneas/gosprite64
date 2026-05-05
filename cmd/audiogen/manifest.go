@@ -234,9 +234,8 @@ func readPackageClause(path string) string {
 	return ""
 }
 
-// generateEmbedFileV1 produces a single init() that registers both the
-// asset manifest and the SFX name resolver, so init ordering is
-// deterministic regardless of file naming.
+// generateEmbedFileV1 produces a single init() that registers a complete
+// audio bundle, so init ordering is deterministic regardless of file naming.
 func generateEmbedFileV1(dir string, inputs []manifestInput, pkgOverride string) error {
 	pkgName := pkgOverride
 	if pkgName == "" {
@@ -254,8 +253,8 @@ func generateEmbedFileV1(dir string, inputs []manifestInput, pkgOverride string)
 	b.WriteString("var audioV1Data []byte\n\n")
 	b.WriteString(fmt.Sprintf("//go:embed %s/%s\n", BuildDirName, AudioAuxName))
 	b.WriteString("var audioV1Aux []byte\n\n")
-	b.WriteString("func init() {\n")
-	b.WriteString("\tgosprite64.RegisterAudioV1([]gosprite64.AudioAsset{\n")
+	b.WriteString("var audioBundle = gosprite64.AudioBundle{\n")
+	b.WriteString("\tAssets: []gosprite64.AudioAsset{\n")
 
 	for _, in := range inputs {
 		classVal := 0
@@ -278,32 +277,26 @@ func generateEmbedFileV1(dir string, inputs []manifestInput, pkgOverride string)
 			in.DataOffset, in.DataBytes, in.AuxOffset, in.AuxBytes, maxInst))
 	}
 
-	b.WriteString("\t}, audioV1Data, audioV1Aux)\n\n")
-
-	// SFX name resolver in the same init() for deterministic ordering
-	hasSFX := false
+	b.WriteString("\t},\n")
+	b.WriteString("\tData: audioV1Data,\n")
+	b.WriteString("\tAux:  audioV1Aux,\n")
+	b.WriteString("\tResolveSoundEffectName: func(name string) (uint16, bool) {\n")
+	b.WriteString("\t\tswitch name {\n")
 	for _, in := range inputs {
-		if in.Class == "sfx" {
-			hasSFX = true
-			break
+		if in.Class != "sfx" {
+			continue
 		}
+		b.WriteString(fmt.Sprintf("\t\tcase %q:\n", in.Name))
+		b.WriteString(fmt.Sprintf("\t\t\treturn %d, true\n", in.ID))
 	}
-	if hasSFX {
-		b.WriteString("\tgosprite64.RegisterSFXNameResolver(func(name string) (uint16, bool) {\n")
-		b.WriteString("\t\tswitch name {\n")
-		for _, in := range inputs {
-			if in.Class != "sfx" {
-				continue
-			}
-			b.WriteString(fmt.Sprintf("\t\tcase %q:\n", in.Name))
-			b.WriteString(fmt.Sprintf("\t\t\treturn %d, true\n", in.ID))
-		}
-		b.WriteString("\t\tdefault:\n")
-		b.WriteString("\t\t\treturn 0, false\n")
-		b.WriteString("\t\t}\n")
-		b.WriteString("\t})\n")
-	}
+	b.WriteString("\t\tdefault:\n")
+	b.WriteString("\t\t\treturn 0, false\n")
+	b.WriteString("\t\t}\n")
+	b.WriteString("\t},\n")
+	b.WriteString("}\n\n")
 
+	b.WriteString("func init() {\n")
+	b.WriteString("\tgosprite64.RegisterAudioBundle(audioBundle)\n")
 	b.WriteString("}\n")
 	return os.WriteFile(filepath.Join(dir, AudioEmbedName), []byte(b.String()), 0o644)
 }

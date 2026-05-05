@@ -5,7 +5,7 @@
 When I started building GoSprite64, one of the first things I tried was drawing a square. A simple 40x40 filled rectangle. The code was obvious:
 
 ```go
-Rectfill(100, 80, 139, 119, Red)
+gosprite64.FillRect(100, 80, 139, 119, gosprite64.Red)
 ```
 
 That is a 40x40 filled rectangle. It should be a square.
@@ -90,7 +90,7 @@ Each pixel is 20% wider than it is tall. A 40x40 rect now looks like a wide, squ
 
 ### Seeing it visually
 
-Here is the same `Rectfill(0, 0, 39, 39)` call rendered at three different pixel aspect ratios:
+Here is the same `gosprite64.FillRect(0, 0, 39, 39, gosprite64.Red)` call rendered at three different pixel aspect ratios:
 
 ![The same 40x40 rect at PAR 1.0, 0.5, and 1.2](par-comparison.png)
 
@@ -118,7 +118,7 @@ This is my personal preference, and since this is my library, I can make that ca
 
 **288 x 216 logical pixels.**
 
-One logical pixel always maps to one square pixel on the final display. No configuration. No presets. No choices. You call `Rectfill(0, 0, 39, 39)` and you get a square on screen. Always.
+One logical pixel always maps to one square pixel on the final display. No configuration. No presets. No choices. You call `gosprite64.FillRect(0, 0, 39, 39, gosprite64.Red)` and you get a square on screen. Always.
 
 ### Why 288x216 specifically?
 
@@ -145,7 +145,7 @@ The surrounding 16px/12px borders are the framebuffer gutters. `ClearScreen` fil
 
 This is an opinionated library. GoSprite64 is built for people who are learning N64 homebrew development, not for people who already have years of experience with the hardware.
 
-You get one resolution. That is it. There is no `Config` struct, no `VideoPreset` enum, no `LowRes` versus `HighRes` mode selector. You call `Run(&Game{})` and the library sets up the display for you.
+You get one resolution. That is it. There is no `Config` struct, no `VideoPreset` enum, no `LowRes` versus `HighRes` mode selector. You call `gosprite64.Run(&Game{})` and the library sets up the display for you.
 
 Fewer options means less confusion. A newcomer does not need to understand pixel aspect ratios, video interface registers, or interlacing modes to draw a game. They need to know that X goes from 0 to 287, Y goes from 0 to 215, and a square is a square.
 
@@ -168,7 +168,7 @@ Let's trace a single drawing call through the entire rendering pipeline, step by
 Your game code calls:
 
 ```go
-Rectfill(10, 10, 50, 50, Red)
+gosprite64.FillRect(10, 10, 50, 50, gosprite64.Red)
 ```
 
 These are **logical coordinates**. The game only thinks in terms of the 288x216 canvas. It does not know or care about the framebuffer, the video interface, or the display standard. X=10, Y=10, width=40, height=40. That is a square.

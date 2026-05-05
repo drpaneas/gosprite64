@@ -30,11 +30,14 @@ func TestGenerateManifestAndConstPackages(t *testing.T) {
 		t.Fatalf("bad sfx ids:\n%s", sfxContent)
 	}
 	embedContent := mustReadString(t, filepath.Join(dir, AudioEmbedName))
-	if !strings.Contains(embedContent, "//go:embed") || !strings.Contains(embedContent, "RegisterAudioV1") || !strings.Contains(embedContent, "package main") {
+	if !strings.Contains(embedContent, "AudioBundle") || !strings.Contains(embedContent, "RegisterAudioBundle") || !strings.Contains(embedContent, "package main") {
 		t.Fatalf("bad embed file:\n%s", embedContent)
 	}
-	if !strings.Contains(embedContent, "RegisterSFXNameResolver") || !strings.Contains(embedContent, "return 0, true") {
-		t.Fatalf("embed file missing SFX name resolver:\n%s", embedContent)
+	if strings.Contains(embedContent, "RegisterAudioV1") || strings.Contains(embedContent, "RegisterSFXNameResolver") {
+		t.Fatalf("embed file still uses legacy audio names:\n%s", embedContent)
+	}
+	if !strings.Contains(embedContent, "ResolveSoundEffectName") || !strings.Contains(embedContent, "return 0, true") {
+		t.Fatalf("embed file missing sound effect resolver:\n%s", embedContent)
 	}
 }
 

@@ -22,26 +22,26 @@ func DrawRect(x1, y1, x2, y2 int, c color.Color) {
 	}
 
 	// Draw top line
-	Line(x1, y1, x2, y1, c)
+	DrawLine(x1, y1, x2, y1, c)
 	// Draw bottom line
-	Line(x1, y2, x2, y2, c)
+	DrawLine(x1, y2, x2, y2, c)
 	// Draw left and right side lines (offset by 1 to avoid double-drawing corners)
 	if y2-y1 >= 1 {
-		Line(x1, y1+1, x1, y2-1, c)
-		Line(x2, y1+1, x2, y2-1, c)
+		DrawLine(x1, y1+1, x1, y2-1, c)
+		DrawLine(x2, y1+1, x2, y2-1, c)
 	}
 }
 
-// Line draws a line from (x1,y1) to (x2,y2) using DrawRectFill.
+// DrawLine draws a line from (x1,y1) to (x2,y2) using FillRect.
 // The line will be 1 pixel thick.
 // Coordinates are expressed in the logical 288x216 canvas.
-func Line(x1, y1, x2, y2 int, c color.Color) {
+func DrawLine(x1, y1, x2, y2 int, c color.Color) {
 	// For horizontal lines
 	if y1 == y2 {
 		if x1 > x2 {
 			x1, x2 = x2, x1 // Ensure x1 <= x2
 		}
-		DrawRectFill(x1, y1, x2, y1, c)
+		FillRect(x1, y1, x2, y1, c)
 		return
 	}
 
@@ -50,7 +50,7 @@ func Line(x1, y1, x2, y2 int, c color.Color) {
 		if y1 > y2 {
 			y1, y2 = y2, y1 // Ensure y1 <= y2
 		}
-		DrawRectFill(x1, y1, x1, y2, c)
+		FillRect(x1, y1, x1, y2, c)
 		return
 	}
 
@@ -69,7 +69,7 @@ func Line(x1, y1, x2, y2 int, c color.Color) {
 	err := dx - dy
 
 	for {
-		DrawRectFill(x1, y1, x1, y1, c)
+		FillRect(x1, y1, x1, y1, c)
 		if x1 == x2 && y1 == y2 {
 			break
 		}
@@ -93,11 +93,11 @@ func abs(x int) int {
 	return x
 }
 
-// Rectfill draws a filled rectangle on screen
+// FillRect draws a filled rectangle on screen.
 // x1, y1: Top-left corner (0-287, 0-215)
 // x2, y2: Bottom-right corner (inclusive)
 // c: The color to fill the rectangle with
-func Rectfill(x1, y1, x2, y2 int, c color.Color) {
+func FillRect(x1, y1, x2, y2 int, c color.Color) {
 	framebufferRect, ok := rendergeom.MapRectInclusive(image.Rectangle{
 		Min: image.Pt(x1, y1),
 		Max: image.Pt(x2, y2),

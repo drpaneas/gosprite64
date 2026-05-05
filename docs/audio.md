@@ -12,7 +12,7 @@ Three steps:
 
 1. Put your `.wav` files in the right directories.
 2. Run `go generate`.
-3. Call `PlayEffect` or `PlayTrack` from your game.
+3. Call `gosprite64.PlaySoundEffect` or `gosprite64.PlayMusic` from your game.
 
 ### Project layout
 
@@ -79,48 +79,48 @@ If the file is not PCM 16-bit, `audiogen` rejects it with a clear error message.
 
 ### Playing sound effects
 
-Import the generated `sfx` package and call `PlayEffect`:
+Import the generated `sfx` package and call `gosprite64.PlaySoundEffect`:
 
 ```go
 import "github.com/drpaneas/gosprite64/examples/pong/sfx"
 
 func (g *Game) Update() {
     if playerScored {
-        gosprite64.PlayEffect(sfx.ScorePlayer)
+        gosprite64.PlaySoundEffect(sfx.ScorePlayer)
     }
     if ballHitWall {
-        gosprite64.PlayEffect(sfx.Wall)
+        gosprite64.PlaySoundEffect(sfx.Wall)
     }
 }
 ```
 
-`PlayEffect` returns `true` if the sound was accepted, `false` if it was dropped (engine not ready or command ring full). Sound effects are one-shot and can overlap. The same effect can play up to 4 times simultaneously. If you trigger a 5th instance, the oldest one is evicted.
+`gosprite64.PlaySoundEffect` returns `true` if the sound was accepted, `false` if it was dropped (engine not ready or command ring full). Sound effects are one-shot and can overlap. The same effect can play up to 4 times simultaneously. If you trigger a 5th instance, the oldest one is evicted.
 
 ### Playing background music
 
-Import the generated `music` package and call `PlayTrack`:
+Import the generated `music` package and call `gosprite64.PlayMusic`:
 
 ```go
 import "github.com/drpaneas/gosprite64/examples/mygame/music"
 
 func (g *Game) Init() {
-    gosprite64.PlayTrack(music.Overworld)
+    gosprite64.PlayMusic(music.Overworld)
 }
 ```
 
-Music always loops. If a different track is already playing, it stops and the new one starts. Calling `PlayTrack` with the same track that is already playing does nothing.
+Music always loops. If a different track is already playing, it stops and the new one starts. Calling `gosprite64.PlayMusic` with the same track that is already playing does nothing.
 
 To stop music:
 
 ```go
-gosprite64.StopTrack()
+gosprite64.StopMusic()
 ```
 
 ### Volume control
 
 ```go
-gosprite64.SetEffectVolume(0.5)  // SFX at half volume
-gosprite64.SetTrackVolume(0.8)   // music at 80%
+gosprite64.SetSoundEffectVolume(0.5)  // SFX at half volume
+gosprite64.SetMusicVolume(0.8)        // music at 80%
 ```
 
 Volume is a `float32` from 0.0 (silent) to 1.0 (full). Values outside that range are clamped. Music and SFX volumes are independent.
@@ -135,30 +135,30 @@ Here is how the Pong example uses audio:
 package main
 
 import (
-    . "github.com/drpaneas/gosprite64"
+    "github.com/drpaneas/gosprite64"
     "github.com/drpaneas/gosprite64/examples/pong/sfx"
 )
 
 func (g *Game) Init() {
     switch g.Scored {
     case "Player":
-        PlayEffect(sfx.ScorePlayer)
+        gosprite64.PlaySoundEffect(sfx.ScorePlayer)
     case "Computer":
-        PlayEffect(sfx.ScoreComputer)
+        gosprite64.PlaySoundEffect(sfx.ScoreComputer)
     default:
-        PlayEffect(sfx.Start)
+        gosprite64.PlaySoundEffect(sfx.Start)
     }
 }
 
 func (g *Game) Update() {
     if collide(g.ball, g.computer) {
-        PlayEffect(sfx.PaddleComputer)
+        gosprite64.PlaySoundEffect(sfx.PaddleComputer)
     }
     if collide(g.ball, g.player) {
-        PlayEffect(sfx.PaddlePlayer)
+        gosprite64.PlaySoundEffect(sfx.PaddlePlayer)
     }
     if g.ball.y <= courtTop || g.ball.y >= courtBottom {
-        PlayEffect(sfx.Wall)
+        gosprite64.PlaySoundEffect(sfx.Wall)
     }
 }
 ```
@@ -263,7 +263,7 @@ The old system allocated memory on the first play of every SFX (about 114 KB per
 
 ### Concurrency
 
-Gameplay code and the audio feeder run in separate goroutines. They communicate through a lock-free single-producer single-consumer command ring. Gameplay calls like `PlayEffect` push a small command struct into the ring. The feeder drains all pending commands at the top of each fill cycle before touching any voice state. No mutexes are used in the audio hot path.
+Gameplay code and the audio feeder run in separate goroutines. They communicate through a lock-free single-producer single-consumer command ring. Gameplay calls like `gosprite64.PlaySoundEffect` push a small command struct into the ring. The feeder drains all pending commands at the top of each fill cycle before touching any voice state. No mutexes are used in the audio hot path.
 
 ### The feeder loop
 
@@ -276,7 +276,7 @@ A background goroutine runs continuously:
 
 ### Anti-click ramp
 
-When music is stopped via `StopTrack()`, the engine applies a short linear ramp to zero over 1-2 ms (about 22-44 samples) before releasing the voice. This prevents the audible click that would otherwise occur from abruptly zeroing a playing waveform.
+When music is stopped via `gosprite64.StopMusic()`, the engine applies a short linear ramp to zero over 1-2 ms (about 22-44 samples) before releasing the voice. This prevents the audible click that would otherwise occur from abruptly zeroing a playing waveform.
 
 ### Loop handling
 

@@ -1,6 +1,6 @@
 package main
 
-import . "github.com/drpaneas/gosprite64"
+import "github.com/drpaneas/gosprite64"
 
 const (
 	logicalWidth  = 288
@@ -25,29 +25,29 @@ func (g *Game) Init() {}
 func (g *Game) Update() {}
 
 func (g *Game) Draw() {
-	ClearScreenWith(DarkBlue)
+	gosprite64.ClearScreenWith(gosprite64.DarkBlue)
 
 	// Outline the public 288x216 canvas so the surrounding gutters stay obvious.
-	DrawRect(0, 0, logicalWidth-1, logicalHeight-1, White)
+	gosprite64.DrawRect(0, 0, logicalWidth-1, logicalHeight-1, gosprite64.White)
 
-	Rectfill(0, 0, markerSize, markerSize, Red)
-	Rectfill(logicalWidth-1-markerSize, 0, logicalWidth-1, markerSize, Orange)
-	Rectfill(0, logicalHeight-1-markerSize, markerSize, logicalHeight-1, Green)
-	Rectfill(logicalWidth-1-markerSize, logicalHeight-1-markerSize, logicalWidth-1, logicalHeight-1, Blue)
+	gosprite64.FillRect(0, 0, markerSize, markerSize, gosprite64.Red)
+	gosprite64.FillRect(logicalWidth-1-markerSize, 0, logicalWidth-1, markerSize, gosprite64.Orange)
+	gosprite64.FillRect(0, logicalHeight-1-markerSize, markerSize, logicalHeight-1, gosprite64.Green)
+	gosprite64.FillRect(logicalWidth-1-markerSize, logicalHeight-1-markerSize, logicalWidth-1, logicalHeight-1, gosprite64.Blue)
 
-	Rectfill(centerMinX, centerMinY, centerMaxX, centerMaxY, Yellow)
+	gosprite64.FillRect(centerMinX, centerMinY, centerMaxX, centerMaxY, gosprite64.Yellow)
 
-	DrawRect(squareLeft, squareTop, squareRight, squareBottom, Pink)
-	Line(squareLeft, squareTop, squareRight, squareBottom, LightGray)
-	Line(squareLeft, squareBottom, squareRight, squareTop, LightGray)
+	gosprite64.DrawRect(squareLeft, squareTop, squareRight, squareBottom, gosprite64.Pink)
+	gosprite64.DrawLine(squareLeft, squareTop, squareRight, squareBottom, gosprite64.LightGray)
+	gosprite64.DrawLine(squareLeft, squareBottom, squareRight, squareTop, gosprite64.LightGray)
 
-	Print("288x216", 112, 8, White)
-	Print("TL", 6, 6, White)
-	Print("TR", logicalWidth-22, 6, White)
-	Print("BL", 6, logicalHeight-14, White)
-	Print("BR", logicalWidth-22, logicalHeight-14, White)
+	gosprite64.DrawText("288x216", 112, 8, gosprite64.White)
+	gosprite64.DrawText("TL", 6, 6, gosprite64.White)
+	gosprite64.DrawText("TR", logicalWidth-22, 6, gosprite64.White)
+	gosprite64.DrawText("BL", 6, logicalHeight-14, gosprite64.White)
+	gosprite64.DrawText("BR", logicalWidth-22, logicalHeight-14, gosprite64.White)
 }
 
 func main() {
-	Run(&Game{})
+	gosprite64.Run(&Game{})
 }

@@ -116,7 +116,8 @@ func Rectfill(x1, y1, x2, y2 int, c color.Color) {
 }
 
 func drawFramebufferRect(x1, y1, x2, y2 int, c color.Color) {
-	if currentScreen == nil || currentScreen.Framebuffer == nil {
+	video := currentVideo()
+	if video == nil || video.Framebuffer == nil {
 		return
 	}
 
@@ -150,6 +151,6 @@ func drawFramebufferRect(x1, y1, x2, y2 int, c color.Color) {
 	// Create and draw the rectangle
 	// Note: image.Rect is half-open interval [Min, Max)
 	rect := image.Rect(x1, y1, x2+1, y2+1)
-	img := currentScreen.uniform(c)
-	n64draw.Src.Draw(currentScreen.Framebuffer, rect, img, image.Point{})
+	img := video.uniform(c)
+	n64draw.Src.Draw(video.Framebuffer, rect, img, image.Point{})
 }

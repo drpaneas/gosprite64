@@ -33,8 +33,8 @@ var frameDuration = time.Second / time.Duration(TargetFPS)
 func Run(g Gamelooper) {
 	setupConsole()
 	rt := newRuntimeState()
+	rt.initVideo()
 	activateRuntime(rt)
-	videoInit()
 
 	framebufferBounds := rendergeom.FramebufferBounds()
 	rdp.RDP.SetScissor(

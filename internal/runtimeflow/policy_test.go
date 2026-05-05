@@ -74,23 +74,54 @@ func TestRuntimeBootstrapIsExplicit(t *testing.T) {
 
 	runtimeSource := mustReadRepoFile(t, "runtime.go")
 	for _, snippet := range []string{
-		"type runtimeState struct{}",
+		"type runtimeState struct {",
+		"video *videoState",
 		"var activeRuntime *runtimeState",
 		"func newRuntimeState() *runtimeState",
 		"func activateRuntime(rt *runtimeState)",
 		"func currentRuntime() *runtimeState",
+		"func (rt *runtimeState) currentVideo() *videoState",
 	} {
 		if !strings.Contains(runtimeSource, snippet) {
 			t.Fatalf("runtime.go must contain %q", snippet)
 		}
 	}
 
+	screenSource := mustReadRepoFile(t, "screen.go")
+	for _, snippet := range []string{
+		"type videoState struct {",
+		"func newVideoState() *videoState",
+		"func (rt *runtimeState) initVideo()",
+		"func beginDrawing()",
+		"func endDrawing()",
+		"func ClearScreen()",
+		"func ClearScreenWith(c color.Color)",
+		"currentVideo()",
+	} {
+		if !strings.Contains(screenSource, snippet) {
+			t.Fatalf("screen.go must contain %q", snippet)
+		}
+	}
+	if strings.Contains(screenSource, "var currentScreen") {
+		t.Fatal("screen.go must not keep global screen ownership")
+	}
+
+	shapesSource := mustReadRepoFile(t, "shapes.go")
+	if !strings.Contains(shapesSource, "currentVideo()") {
+		t.Fatal("shapes.go must route drawing through currentVideo()")
+	}
+
+	textSource := mustReadRepoFile(t, "text.go")
+	if !strings.Contains(textSource, "currentVideo()") {
+		t.Fatal("text.go must route drawing through currentVideo()")
+	}
+
 	gameLoopSource := mustReadRepoFile(t, "gameloop.go")
 	assertOrderedSubstrings(t, gameLoopSource,
 		"setupConsole()",
 		"rt := newRuntimeState()",
+		"rt.initVideo()",
 		"activateRuntime(rt)",
-		"videoInit()",
 		"rdp.RDP.SetScissor(",
 		"g.Init()",
 		"initAudioV1()",

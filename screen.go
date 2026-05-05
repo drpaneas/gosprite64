@@ -13,14 +13,19 @@ import (
 	"github.com/drpaneas/gosprite64/internal/rendergeom"
 )
 
-type screen struct {
+type videoState struct {
 	Display      *display.Display
 	Framebuffer  *texture.Texture
 	Bounds       image.Rectangle
 	uniformCache map[color.Color]*image.Uniform
 }
 
-func newScreen(disp *display.Display, framebuffer *texture.Texture) *screen {
+func newVideoState() *videoState {
+	resolution := rendergeom.FramebufferBounds().Size()
+	video.Setup(false)
+	video.SetScale(squarePixelPresentationRect())
+	disp := display.NewDisplay(resolution, video.BPP16)
+	framebuffer := disp.Swap()
 	bounds := rendergeom.FramebufferBounds()
 	defaults := []color.Color{
 		Black, DarkBlue, DarkPurple, DarkGreen, Brown, DarkGray,
@@ -30,7 +35,7 @@ func newScreen(disp *display.Display, framebuffer *texture.Texture) *screen {
 	for _, c := range defaults {
 		cache[c] = &image.Uniform{C: c}
 	}
-	s := &screen{
+	s := &videoState{
 		Display:      disp,
 		Framebuffer:  framebuffer,
 		Bounds:       bounds,
@@ -40,15 +45,11 @@ func newScreen(disp *display.Display, framebuffer *texture.Texture) *screen {
 	return s
 }
 
-var currentScreen *screen
-
-func videoInit() {
-	resolution := rendergeom.FramebufferBounds().Size()
-	video.Setup(false)
-	video.SetScale(squarePixelPresentationRect())
-	disp := display.NewDisplay(resolution, video.BPP16)
-	fb := disp.Swap()
-	currentScreen = newScreen(disp, fb)
+func (rt *runtimeState) initVideo() {
+	if rt == nil {
+		return
+	}
+	rt.video = newVideoState()
 }
 
 func squarePixelPresentationRect() image.Rectangle {
@@ -64,27 +65,29 @@ func squarePixelPresentationRect() image.Rectangle {
 }
 
 func beginDrawing() {
-	if currentScreen == nil || currentScreen.Display == nil {
+	video := currentVideo()
+	if video == nil || video.Display == nil {
 		log.Println("Warning: beginDrawing called before screen was ready.")
 		return
 	}
-	currentScreen.Framebuffer = currentScreen.Display.Swap()
+	video.Framebuffer = video.Display.Swap()
 }
 
 func endDrawing() {
-	if currentScreen != nil && currentScreen.Framebuffer != nil {
+	video := currentVideo()
+	if video != nil && video.Framebuffer != nil {
 		n64draw.Flush()
 	}
 }
 
-func (s *screen) fill(c color.Color) {
+func (s *videoState) fill(c color.Color) {
 	if s == nil || s.Framebuffer == nil {
 		return
 	}
 	n64draw.Src.Draw(s.Framebuffer, s.Bounds, s.uniform(c), image.Point{})
 }
 
-func (s *screen) uniform(c color.Color) image.Image {
+func (s *videoState) uniform(c color.Color) image.Image {
 	if c == nil {
 		c = Black
 	}
@@ -99,18 +102,20 @@ func (s *screen) uniform(c color.Color) image.Image {
 
 // ClearScreen fills the screen with Black.
 func ClearScreen() {
-	if currentScreen == nil {
+	video := currentVideo()
+	if video == nil {
 		log.Println("Warning: ClearScreen() called before screen was ready.")
 		return
 	}
-	currentScreen.fill(Black)
+	video.fill(Black)
 }
 
 // ClearScreenWith fills the screen with the given color.
 func ClearScreenWith(c color.Color) {
-	if currentScreen == nil {
+	video := currentVideo()
+	if video == nil {
 		log.Println("Warning: ClearScreenWith() called before screen was ready.")
 		return
 	}
-	currentScreen.fill(c)
+	video.fill(c)
 }

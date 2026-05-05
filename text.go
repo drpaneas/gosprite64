@@ -110,8 +110,8 @@ var font8x8 = []byte{
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // U+007F
 }
 
-func drawGlyph1BPP(ch rune, dstX, dstY int, src image.Image) {
-	if currentScreen == nil || currentScreen.Framebuffer == nil {
+func drawGlyph1BPP(video *videoState, ch rune, dstX, dstY int, src image.Image) {
+	if video == nil || video.Framebuffer == nil {
 		return
 	}
 	if ch < 32 || ch >= 128 {
@@ -127,7 +127,7 @@ func drawGlyph1BPP(ch rune, dstX, dstY int, src image.Image) {
 					continue
 				}
 				n64draw.Src.Draw(
-					currentScreen.Framebuffer,
+					video.Framebuffer,
 					image.Rect(
 						framebufferPixel.X,
 						framebufferPixel.Y,
@@ -144,17 +144,18 @@ func drawGlyph1BPP(ch rune, dstX, dstY int, src image.Image) {
 
 // Print draws a string at the given logical coordinates using the built-in 8x8 font.
 func Print(str string, x, y int, c color.Color) {
-	if currentScreen == nil || currentScreen.Framebuffer == nil {
+	video := currentVideo()
+	if video == nil || video.Framebuffer == nil {
 		return
 	}
-	src := currentScreen.uniform(c)
+	src := video.uniform(c)
 	dstX := x
 	for _, r := range str {
 		if r < 32 || r >= 128 {
 			dstX += 8
 			continue
 		}
-		drawGlyph1BPP(r, dstX, y, src)
+		drawGlyph1BPP(video, r, dstX, y, src)
 		dstX += 8
 	}
 }

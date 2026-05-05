@@ -76,11 +76,13 @@ func TestRuntimeBootstrapIsExplicit(t *testing.T) {
 	for _, snippet := range []string{
 		"type runtimeState struct {",
 		"video *videoState",
+		"audio *audioState",
 		"var activeRuntime *runtimeState",
 		"func newRuntimeState() *runtimeState",
 		"func activateRuntime(rt *runtimeState)",
 		"func currentRuntime() *runtimeState",
 		"func (rt *runtimeState) currentVideo() *videoState",
+		"func (rt *runtimeState) currentAudio() *audioState",
 	} {
 		if !strings.Contains(runtimeSource, snippet) {
 			t.Fatalf("runtime.go must contain %q", snippet)
@@ -116,6 +118,23 @@ func TestRuntimeBootstrapIsExplicit(t *testing.T) {
 		t.Fatal("text.go must route drawing through currentVideo()")
 	}
 
+	audioSource := mustReadRepoFile(t, "audio.go")
+	for _, snippet := range []string{
+		"type audioConfig struct {",
+		"type audioState struct {",
+		"var pendingAudioConfig audioConfig",
+		"func newAudioState(cfg audioConfig) *audioState",
+		"func (a *audioState) ready() bool",
+		"func (rt *runtimeState) initAudio()",
+		"func (a *audioState) start()",
+		"func (a *audioState) feeder()",
+		"currentAudio()",
+	} {
+		if !strings.Contains(audioSource, snippet) {
+			t.Fatalf("audio.go must contain %q", snippet)
+		}
+	}
+
 	gameLoopSource := mustReadRepoFile(t, "gameloop.go")
 	assertOrderedSubstrings(t, gameLoopSource,
 		"setupConsole()",
@@ -124,7 +143,7 @@ func TestRuntimeBootstrapIsExplicit(t *testing.T) {
 		"activateRuntime(rt)",
 		"rdp.RDP.SetScissor(",
 		"g.Init()",
-		"initAudioV1()",
+		"rt.initAudio()",
 	)
 }
 

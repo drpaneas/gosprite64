@@ -28,6 +28,13 @@ type AudioAsset struct {
 	MaxInstances  uint8
 }
 
+type audioConfig struct {
+	manifest        []audiov1.AssetEntry
+	data            []byte
+	aux             []byte
+	sfxNameResolver func(string) (uint16, bool)
+}
+
 type audioV1Runtime struct {
 	outBuf      []int16
 	outByte     []byte
@@ -39,15 +46,19 @@ type audioV1Runtime struct {
 	retire      [audiov1.MaxVoices]bool
 }
 
-var (
-	v1engine          *audiov1.Engine
-	v1mixer           *audiov1.Mixer
-	v1runtime         *audioV1Runtime
-	v1dacBufFrames    = 512
-	v1sfxNameResolver func(string) (uint16, bool)
-)
+type audioState struct {
+	engine          *audiov1.Engine
+	mixer           *audiov1.Mixer
+	runtime         audioV1Runtime
+	dacBufFrames    int
+	sfxNameResolver func(string) (uint16, bool)
+}
 
 const DefaultAudioOutputRate = 48000
+
+const defaultAudioDACBufFrames = 512
+
+var pendingAudioConfig audioConfig
 
 func RegisterAudioV1(assets []AudioAsset, data, aux []byte) {
 	entries := make([]audiov1.AssetEntry, len(assets))
@@ -70,62 +81,83 @@ func RegisterAudioV1(assets []AudioAsset, data, aux []byte) {
 		}
 	}
 
-	v1engine = &audiov1.Engine{
-		Manifest:  entries,
-		Data:      data,
-		Aux:       aux,
-		SFXGain:   audiov1.GainFull,
-		MusicGain: audiov1.GainFull,
-	}
-	v1mixer = audiov1.NewMixer(DefaultAudioOutputRate, v1dacBufFrames)
-	rt := &audioV1Runtime{
-		outBuf:  make([]int16, v1dacBufFrames*2),
-		outByte: make([]byte, v1dacBufFrames*4),
-		taps:    make([]audiov1.VoiceTap, audiov1.MaxVoices),
-	}
-	for i := range rt.srcBufs {
-		rt.srcBufs[i] = make([]int16, v1dacBufFrames+4)
-	}
-	v1runtime = rt
+	pendingAudioConfig.manifest = entries
+	pendingAudioConfig.data = data
+	pendingAudioConfig.aux = aux
 }
 
 func RegisterSFXNameResolver(fn func(string) (uint16, bool)) {
-	v1sfxNameResolver = fn
+	pendingAudioConfig.sfxNameResolver = fn
+}
+
+func newAudioState(cfg audioConfig) *audioState {
+	a := &audioState{
+		dacBufFrames:    defaultAudioDACBufFrames,
+		sfxNameResolver: cfg.sfxNameResolver,
+	}
+	if len(cfg.manifest) == 0 {
+		return a
+	}
+
+	a.engine = &audiov1.Engine{
+		Manifest:  cfg.manifest,
+		Data:      cfg.data,
+		Aux:       cfg.aux,
+		SFXGain:   audiov1.GainFull,
+		MusicGain: audiov1.GainFull,
+	}
+	a.mixer = audiov1.NewMixer(DefaultAudioOutputRate, a.dacBufFrames)
+	a.runtime.outBuf = make([]int16, a.dacBufFrames*2)
+	a.runtime.outByte = make([]byte, a.dacBufFrames*4)
+	a.runtime.taps = make([]audiov1.VoiceTap, audiov1.MaxVoices)
+	for i := range a.runtime.srcBufs {
+		a.runtime.srcBufs[i] = make([]int16, a.dacBufFrames+4)
+	}
+	return a
+}
+
+func (a *audioState) ready() bool {
+	return a != nil && a.engine != nil && a.engine.IsReady()
 }
 
 func PlayEffect(id sfx.ID) bool {
-	if v1engine == nil || !v1engine.IsReady() {
+	audio := currentAudio()
+	if !audio.ready() {
 		return false
 	}
-	return v1engine.Ring.Push(audiov1.Command{Kind: audiov1.CmdPlaySFX, ID: uint16(id)})
+	return audio.engine.Ring.Push(audiov1.Command{Kind: audiov1.CmdPlaySFX, ID: uint16(id)})
 }
 
 func PlayTrack(id music.ID) bool {
-	if v1engine == nil || !v1engine.IsReady() {
+	audio := currentAudio()
+	if !audio.ready() {
 		return false
 	}
-	return v1engine.Ring.Push(audiov1.Command{Kind: audiov1.CmdPlayMusic, ID: uint16(id)})
+	return audio.engine.Ring.Push(audiov1.Command{Kind: audiov1.CmdPlayMusic, ID: uint16(id)})
 }
 
 func StopTrack() {
-	if v1engine == nil || !v1engine.IsReady() {
+	audio := currentAudio()
+	if !audio.ready() {
 		return
 	}
-	v1engine.Ring.Push(audiov1.Command{Kind: audiov1.CmdStopMusic})
+	audio.engine.Ring.Push(audiov1.Command{Kind: audiov1.CmdStopMusic})
 }
 
 func SetEffectVolume(v float32) {
-	if v1engine == nil || !v1engine.IsReady() {
+	audio := currentAudio()
+	if !audio.ready() {
 		return
 	}
-	v1engine.Ring.Push(audiov1.Command{Kind: audiov1.CmdSetSFXGain, Gain: floatToGain(v)})
+	audio.engine.Ring.Push(audiov1.Command{Kind: audiov1.CmdSetSFXGain, Gain: floatToGain(v)})
 }
 
 func SetTrackVolume(v float32) {
-	if v1engine == nil || !v1engine.IsReady() {
+	audio := currentAudio()
+	if !audio.ready() {
 		return
 	}
-	v1engine.Ring.Push(audiov1.Command{Kind: audiov1.CmdSetMusicGain, Gain: floatToGain(v)})
+	audio.engine.Ring.Push(audiov1.Command{Kind: audiov1.CmdSetMusicGain, Gain: floatToGain(v)})
 }
 
 func floatToGain(v float32) uint16 {
@@ -138,19 +170,31 @@ func floatToGain(v float32) uint16 {
 	return uint16(v * float32(audiov1.GainFull))
 }
 
-func initAudioV1() {
-	if v1engine == nil {
+func (rt *runtimeState) initAudio() {
+	if rt == nil {
+		return
+	}
+	rt.audio = newAudioState(pendingAudioConfig)
+	rt.audio.start()
+}
+
+func (a *audioState) start() {
+	if a == nil || a.engine == nil {
 		return
 	}
 	audio.Start(DefaultAudioOutputRate)
-	v1engine.SetReady(true)
-	go v1AudioFeeder()
+	a.engine.SetReady(true)
+	go a.feeder()
 }
 
-func v1AudioFeeder() {
-	rt := v1runtime
+func (a *audioState) feeder() {
+	if a == nil || a.engine == nil || a.mixer == nil {
+		return
+	}
+
+	rt := &a.runtime
 	for {
-		v1engine.DrainCommands()
+		a.engine.DrainCommands()
 		clear(rt.outBuf)
 		clear(rt.retire[:])
 
@@ -160,7 +204,7 @@ func v1AudioFeeder() {
 			tap.Samples = nil
 			tap.Consumed = 0
 
-			voice := &v1engine.Voices[i]
+			voice := &a.engine.Voices[i]
 			if voice.State != audiov1.VoicePlaying || voice.ManifestIndex < 0 {
 				rt.pending[i] = 0
 				rt.startSeq[i] = 0
@@ -172,12 +216,12 @@ func v1AudioFeeder() {
 				rt.startSeq[i] = voice.StartSeq
 				rt.wasStopping[i] = false
 			}
-			if v1engine.Sources[i].Stopping() && !rt.wasStopping[i] {
+			if a.engine.Sources[i].Stopping() && !rt.wasStopping[i] {
 				rt.pending[i] = 0
 				rt.wasStopping[i] = true
 			}
-			entry := &v1engine.Manifest[voice.ManifestIndex]
-			need := audiov1.SourceFramesNeeded(uint32(entry.Rate), DefaultAudioOutputRate, v1dacBufFrames, voice.Phase)
+			entry := &a.engine.Manifest[voice.ManifestIndex]
+			need := audiov1.SourceFramesNeeded(uint32(entry.Rate), DefaultAudioOutputRate, a.dacBufFrames, voice.Phase)
 			if need > len(rt.srcBufs[i]) {
 				need = len(rt.srcBufs[i])
 			}
@@ -185,7 +229,7 @@ func v1AudioFeeder() {
 				need = rt.pending[i]
 			}
 			if rt.pending[i] < need {
-				n, ended := v1engine.Sources[i].Fill(rt.srcBufs[i][rt.pending[i]:need])
+				n, ended := a.engine.Sources[i].Fill(rt.srcBufs[i][rt.pending[i]:need])
 				rt.pending[i] += n
 				rt.retire[i] = ended
 			}
@@ -197,9 +241,9 @@ func v1AudioFeeder() {
 				continue
 			}
 
-			gain := v1engine.SFXGain
+			gain := a.engine.SFXGain
 			if voice.Class == audiov1.ClassMusic {
-				gain = v1engine.MusicGain
+				gain = a.engine.MusicGain
 			}
 			tap.Samples = rt.srcBufs[i][:rt.pending[i]]
 			tap.SrcRate = uint32(entry.Rate)
@@ -208,11 +252,11 @@ func v1AudioFeeder() {
 			tap.Phase = voice.Phase
 		}
 
-		v1mixer.Mix(rt.outBuf, rt.taps)
+		a.mixer.Mix(rt.outBuf, rt.taps)
 
 		for i := 0; i < audiov1.MaxVoices; i++ {
 			tap := &rt.taps[i]
-			voice := &v1engine.Voices[i]
+			voice := &a.engine.Voices[i]
 			if !tap.Active {
 				continue
 			}

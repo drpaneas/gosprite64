@@ -47,7 +47,7 @@ func Run(g Gamelooper) {
 
 	// Audio init runs after g.Init() so that pre-init PlayEffect/PlayTrack
 	// calls from g.Init() are silent no-ops, matching the spec (section 3.3).
-	initAudioV1()
+	rt.initAudio()
 
 	lastTime := rtos.Nanotime()
 	accumulator := time.Duration(0)

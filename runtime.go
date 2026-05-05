@@ -2,6 +2,7 @@ package gosprite64
 
 type runtimeState struct {
 	video *videoState
+	audio *audioState
 }
 
 var activeRuntime *runtimeState
@@ -27,4 +28,15 @@ func (rt *runtimeState) currentVideo() *videoState {
 
 func currentVideo() *videoState {
 	return currentRuntime().currentVideo()
+}
+
+func (rt *runtimeState) currentAudio() *audioState {
+	if rt == nil {
+		return nil
+	}
+	return rt.audio
+}
+
+func currentAudio() *audioState {
+	return currentRuntime().currentAudio()
 }

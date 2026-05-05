@@ -16,7 +16,7 @@ import (
 	"github.com/embeddedgo/fs/termfs"
 )
 
-func init() {
+func setupConsole() {
 	systim.Setup(cpu.ClockSpeed) // required for timer to work
 	var err error
 	var cart carts.Cart

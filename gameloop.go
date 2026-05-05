@@ -31,6 +31,9 @@ var frameDuration = time.Second / time.Duration(TargetFPS)
 
 // Run starts the game loop using the fixed square-pixel framebuffer path.
 func Run(g Gamelooper) {
+	setupConsole()
+	rt := newRuntimeState()
+	activateRuntime(rt)
 	videoInit()
 
 	framebufferBounds := rendergeom.FramebufferBounds()

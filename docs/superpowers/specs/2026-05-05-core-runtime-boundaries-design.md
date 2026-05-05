@@ -47,6 +47,14 @@ This is an internal boundary cleanup, not a public API redesign.
 
 The active-runtime holder is an internal singleton to preserve current package-level ergonomics. This design does not introduce public multi-runtime support.
 
+Implementation should follow a simplicity-first Go style in the spirit of Ken Thompson, Rob Pike, and Robert Griesemer:
+
+- prefer obvious control flow over clever abstractions
+- keep functions and types small when possible
+- avoid indirection that hides data ownership or runtime behavior
+- choose direct code that is easy to read, explain, and modify later
+- reject speculative flexibility that is not required by this refactor
+
 ## Architecture
 
 ```mermaid
@@ -232,6 +240,8 @@ Do not expand this work into:
 - broad renaming for style alone
 - unrelated cleanup in examples, docs, geometry helpers, or rendering model code
 - performance tuning presented as maintainability work
+
+The refactor should not introduce "enterprise" structure, ornamental interfaces, or abstraction layers that conflict with the simplicity goal above.
 
 ## Final Position
 

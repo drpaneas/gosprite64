@@ -46,6 +46,37 @@ GOARCH=mips64
 GOFLAGS='-tags=n64' '-trimpath' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
 ```
 
+## Cursor / VS Code
+
+If `gopls` reports `embedded/*` packages as missing or does not recognize files guarded by `//go:build n64`, configure the workspace so the editor uses the same build tag and toolchain environment as the terminal.
+
+Create `.vscode/settings.json` in the repository with:
+
+```json
+{
+  "go.buildTags": "n64",
+  "go.toolsEnvVars": {
+    "GOENV": "${workspaceFolder}/n64.env"
+  },
+  "gopls": {
+    "build.buildFlags": ["-tags=n64"],
+    "env": {
+      "GOENV": "${workspaceFolder}/n64.env"
+    }
+  }
+}
+```
+
+If the Go extension still invokes the wrong `go` binary for editor actions, add:
+
+```json
+"go.alternateTools": {
+  "go": "go1.24.5-embedded"
+}
+```
+
+After changing the settings, run `Go: Restart Language Server` or `Developer: Reload Window`.
+
 GoSprite64 exposes one official fixed resolution and drawing canvas: `288x216` logical pixels. The runtime centers that canvas and handles presentation scaling for you, so gameplay code should not manage borders, safe areas, or video-mode presets directly.
 
 If you want to verify the fixed-resolution presentation visually, run `examples/calibration/game.z64` in `ares` after the build. The expected calibration frame looks like this:

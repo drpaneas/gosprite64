@@ -29,6 +29,8 @@ The repository tracks toolchain settings in `n64.env`, and `./build_examples.sh`
 
 For the full setup details read [`docs/getting_started.md`](./docs/getting_started.md).
 
+If `Cursor` or `VS Code` shows false `embedded/*` import errors or ignores `//go:build n64` files, see the editor setup note in [`docs/getting_started.md`](./docs/getting_started.md).
+
 ## Rendering Model
 
 GoSprite64 exposes one official fixed resolution and drawing canvas: `288x216` logical pixels.

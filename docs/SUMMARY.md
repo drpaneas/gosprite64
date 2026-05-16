@@ -7,3 +7,4 @@
 - [Your First Tile Game](first_tile_game.md)
 - [Using Audio in GoSprite64](audio.md)
 - [Using the Tile2D Scene Pipeline](tile2d.md)
+- [Sprites](sprites.md)

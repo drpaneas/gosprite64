@@ -82,7 +82,7 @@ The distinction between tile sheet and sprite sheet is a usage convention, not a
 
 Three public types.
 
-**`SpriteSheet`** is a sprite-oriented wrapper over the compiled sheet data. Internally it may share the same backing implementation as `Sheet`, but publicly it is a separate type with sprite-facing vocabulary (`Frame` instead of `Tile`, frame count instead of tile count). This gives room for sprite-specific metadata to diverge from tile-specific metadata in the future without breaking the public API.
+**`SpriteSheet`** is a sprite-oriented wrapper over the compiled sheet data. Internally it may share the same backing implementation as `Sheet`, but publicly it is a separate type with frame-oriented vocabulary (frame count and frame dimensions instead of tile count and tile dimensions). This gives room for sprite-specific metadata to diverge from tile-specific metadata in the future without breaking the public API.
 
 The design principle is: share implementation, not user vocabulary.
 
@@ -210,7 +210,7 @@ const (
 `LoadSpriteSheet` returns an explicit error when:
 - the path cannot be opened through the registered asset filesystem
 - the compiled sheet data is malformed
-- the sheet has zero frames
+- the sheet has zero frames (zero-frame sheets are invalid content)
 
 These follow the same strict-and-early pattern as `OpenBundle` and `LoadScene`.
 

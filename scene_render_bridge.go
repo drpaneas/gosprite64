@@ -1,9 +1,6 @@
 package gosprite64
 
 import (
-	"image"
-
-	n64draw "github.com/clktmr/n64/drivers/draw"
 	tilerender "github.com/drpaneas/gosprite64/internal/tile2d/render"
 )
 
@@ -11,14 +8,6 @@ type sceneRenderBridge struct{}
 
 func newSceneRenderBridge() *sceneRenderBridge {
 	return &sceneRenderBridge{}
-}
-
-func (b *sceneRenderBridge) BlitImage(dst image.Rectangle, src image.Image, sp image.Point) {
-	video := currentVideo()
-	if video == nil || video.Framebuffer == nil || src == nil {
-		return
-	}
-	n64draw.Src.Draw(video.Framebuffer, dst, src, sp)
 }
 
 func (b *sceneRenderBridge) DrawPreparedRun(x, y, tileWidth, tileHeight int, run tilerender.PreparedRun) {

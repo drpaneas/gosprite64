@@ -7,19 +7,13 @@ import (
 	tileloader "github.com/drpaneas/gosprite64/internal/tile2d/loader"
 )
 
-// cartFS is the global cartridge filesystem instance
-var _cartFS cartfs.FS // Prefixed with underscore to indicate intended usage in the future
+var _cartFS cartfs.FS
 
 func RegisterAssetFS(f cartfs.FS) {
 	_cartFS = f
 }
 
-// loadFromCartridge reads a file from the cartridge filesystem
-// filename: name of the file to read from the cartridge
-// Returns the file contents as a byte slice or an error if the operation fails
-// LoadFromCartridge reads a file from the cartridge filesystem
-// filename: name of the file to read from the cartridge
-// Returns the file contents as a byte slice or an error if the operation fails
+// LoadFromCartridge reads a file from the cartridge filesystem.
 func LoadFromCartridge(filename string) ([]byte, error) {
 	f, err := _cartFS.Open(filename)
 	if err != nil {

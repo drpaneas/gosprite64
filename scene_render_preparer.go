@@ -10,10 +10,9 @@ type sceneRenderPreparer struct {
 }
 
 type sceneRenderLayerSource struct {
-	Map      visibility.MapInfo
-	SheetID  uint16
-	Tiles    [][]uint16
-	SheetIDs [][]uint16
+	Map     visibility.MapInfo
+	SheetID uint16
+	Tiles   [][]uint16
 }
 
 func newSceneRenderPreparer(scene *Scene) *sceneRenderPreparer {

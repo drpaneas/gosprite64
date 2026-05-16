@@ -20,6 +20,8 @@ type Scene struct {
 	bridge        *sceneRenderBridge
 	renderScene   tilerender.PreparedScene
 	lastDrawStats tilerender.DrawStats
+	cachedParsed  []format.ParsedSheet
+	staticStats   RuntimeStats
 }
 
 func LoadScene(bundle *Bundle) (*Scene, error) {
@@ -68,6 +70,15 @@ func LoadScene(bundle *Bundle) (*Scene, error) {
 
 	scene.configureRenderer()
 	scene.renderScene = scene.preparer.buildScene()
+
+	scene.cachedParsed = collectParsedSheets(scene.sheets)
+	initSnap := tilestats.FromSceneAssets(scene.gameMap.parsed, scene.cachedParsed, tilerender.DrawStats{})
+	scene.staticStats = RuntimeStats{
+		SheetRAMBytes: initSnap.SheetRAMBytes,
+		MapRAMBytes:   initSnap.MapRAMBytes,
+		SheetCount:    initSnap.SheetCount,
+		LayerCount:    initSnap.LayerCount,
+	}
 
 	return scene, nil
 }
@@ -149,8 +160,8 @@ func (s *Scene) LayerAssets(layer int) (MapLayerInfo, *Sheet, bool) {
 	if !ok {
 		return MapLayerInfo{}, nil, false
 	}
-	sheet, ok := s.LayerSheet(layer)
-	if !ok {
+	sheet := s.SheetByID(info.SheetID)
+	if sheet == nil {
 		return MapLayerInfo{}, nil, false
 	}
 	return info, sheet, true
@@ -210,14 +221,8 @@ func (s *Scene) Stats() RuntimeStats {
 	if s == nil || s.gameMap == nil {
 		return RuntimeStats{}
 	}
-	snap := tilestats.FromSceneAssets(s.gameMap.parsed, collectParsedSheets(s.sheets), s.lastDrawStats)
-	return RuntimeStats{
-		SheetRAMBytes: snap.SheetRAMBytes,
-		MapRAMBytes:   snap.MapRAMBytes,
-		CachedChunks:  snap.CachedChunks,
-		VisibleTiles:  snap.VisibleTiles,
-		SheetCount:    snap.SheetCount,
-		LayerCount:    snap.LayerCount,
-		UploadCount:   snap.UploadCount,
-	}
+	stats := s.staticStats
+	stats.VisibleTiles = s.lastDrawStats.VisibleTiles
+	stats.UploadCount = s.lastDrawStats.Uploads
+	return stats
 }

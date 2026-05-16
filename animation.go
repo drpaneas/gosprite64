@@ -20,6 +20,14 @@ func (a *AnimationSet) Name() string {
 	return a.name
 }
 
+func convertClip(clip format.ParsedClip) AnimationClip {
+	return AnimationClip{
+		Name:   clip.Name,
+		FPS:    clip.FPS,
+		Frames: append([]uint16(nil), clip.Frames...),
+	}
+}
+
 func (a *AnimationSet) Clips() []AnimationClip {
 	if a == nil {
 		return nil
@@ -27,11 +35,7 @@ func (a *AnimationSet) Clips() []AnimationClip {
 
 	clips := make([]AnimationClip, 0, len(a.parsed.Clips))
 	for _, clip := range a.parsed.Clips {
-		clips = append(clips, AnimationClip{
-			Name:   clip.Name,
-			FPS:    clip.FPS,
-			Frames: append([]uint16(nil), clip.Frames...),
-		})
+		clips = append(clips, convertClip(clip))
 	}
 	return clips
 }
@@ -41,14 +45,9 @@ func (a *AnimationSet) Clip(name string) (AnimationClip, bool) {
 		return AnimationClip{}, false
 	}
 	for _, clip := range a.parsed.Clips {
-		if clip.Name != name {
-			continue
+		if clip.Name == name {
+			return convertClip(clip), true
 		}
-		return AnimationClip{
-			Name:   clip.Name,
-			FPS:    clip.FPS,
-			Frames: append([]uint16(nil), clip.Frames...),
-		}, true
 	}
 	return AnimationClip{}, false
 }

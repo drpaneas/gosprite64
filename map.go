@@ -89,49 +89,6 @@ func (m *Map) PixelHeight() int {
 	return m.Height() * m.TileHeight()
 }
 
-func (m *Map) renderLayer(tileWidth, tileHeight int) sceneRenderLayerSource {
-	if tileWidth <= 0 {
-		tileWidth = 8
-	}
-	if tileHeight <= 0 {
-		tileHeight = 8
-	}
-
-	layer := sceneRenderLayerSource{
-		Map: visibility.MapInfo{
-			Width:      int(m.parsed.Width),
-			Height:     int(m.parsed.Height),
-			TileWidth:  tileWidth,
-			TileHeight: tileHeight,
-		},
-	}
-
-	if len(m.parsed.Layers) == 0 {
-		layer.Tiles = make([][]uint16, int(m.parsed.Height))
-		for y := range layer.Tiles {
-			layer.Tiles[y] = make([]uint16, int(m.parsed.Width))
-		}
-		return layer
-	}
-
-	cells := m.parsed.Layers[0].Cells
-	layer.Tiles = make([][]uint16, int(m.parsed.Height))
-	layer.SheetIDs = make([][]uint16, int(m.parsed.Height))
-	for y := range layer.Tiles {
-		start := y * int(m.parsed.Width)
-		end := start + int(m.parsed.Width)
-		layer.Tiles[y] = append([]uint16(nil), cells[start:end]...)
-		layer.SheetIDs[y] = make([]uint16, int(m.parsed.Width))
-		for x, tileID := range layer.Tiles[y] {
-			if tileID != 0 {
-				layer.SheetIDs[y][x] = 1
-			}
-		}
-	}
-
-	return layer
-}
-
 func (m *Map) renderLayers(tileWidth, tileHeight int) []sceneRenderLayerSource {
 	if tileWidth <= 0 {
 		tileWidth = 8
@@ -140,16 +97,17 @@ func (m *Map) renderLayers(tileWidth, tileHeight int) []sceneRenderLayerSource {
 		tileHeight = 8
 	}
 
+	w, h := m.Width(), m.Height()
 	mapInfo := visibility.MapInfo{
-		Width:      int(m.parsed.Width),
-		Height:     int(m.parsed.Height),
+		Width:      w,
+		Height:     h,
 		TileWidth:  tileWidth,
 		TileHeight: tileHeight,
 	}
 	if len(m.parsed.Layers) == 0 {
 		return []sceneRenderLayerSource{{
 			Map:   mapInfo,
-			Tiles: make([][]uint16, int(m.parsed.Height)),
+			Tiles: make([][]uint16, h),
 		}}
 	}
 
@@ -158,11 +116,11 @@ func (m *Map) renderLayers(tileWidth, tileHeight int) []sceneRenderLayerSource {
 		layer := sceneRenderLayerSource{
 			Map:     mapInfo,
 			SheetID: parsedLayer.SheetID,
-			Tiles:   make([][]uint16, int(m.parsed.Height)),
+			Tiles:   make([][]uint16, h),
 		}
 		for y := range layer.Tiles {
-			start := y * int(m.parsed.Width)
-			end := start + int(m.parsed.Width)
+			start := y * w
+			end := start + w
 			layer.Tiles[y] = append([]uint16(nil), parsedLayer.Cells[start:end]...)
 		}
 		layers = append(layers, layer)

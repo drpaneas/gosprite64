@@ -187,6 +187,63 @@ func TestValidateSceneAssetsRejectsUnsupportedTileSize(t *testing.T) {
 	}
 }
 
+func TestOpenBundleRejectsInvalidMagic(t *testing.T) {
+	l := NewMemoryLoader(map[string][]byte{"bad.bundle": []byte("not a bundle")})
+	_, err := OpenBundle("bad.bundle", l)
+	if err == nil {
+		t.Fatal("expected error for invalid bundle magic")
+	}
+}
+
+func TestOpenBundleRejectsMissingFile(t *testing.T) {
+	l := NewMemoryLoader(map[string][]byte{})
+	_, err := OpenBundle("missing.bundle", l)
+	if err == nil {
+		t.Fatal("expected error for missing bundle file")
+	}
+}
+
+func TestLoadSheetRejectsMalformedData(t *testing.T) {
+	l := NewMemoryLoader(map[string][]byte{"bad.sheet": []byte("bad!")})
+	_, err := LoadSheet("bad.sheet", l)
+	if err == nil {
+		t.Fatal("expected error for malformed sheet")
+	}
+}
+
+func TestLoadMapRejectsMalformedData(t *testing.T) {
+	l := NewMemoryLoader(map[string][]byte{"bad.map": []byte("bad!")})
+	_, err := LoadMap("bad.map", l)
+	if err == nil {
+		t.Fatal("expected error for malformed map")
+	}
+}
+
+func TestLoadAnimRejectsMalformedData(t *testing.T) {
+	l := NewMemoryLoader(map[string][]byte{"bad.anim": []byte("bad!")})
+	_, err := LoadAnim("bad.anim", l)
+	if err == nil {
+		t.Fatal("expected error for malformed anim")
+	}
+}
+
+func TestBundleManifestIsNotMonolithicBlob(t *testing.T) {
+	l := NewMemoryLoader(fixtures(t))
+	b, err := OpenBundle("level1.bundle", l)
+	if err != nil {
+		t.Fatalf("OpenBundle() error = %v", err)
+	}
+	for _, entry := range b.Entries {
+		if entry.Path == "" {
+			t.Fatalf("bundle entry %q has empty path", entry.Name)
+		}
+		_, err := l.ReadAsset(entry.Path)
+		if err != nil {
+			t.Fatalf("bundle entry %q path %q not separately loadable: %v", entry.Name, entry.Path, err)
+		}
+	}
+}
+
 func mustBuildSheet(t *testing.T) []byte {
 	t.Helper()
 	raw, err := format.BuildSheet(image.NewRGBA(image.Rect(0, 0, 8, 8)), 8, 8)

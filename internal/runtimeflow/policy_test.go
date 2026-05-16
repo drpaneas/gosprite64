@@ -77,12 +77,16 @@ func TestRuntimeBootstrapIsExplicit(t *testing.T) {
 		"type runtimeState struct {",
 		"video *videoState",
 		"audio *audioState",
+		"tile  *tileRuntime",
 		"var activeRuntime *runtimeState",
+		"type tileRuntime struct {",
+		"func newTileRuntime() *tileRuntime",
 		"func newRuntimeState() *runtimeState",
 		"func activateRuntime(rt *runtimeState)",
 		"func currentRuntime() *runtimeState",
 		"func (rt *runtimeState) currentVideo() *videoState",
 		"func (rt *runtimeState) currentAudio() *audioState",
+		"func (rt *runtimeState) currentTile() *tileRuntime",
 	} {
 		if !strings.Contains(runtimeSource, snippet) {
 			t.Fatalf("runtime.go must contain %q", snippet)
@@ -145,6 +149,97 @@ func TestRuntimeBootstrapIsExplicit(t *testing.T) {
 		"g.Init()",
 		"rt.initAudio()",
 	)
+
+	sceneSource := mustReadRepoFile(t, "scene.go")
+	if !strings.Contains(sceneSource, `return nil, fmt.Errorf("load scene: bundle has multiple maps")`) {
+		t.Fatal("scene.go must fail fast on multiple-map bundles")
+	}
+}
+
+func TestTilemapExampleUsesCanonicalSceneAPI(t *testing.T) {
+	example := mustReadRepoFile(t, "examples/tilemap/main.go")
+	for _, snippet := range []string{
+		`"github.com/drpaneas/gosprite64"`,
+		"bundle, err := gosprite64.OpenBundle(",
+		"scene, err := gosprite64.LoadScene(bundle)",
+		"scene.Draw(camera)",
+		"gosprite64.Run(&Game{})",
+	} {
+		if !strings.Contains(example, snippet) {
+			t.Fatalf("examples/tilemap/main.go must contain %q", snippet)
+		}
+	}
+}
+
+func TestTilemapExampleAutoPansCamera(t *testing.T) {
+	example := mustReadRepoFile(t, "examples/tilemap/main.go")
+	for _, snippet := range []string{
+		"type Game struct {",
+		"tick   int",
+		"g.tick++",
+		"m := scene.Map()",
+		"g.camera.X = pingPong(g.tick/2, max(0, m.PixelWidth()-g.camera.Width))",
+		"g.camera.Y = pingPong(g.tick/3, max(0, m.PixelHeight()-g.camera.Height))",
+		"func pingPong(step, limit int) int",
+		"Width: 64, Height: 64",
+	} {
+		if !strings.Contains(example, snippet) {
+			t.Fatalf("examples/tilemap/main.go must contain %q", snippet)
+		}
+	}
+}
+
+func TestTilemapExampleShipsBundleAsset(t *testing.T) {
+	if _, err := os.Stat(repoFilePath(t, "examples/tilemap/assets/level.bundle")); err != nil {
+		t.Fatalf("examples/tilemap/assets/level.bundle must exist: %v", err)
+	}
+}
+
+func TestTilemapExampleExercisesMultipleSheets(t *testing.T) {
+	example := mustReadRepoFile(t, "examples/tilemap/main.go")
+	if !strings.Contains(example, "-sheet assets/tiles.sheet -sheet assets/tiles_overlay.sheet") {
+		t.Fatal("examples/tilemap/main.go must bundle multiple sheet assets")
+	}
+
+	level := mustReadRepoFile(t, "examples/tilemap/assets-src/level.json")
+	for _, snippet := range []string{
+		`"layer_count": 2`,
+		`"sheet_id": 2`,
+	} {
+		if !strings.Contains(level, snippet) {
+			t.Fatalf("examples/tilemap/assets-src/level.json must contain %q", snippet)
+		}
+	}
+}
+
+func TestTilemapExampleDisplaysRuntimeStats(t *testing.T) {
+	example := mustReadRepoFile(t, "examples/tilemap/main.go")
+	for _, snippet := range []string{
+		`"fmt"`,
+		`"idle"`,
+		"anim := scene.AnimationByName(\"idle\")",
+		"anim.Clip(\"idle\")",
+		"frameIdx, frameTile := animationCursor(g.tick, clip)",
+		"baseLayer, baseSheet, _ := scene.LayerAssets(0)",
+		"overlayLayer, _, _ := scene.LayerAssets(1)",
+		"baseSheetInfo, _ := scene.LayerSheetInfo(0)",
+		"overlaySheetInfo, _ := scene.LayerSheetInfo(1)",
+		"animTile := baseSheet.Tile(frameTile + 1)",
+		"gosprite64.DrawWorldImage(animTile, 56, 24, camera)",
+		`fmt.Sprintf("an:%s %d/%d f:%d@%d", clip.Name, frameIdx+1, len(clip.Frames), frameTile, clip.FPS)`,
+		`fmt.Sprintf("tc:%d/%d", baseSheetInfo.TileCount, overlaySheetInfo.TileCount)`,
+		`fmt.Sprintf("sh:%d/%d", baseLayer.SheetID, overlayLayer.SheetID)`,
+		`fmt.Sprintf("nz:%d/%d", baseLayer.NonZeroTiles, overlayLayer.NonZeroTiles)`,
+		"stats := scene.Stats()",
+		`fmt.Sprintf("vis:%d", stats.VisibleTiles)`,
+		`fmt.Sprintf("up:%d", stats.UploadCount)`,
+		`fmt.Sprintf("ram:%d/%d", stats.SheetRAMBytes, stats.MapRAMBytes)`,
+		"gosprite64.DrawText(",
+	} {
+		if !strings.Contains(example, snippet) {
+			t.Fatalf("examples/tilemap/main.go must contain %q", snippet)
+		}
+	}
 }
 
 func mustReadRepoFile(t *testing.T, name string) string {
@@ -162,6 +257,17 @@ func mustReadRepoFile(t *testing.T, name string) string {
 	}
 
 	return string(content)
+}
+
+func repoFilePath(t *testing.T, name string) string {
+	t.Helper()
+
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("runtime.Caller(0) failed")
+	}
+
+	return filepath.Join(filepath.Dir(file), "..", "..", name)
 }
 
 func assertOrderedSubstrings(t *testing.T, content string, snippets ...string) {

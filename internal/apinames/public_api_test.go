@@ -83,6 +83,8 @@ func TestDrawHelperNaming(t *testing.T) {
 	shapes := mustReadRepoFile(t, "shapes.go")
 	requireContains(t, shapes, "func DrawRect(")
 	requireContains(t, shapes, "func DrawLine(")
+	requireContains(t, shapes, "func DrawImage(src image.Image, x, y int)")
+	requireContains(t, shapes, "func DrawWorldImage(src image.Image, worldX, worldY int, cam *Camera)")
 	requireContains(t, shapes, "func FillRect(")
 	requireNotContains(t, shapes, "func Line(")
 	requireNotContains(t, shapes, "func Rectfill(")
@@ -149,6 +151,115 @@ func TestAudioNaming(t *testing.T) {
 	} {
 		requireNotContains(t, audioSource, snippet)
 	}
+}
+
+func TestTileEngineNaming(t *testing.T) {
+	for _, path := range []string{"bundle.go", "scene.go", "camera.go", "sheet.go", "map.go", "sprite.go", "animation.go", "asset_policy.go"} {
+		content := mustReadRepoFile(t, path)
+		requireNotContains(t, content, "TMEM")
+		requireNotContains(t, content, "DMA")
+	}
+
+	scene := mustReadRepoFile(t, "scene.go")
+	requireContains(t, scene, "func LoadScene(bundle *Bundle) (*Scene, error)")
+	requireContains(t, scene, "func (s *Scene) SheetCount() int")
+	requireContains(t, scene, "func (s *Scene) Sheet(index int) *Sheet")
+	requireContains(t, scene, "func (s *Scene) SheetByID(id uint16) *Sheet")
+	requireContains(t, scene, "func (s *Scene) AnimationCount() int")
+	requireContains(t, scene, "func (s *Scene) Animation(index int) *AnimationSet")
+	requireContains(t, scene, "func (s *Scene) AnimationByName(name string) *AnimationSet")
+	requireContains(t, scene, "func (s *Scene) LayerSheet(layer int) (*Sheet, bool)")
+	requireContains(t, scene, "func (s *Scene) LayerAssets(layer int) (MapLayerInfo, *Sheet, bool)")
+	requireContains(t, scene, "func (s *Scene) LayerSheetInfo(layer int) (SheetInfo, bool)")
+	requireContains(t, scene, "func (s *Scene) Update(dt int)")
+	requireContains(t, scene, "func (s *Scene) Draw(cam *Camera)")
+
+	m := mustReadRepoFile(t, "map.go")
+	for _, snippet := range []string{
+		"type MapLayerInfo struct {",
+		"func (m *Map) Width() int",
+		"func (m *Map) Height() int",
+		"func (m *Map) TileWidth() int",
+		"func (m *Map) TileHeight() int",
+		"func (m *Map) LayerCount() int",
+		"func (m *Map) LayerInfo(layer int) (MapLayerInfo, bool)",
+		"func (m *Map) LayerSheetID(layer int) (uint16, bool)",
+		"func (m *Map) TileAt(layer, x, y int) (uint16, bool)",
+		"func (m *Map) PixelWidth() int",
+		"func (m *Map) PixelHeight() int",
+	} {
+		requireContains(t, m, snippet)
+	}
+
+	sheet := mustReadRepoFile(t, "sheet.go")
+	for _, snippet := range []string{
+		"type SheetInfo struct {",
+		"func (s *Sheet) Info() SheetInfo",
+		"func (s *Sheet) Tile(tileID uint16) image.Image",
+	} {
+		requireContains(t, sheet, snippet)
+	}
+
+	animation := mustReadRepoFile(t, "animation.go")
+	for _, snippet := range []string{
+		"type AnimationSet struct {",
+		"type AnimationClip struct {",
+		"func (a *AnimationSet) Name() string",
+		"func (a *AnimationSet) Clips() []AnimationClip",
+		"func (a *AnimationSet) Clip(name string) (AnimationClip, bool)",
+	} {
+		requireContains(t, animation, snippet)
+	}
+}
+
+func TestTileEngineCameraAndSceneHooks(t *testing.T) {
+	camera := mustReadRepoFile(t, "camera.go")
+	requireContains(t, camera, "type Camera struct {")
+	requireContains(t, camera, "X, Y          int")
+	requireContains(t, camera, "Width, Height int")
+
+	scene := mustReadRepoFile(t, "scene.go")
+	requireContains(t, scene, "defaultCamera *Camera")
+	requireContains(t, scene, "preparer      *sceneRenderPreparer")
+	requireContains(t, scene, "adapter       *sceneRendererAdapter")
+	requireContains(t, scene, "bridge        *sceneRenderBridge")
+	requireContains(t, scene, "func (s *Scene) configureRenderer()")
+	requireContains(t, scene, "scene.preparer = newSceneRenderPreparer(scene)")
+	requireContains(t, scene, "scene.bridge = newSceneRenderBridge()")
+	requireContains(t, scene, "scene.adapter = newSceneRendererAdapter(scene.resolveRenderer(), scene.bridge)")
+	requireContains(t, scene, "scene.configureRenderer()")
+	requireContains(t, scene, "func (s *Scene) Draw(cam *Camera)")
+	requireContains(t, scene, "cam = s.defaultCamera")
+	requireContains(t, scene, "s.adapter.drawPreparedScene(s.renderScene, *cam)")
+}
+
+func TestTileEnginePolicyControls(t *testing.T) {
+	assetPolicy := mustReadRepoFile(t, "asset_policy.go")
+	requireContains(t, assetPolicy, "type CompressionMode uint8")
+	requireContains(t, assetPolicy, "CompressionDefault CompressionMode = iota")
+	requireContains(t, assetPolicy, "CompressionDisabled")
+	requireContains(t, assetPolicy, "Compression CompressionMode")
+}
+
+func TestTileEngineRuntimeStatsSurface(t *testing.T) {
+	scene := mustReadRepoFile(t, "scene.go")
+	requireContains(t, scene, "func (s *Scene) Stats() RuntimeStats")
+
+	assetPolicy := mustReadRepoFile(t, "asset_policy.go")
+	requireContains(t, assetPolicy, "type RuntimeStats struct {")
+	requireContains(t, assetPolicy, "VisibleTiles  int")
+	requireContains(t, assetPolicy, "SheetCount    int")
+	requireContains(t, assetPolicy, "LayerCount    int")
+	requireContains(t, assetPolicy, "UploadCount   int")
+}
+
+func TestTileEngineAssetRegistrationNaming(t *testing.T) {
+	cartfsSource := mustReadRepoFile(t, "cartfs.go")
+	requireContains(t, cartfsSource, "func RegisterAssetFS(f cartfs.FS)")
+
+	example := mustReadRepoFile(t, "examples/tilemap/assets_embed.go")
+	requireContains(t, example, "//go:embed assets/*")
+	requireContains(t, example, "gosprite64.RegisterAssetFS(assetFS)")
 }
 
 func TestLegacyNamesAreGoneFromDocsAndExamples(t *testing.T) {

@@ -71,6 +71,7 @@ func beginDrawing() {
 		return
 	}
 	video.Framebuffer = video.Display.Swap()
+	currentTile().resetTexturedState()
 }
 
 func endDrawing() {

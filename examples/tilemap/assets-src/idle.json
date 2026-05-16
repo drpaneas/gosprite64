@@ -1,0 +1,9 @@
+{
+  "clips": [
+    {
+      "name": "idle",
+      "fps": 12,
+      "frames": [0, 1]
+    }
+  ]
+}

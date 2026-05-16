@@ -115,6 +115,18 @@ func FillRect(x1, y1, x2, y2 int, c color.Color) {
 	)
 }
 
+func DrawImage(src image.Image, x, y int) {
+	drawLogicalImage(src, x, y)
+}
+
+func DrawWorldImage(src image.Image, worldX, worldY int, cam *Camera) {
+	if cam == nil {
+		DrawImage(src, worldX, worldY)
+		return
+	}
+	drawLogicalImage(src, worldX-cam.X, worldY-cam.Y)
+}
+
 func drawFramebufferRect(x1, y1, x2, y2 int, c color.Color) {
 	video := currentVideo()
 	if video == nil || video.Framebuffer == nil {
@@ -153,4 +165,37 @@ func drawFramebufferRect(x1, y1, x2, y2 int, c color.Color) {
 	rect := image.Rect(x1, y1, x2+1, y2+1)
 	img := video.uniform(c)
 	n64draw.Src.Draw(video.Framebuffer, rect, img, image.Point{})
+}
+
+func drawLogicalImage(src image.Image, x, y int) {
+	video := currentVideo()
+	if video == nil || video.Framebuffer == nil || src == nil {
+		return
+	}
+
+	srcBounds := src.Bounds()
+	logicalDst := image.Rect(x, y, x+srcBounds.Dx(), y+srcBounds.Dy())
+	clipped := logicalDst.Intersect(rendergeom.LogicalBounds())
+	if clipped.Empty() {
+		return
+	}
+
+	framebufferRect, ok := rendergeom.MapRectInclusive(image.Rectangle{
+		Min: clipped.Min,
+		Max: clipped.Max.Sub(image.Pt(1, 1)),
+	})
+	if !ok {
+		return
+	}
+
+	srcPt := image.Pt(
+		srcBounds.Min.X+(clipped.Min.X-logicalDst.Min.X),
+		srcBounds.Min.Y+(clipped.Min.Y-logicalDst.Min.Y),
+	)
+	n64draw.Src.Draw(
+		video.Framebuffer,
+		image.Rect(framebufferRect.Min.X, framebufferRect.Min.Y, framebufferRect.Max.X+1, framebufferRect.Max.Y+1),
+		src,
+		srcPt,
+	)
 }

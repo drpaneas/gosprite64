@@ -13,8 +13,7 @@ func (g *Game) Init() {}
 // Update game logic here
 func (g *Game) Update() {}
 
-// ClearScreen is the simplest render sanity check. Other drawing APIs use the
-// fixed 288x216 logical canvas described in the docs and calibration example.
+// Draw renders a solid red screen.
 func (g *Game) Draw() {
 	gosprite64.ClearScreenWith(gosprite64.Red)
 }

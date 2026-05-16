@@ -109,6 +109,101 @@ func TestBuildAndParseSheetPreservesPixelData(t *testing.T) {
 	}
 }
 
+func TestBuildSheetRejectsNonDivisibleTileSize(t *testing.T) {
+	img := image.NewNRGBA(image.Rect(0, 0, 10, 10))
+	_, err := BuildSheet(img, 3, 3)
+	if err == nil {
+		t.Fatal("expected error for non-divisible tile size")
+	}
+}
+
+func TestBuildSheetRejectsZeroTileSize(t *testing.T) {
+	img := image.NewNRGBA(image.Rect(0, 0, 8, 8))
+	_, err := BuildSheet(img, 0, 8)
+	if err == nil {
+		t.Fatal("expected error for zero tile width")
+	}
+	_, err = BuildSheet(img, 8, 0)
+	if err == nil {
+		t.Fatal("expected error for zero tile height")
+	}
+}
+
+func TestBuildSheetRejectsNilImage(t *testing.T) {
+	_, err := BuildSheet(nil, 8, 8)
+	if err == nil {
+		t.Fatal("expected error for nil image")
+	}
+}
+
+func TestBuildMapRejectsZeroDimensions(t *testing.T) {
+	_, err := BuildMap(MapConfig{Width: 0, Height: 1, LayerCount: 1, CellBits: 16, ChunkWidth: 1, ChunkHeight: 1})
+	if err == nil {
+		t.Fatal("expected error for zero width")
+	}
+	_, err = BuildMap(MapConfig{Width: 1, Height: 0, LayerCount: 1, CellBits: 16, ChunkWidth: 1, ChunkHeight: 1})
+	if err == nil {
+		t.Fatal("expected error for zero height")
+	}
+}
+
+func TestBuildMapRejectsUnsupportedCellBits(t *testing.T) {
+	_, err := BuildMap(MapConfig{Width: 1, Height: 1, LayerCount: 1, CellBits: 32, ChunkWidth: 1, ChunkHeight: 1})
+	if err == nil {
+		t.Fatal("expected error for unsupported cell bits")
+	}
+}
+
+func TestBuildMapRejectsLayerCountMismatch(t *testing.T) {
+	_, err := BuildMap(MapConfig{
+		Width: 1, Height: 1, LayerCount: 2, CellBits: 16, ChunkWidth: 1, ChunkHeight: 1,
+		Layers: []MapLayerConfig{{Cells: []uint16{1}}},
+	})
+	if err == nil {
+		t.Fatal("expected error for layer count mismatch")
+	}
+}
+
+func TestBuildAnimRejectsClipNameTooLong(t *testing.T) {
+	longName := string(make([]byte, 256))
+	_, err := BuildAnim(AnimConfig{Clips: []AnimClipConfig{{Name: longName, FPS: 12, Frames: []uint16{0}}}})
+	if err == nil {
+		t.Fatal("expected error for clip name too long")
+	}
+}
+
+func TestParseSheetRejectsTruncatedPayload(t *testing.T) {
+	raw := encodeAsset("SHT2", []byte{1, 2})
+	_, err := ParseSheet(raw)
+	if err == nil {
+		t.Fatal("expected error for truncated sheet payload")
+	}
+}
+
+func TestParseMapRejectsTruncatedPayload(t *testing.T) {
+	raw := encodeAsset("MAP2", []byte{1, 2})
+	_, err := ParseMap(raw)
+	if err == nil {
+		t.Fatal("expected error for truncated map payload")
+	}
+}
+
+func TestParseAnimRejectsTruncatedPayload(t *testing.T) {
+	raw := encodeAsset("ANM2", []byte{})
+	_, err := ParseAnim(raw)
+	if err == nil {
+		t.Fatal("expected error for truncated anim payload")
+	}
+}
+
+func TestParseBundleRejectsTruncatedPayload(t *testing.T) {
+	raw := encodeAsset("BND2", []byte{})
+	_, err := ParseBundle(raw)
+	if err == nil {
+		t.Fatal("expected error for truncated bundle payload")
+	}
+}
+
 func mustReadFixture(t *testing.T, name string) []byte {
 	t.Helper()
 

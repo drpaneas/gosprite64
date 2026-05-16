@@ -39,3 +39,36 @@ func TestDrawSpriteOutOfRangeFrameIsNoop(t *testing.T) {
 	DrawSprite(&SpriteSheet{sheet: &Sheet{}}, 999, 10, 20)
 	DrawSpriteWithOptions(&SpriteSheet{sheet: &Sheet{}}, -1, 10, 20, DrawSpriteOptions{})
 }
+
+func TestOptionsNonDefaultWithFlip(t *testing.T) {
+	opts := DrawSpriteOptions{FlipH: true}
+	if opts.isDefault() {
+		t.Fatal("FlipH should make options non-default")
+	}
+}
+
+func TestOptionsNonDefaultWithScale(t *testing.T) {
+	opts := DrawSpriteOptions{ScaleX: 2}
+	if opts.isDefault() {
+		t.Fatal("ScaleX != 1 should make options non-default")
+	}
+}
+
+func TestOptionsNonDefaultWithBlend(t *testing.T) {
+	opts := DrawSpriteOptions{Blend: BlendAlpha, Alpha: 0.5}
+	if opts.isDefault() {
+		t.Fatal("BlendAlpha should make options non-default")
+	}
+}
+
+func TestOptionsNonDefaultWithRotation(t *testing.T) {
+	opts := DrawSpriteOptions{Rotation: 0.5}
+	if opts.isDefault() {
+		t.Fatal("non-zero rotation should make options non-default")
+	}
+}
+
+func TestDrawWorldSpriteNilCameraIsNoop(t *testing.T) {
+	DrawWorldSprite(nil, 0, 100, 200, nil)
+	DrawWorldSpriteWithOptions(nil, 0, 100, 200, nil, DrawSpriteOptions{FlipH: true})
+}

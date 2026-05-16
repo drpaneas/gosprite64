@@ -1,5 +1,9 @@
 package gosprite64
 
+import (
+	"github.com/drpaneas/gosprite64/internal/sprite"
+)
+
 type BlendMode uint8
 
 const (
@@ -76,7 +80,13 @@ func DrawSpriteWithOptions(sheet *SpriteSheet, frame int, x, y float32, opts Dra
 	sy := opts.effectiveScaleY()
 	ox := x - opts.OriginX*sx
 	oy := y - opts.OriginY*sy
-	drawLogicalImage(img, int(ox), int(oy))
+
+	video := currentVideo()
+	if video == nil || video.Framebuffer == nil {
+		return
+	}
+	sprite.RenderSprite(video.Framebuffer, img, int(ox), int(oy),
+		opts.FlipH, opts.FlipV, sx, sy)
 }
 
 func DrawWorldSprite(sheet *SpriteSheet, frame int, worldX, worldY float32, cam *Camera) {

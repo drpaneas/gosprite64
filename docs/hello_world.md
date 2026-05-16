@@ -91,7 +91,7 @@ Load `game.z64` in an emulator like [ares](https://ares-emu.net/) to see a blue 
 
 ## Editor support
 
-No special editor configuration is needed. The GoSprite64 source files have no build tags, so gopls and the VS Code Go extension work with standard Go for code navigation and autocompletion. The EmbeddedGo toolchain is only needed at build time.
+If `gopls` reports `embedded/*` packages as missing or does not recognize files guarded by `//go:build n64`, see the editor setup section in [Getting Started](./getting_started.md).
 
 ## Project structure
 

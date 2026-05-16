@@ -53,6 +53,10 @@ GoSprite64 embraces the flat world of tilemaps, palettes, and pixel-art game sce
 
 * 🧠 Clean and idiomatic Go API inspired from [Ebitengine](https://ebitengine.org/), [Raylib](https://www.raylib.com/) and [PICO-8](https://www.lexaloffle.com/pico-8.php)
 
+* 🗺️ Tile2D scene pipeline: author tile sheets and maps offline, bundle them, load and render at runtime with camera scrolling
+
+* 🔊 VADPCM audio pipeline: compress WAV files at build time, play sound effects and music at runtime with zero per-frame allocations
+
 * 💾 Runs on real N64 consoles (via [EverDrive](https://krikzz.com/our-products/cartridges/ed64x7.html) or [SummerCard64](https://summercart64.dev/))
 
 * 🔧 Great for retro homebrew, demoscene, or nostalgic experiments

@@ -14,10 +14,9 @@ Designed for developers who love Go and grew up on cartridges, GoSprite64 makes 
 
 you can:
 
-<!-- * 🧱 Sprite + Tilemap rendering made simple
-* 🎮 Full controller support out of the box
-* 🔊 Audio playback via the N64’s hardware> -->
 * 🚀 A friendly API built on top of `clktmr/n64` and `embedded-go`
+* 🗺️ Tile2D scene pipeline for authoring and rendering tile-based worlds
+* 🔊 VADPCM audio pipeline for compressed sound effects and music
 * 💾 Builds real N64 ROMs you can flash and play (yes, on real hardware!)
 
 ## Fixed Resolution

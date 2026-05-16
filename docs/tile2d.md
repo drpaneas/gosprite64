@@ -80,6 +80,32 @@ This will:
 - compile the JSON map into a `.map` binary
 - package everything into a `.bundle` manifest
 
+## Embedding assets for the N64
+
+The N64 loads assets from cartridge storage using an embedded filesystem. Create `assets_embed.go` in your game directory:
+
+```go
+package main
+
+import (
+    "embed"
+
+    "github.com/clktmr/n64/drivers/cartfs"
+    "github.com/drpaneas/gosprite64"
+)
+
+//go:embed assets/*
+var embeddedAssets embed.FS
+
+var assetFS = cartfs.Embed(embeddedAssets)
+
+func init() {
+    gosprite64.RegisterAssetFS(assetFS)
+}
+```
+
+This makes the generated `.sheet`, `.map`, and `.bundle` files available to `OpenBundle` at runtime. Without this file, `OpenBundle` cannot find the assets on the N64.
+
 ## Runtime usage
 
 ```go
@@ -95,7 +121,7 @@ func (g *Game) Init() {
     }
 
     g.scene = scene
-    g.camera = &gosprite64.Camera{Width: 64, Height: 64}
+    g.camera = &gosprite64.Camera{Width: 288, Height: 216}
 }
 
 func (g *Game) Draw() {
@@ -127,6 +153,8 @@ stats := scene.Stats()
 fmt.Printf("visible: %d, uploads: %d\n", stats.VisibleTiles, stats.UploadCount)
 ```
 
-## Reference example
+## Reference examples
 
-See `examples/tilemap` in the GoSprite64 repository for a complete working example that demonstrates the full pipeline from source assets to rendered scene.
+See `examples/simplegame` for a minimal working example that follows this tutorial step by step: source PNG + JSON assets, `go generate` pipeline, bundle loading, camera scrolling with D-pad input, and runtime stats overlay.
+
+For a more advanced example with multiple layers, overlay sheets, and tile animations, see `examples/tilemap`.

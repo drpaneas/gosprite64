@@ -11,9 +11,11 @@ import (
 )
 
 // RenderSprite draws a sprite using software rendering on the host.
-// Flip and scale options are ignored; the image is drawn at the given position.
+// Flip, scale, and rotation options are ignored; the image is drawn at the
+// given position. Rotation is not implemented on the host fallback path.
 func RenderSprite(fb *texture.Texture, src image.Image, x, y int,
-	_ bool, _ bool, _ float32, _ float32, blendMode uint8, _ float32) {
+	_ bool, _ bool, _ float32, _ float32, blendMode uint8, _ float32,
+	_ float32, _ float32, _ float32) {
 
 	if fb == nil || src == nil {
 		return

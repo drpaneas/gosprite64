@@ -96,21 +96,21 @@ func LoadSpriteSheet(path string) (*SpriteSheet, error) {
 }
 
 func (s *SpriteSheet) FrameCount() int {
-	if s == nil || s.sheet == nil {
+	if s == nil || s.sheet == nil || s.sheet.parsed.TileCount == 0 {
 		return 0
 	}
 	return int(s.sheet.parsed.TileCount)
 }
 
 func (s *SpriteSheet) FrameWidth() int {
-	if s == nil || s.sheet == nil {
+	if s == nil || s.sheet == nil || s.sheet.parsed.TileWidth == 0 {
 		return 0
 	}
 	return int(s.sheet.parsed.TileWidth)
 }
 
 func (s *SpriteSheet) FrameHeight() int {
-	if s == nil || s.sheet == nil {
+	if s == nil || s.sheet == nil || s.sheet.parsed.TileHeight == 0 {
 		return 0
 	}
 	return int(s.sheet.parsed.TileHeight)
@@ -566,6 +566,28 @@ func TestAnimationPlayerPlayRejectsEmptyClip(t *testing.T) {
 	}
 }
 
+func TestAnimationPlayerPlayEmptyClipStopsExistingPlayback(t *testing.T) {
+	valid := AnimationClip{Name: "walk", FPS: 12, Frames: []uint16{0, 1, 2}}
+	p := NewAnimationPlayer()
+	p.Play(valid)
+	p.Advance(1)
+	if !p.Playing() {
+		t.Fatal("should be playing after valid Play")
+	}
+
+	empty := AnimationClip{Name: "empty", FPS: 12, Frames: []uint16{}}
+	p.Play(empty)
+	if p.Playing() {
+		t.Fatal("Play(emptyClip) on active player should stop playback")
+	}
+	if !p.Done() {
+		t.Fatal("Play(emptyClip) on active player should set done")
+	}
+	if p.Frame() != 0 {
+		t.Fatalf("Play(emptyClip) should reset frame to 0, got %d", p.Frame())
+	}
+}
+
 func TestAnimationPlayerRestartWithNoClipIsNoop(t *testing.T) {
 	p := NewAnimationPlayer()
 	p.Restart()
@@ -611,7 +633,14 @@ func NewAnimationPlayer() *AnimationPlayer {
 }
 
 func (p *AnimationPlayer) Play(clip AnimationClip) {
-	if p == nil || len(clip.Frames) == 0 {
+	if p == nil {
+		return
+	}
+	if len(clip.Frames) == 0 {
+		p.state = playerStopped
+		p.frameIdx = 0
+		p.accumulator = 0
+		p.clip = AnimationClip{}
 		return
 	}
 	p.clip = clip

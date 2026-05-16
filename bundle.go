@@ -90,7 +90,7 @@ func (b *Bundle) loadMapEntry(entry format.BundleEntry) (*Map, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Map{parsed: parsed}, nil
+	return newMap(parsed), nil
 }
 
 func (b *Bundle) loadAnimEntry(entry format.BundleEntry) (*AnimationSet, error) {

@@ -6,12 +6,31 @@ import (
 )
 
 type Map struct {
-	parsed format.ParsedMap
+	parsed          format.ParsedMap
+	cachedLayerInfo []MapLayerInfo
 }
 
 type MapLayerInfo struct {
 	SheetID      uint16
 	NonZeroTiles int
+}
+
+func newMap(parsed format.ParsedMap) *Map {
+	m := &Map{parsed: parsed}
+	m.cachedLayerInfo = make([]MapLayerInfo, len(parsed.Layers))
+	for i, layer := range parsed.Layers {
+		info := MapLayerInfo{SheetID: layer.SheetID}
+		if info.SheetID == 0 {
+			info.SheetID = 1
+		}
+		for _, tile := range layer.Cells {
+			if tile != 0 {
+				info.NonZeroTiles++
+			}
+		}
+		m.cachedLayerInfo[i] = info
+	}
+	return m
 }
 
 func (m *Map) Width() int {
@@ -44,22 +63,10 @@ func (m *Map) LayerCount() int {
 }
 
 func (m *Map) LayerInfo(layer int) (MapLayerInfo, bool) {
-	if m == nil || layer < 0 || layer >= len(m.parsed.Layers) {
+	if m == nil || layer < 0 || layer >= len(m.cachedLayerInfo) {
 		return MapLayerInfo{}, false
 	}
-	parsed := m.parsed.Layers[layer]
-	info := MapLayerInfo{
-		SheetID: parsed.SheetID,
-	}
-	if info.SheetID == 0 {
-		info.SheetID = 1
-	}
-	for _, tile := range parsed.Cells {
-		if tile != 0 {
-			info.NonZeroTiles++
-		}
-	}
-	return info, true
+	return m.cachedLayerInfo[layer], true
 }
 
 func (m *Map) LayerSheetID(layer int) (uint16, bool) {

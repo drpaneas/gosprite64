@@ -372,6 +372,19 @@ func TestSpriteSheetAPI(t *testing.T) {
 	requireNotContains(t, ss, "image.Image")
 }
 
+func TestDrawSpriteAPI(t *testing.T) {
+	sd := mustReadRepoFile(t, "sprite_draw.go")
+	requireContains(t, sd, "type DrawSpriteOptions struct {")
+	requireContains(t, sd, "type BlendMode uint8")
+	requireContains(t, sd, "BlendNone")
+	requireContains(t, sd, "BlendMasked")
+	requireContains(t, sd, "BlendAlpha")
+	requireContains(t, sd, "func DrawSprite(sheet *SpriteSheet, frame int, x, y float32)")
+	requireContains(t, sd, "func DrawSpriteWithOptions(sheet *SpriteSheet, frame int, x, y float32, opts DrawSpriteOptions)")
+	requireContains(t, sd, "func DrawWorldSprite(sheet *SpriteSheet, frame int, worldX, worldY float32, cam *Camera)")
+	requireContains(t, sd, "func DrawWorldSpriteWithOptions(sheet *SpriteSheet, frame int, worldX, worldY float32, cam *Camera, opts DrawSpriteOptions)")
+}
+
 func requireContains(t *testing.T, content, snippet string) {
 	t.Helper()
 	if !strings.Contains(content, snippet) {

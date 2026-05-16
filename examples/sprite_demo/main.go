@@ -69,6 +69,8 @@ func (g *Game) Init() {
 	g.player.SetLoop(true)
 	g.player.Play(g.idle)
 	g.curClip = "idle"
+	g.prevX = g.playerX
+	g.prevY = g.playerY
 }
 
 func (g *Game) Update() {
@@ -146,10 +148,12 @@ func (g *Game) Draw() {
 		FlipH: g.flipH,
 	})
 
-	gosprite64.DrawWorldSpriteWithOptions(g.charSS, frame, g.prevX, g.prevY, g.camera, gosprite64.DrawSpriteOptions{
-		Blend: gosprite64.BlendAlpha,
-		Alpha: 0.5,
-	})
+	if g.prevX != g.playerX || g.prevY != g.playerY {
+		gosprite64.DrawWorldSpriteWithOptions(g.charSS, frame, g.prevX, g.prevY, g.camera, gosprite64.DrawSpriteOptions{
+			Blend: gosprite64.BlendAlpha,
+			Alpha: 0.5,
+		})
+	}
 
 	gosprite64.DrawSpriteWithOptions(g.charSS, frame, 2, 208, gosprite64.DrawSpriteOptions{
 		Blend: gosprite64.BlendAlpha,

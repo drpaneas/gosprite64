@@ -171,7 +171,6 @@ func TestTileEngineNaming(t *testing.T) {
 	requireContains(t, scene, "func (s *Scene) LayerSheet(layer int) (*Sheet, bool)")
 	requireContains(t, scene, "func (s *Scene) LayerAssets(layer int) (MapLayerInfo, *Sheet, bool)")
 	requireContains(t, scene, "func (s *Scene) LayerSheetInfo(layer int) (SheetInfo, bool)")
-	requireContains(t, scene, "func (s *Scene) Update(dt int)")
 	requireContains(t, scene, "func (s *Scene) Draw(cam *Camera)")
 
 	m := mustReadRepoFile(t, "map.go")
@@ -221,16 +220,15 @@ func TestTileEngineCameraAndSceneHooks(t *testing.T) {
 	scene := mustReadRepoFile(t, "scene.go")
 	requireContains(t, scene, "defaultCamera *Camera")
 	requireContains(t, scene, "preparer      *sceneRenderPreparer")
-	requireContains(t, scene, "adapter       *sceneRendererAdapter")
+	requireContains(t, scene, "renderer      *tilerender.Renderer")
 	requireContains(t, scene, "bridge        *sceneRenderBridge")
 	requireContains(t, scene, "func (s *Scene) configureRenderer()")
 	requireContains(t, scene, "scene.preparer = newSceneRenderPreparer(scene)")
 	requireContains(t, scene, "scene.bridge = newSceneRenderBridge()")
-	requireContains(t, scene, "scene.adapter = newSceneRendererAdapter(scene.resolveRenderer(), scene.bridge)")
 	requireContains(t, scene, "scene.configureRenderer()")
 	requireContains(t, scene, "func (s *Scene) Draw(cam *Camera)")
 	requireContains(t, scene, "cam = s.defaultCamera")
-	requireContains(t, scene, "s.adapter.drawPreparedScene(s.renderScene, *cam)")
+	requireContains(t, scene, "s.lastDrawStats = s.renderer.DrawPreparedScene(")
 }
 
 func TestTileEnginePolicyControls(t *testing.T) {

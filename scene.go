@@ -7,6 +7,7 @@ import (
 	tileloader "github.com/drpaneas/gosprite64/internal/tile2d/loader"
 	tilerender "github.com/drpaneas/gosprite64/internal/tile2d/render"
 	tilestats "github.com/drpaneas/gosprite64/internal/tile2d/stats"
+	"github.com/drpaneas/gosprite64/internal/tile2d/visibility"
 )
 
 type Scene struct {
@@ -16,7 +17,7 @@ type Scene struct {
 	animations    []*AnimationSet
 	defaultCamera *Camera
 	preparer      *sceneRenderPreparer
-	adapter       *sceneRendererAdapter
+	renderer      *tilerender.Renderer
 	bridge        *sceneRenderBridge
 	renderScene   tilerender.PreparedScene
 	lastDrawStats tilerender.DrawStats
@@ -59,7 +60,14 @@ func LoadScene(bundle *Bundle) (*Scene, error) {
 	scene.defaultCamera = newDefaultCamera()
 	scene.preparer = newSceneRenderPreparer(scene)
 	scene.bridge = newSceneRenderBridge()
-	scene.adapter = newSceneRendererAdapter(scene.resolveRenderer(), scene.bridge)
+	if rt := currentRuntime(); rt != nil {
+		if tile := rt.currentTile(); tile != nil && tile.renderer != nil {
+			scene.renderer = tile.renderer
+		}
+	}
+	if scene.renderer == nil {
+		scene.renderer = tilerender.NewRenderer(tilerender.RenderHooks{})
+	}
 	if scene.gameMap == nil {
 		return nil, fmt.Errorf("load scene: bundle has no map")
 	}
@@ -175,10 +183,8 @@ func (s *Scene) LayerSheetInfo(layer int) (SheetInfo, bool) {
 	return sheet.Info(), true
 }
 
-func (s *Scene) Update(dt int) {}
-
 func (s *Scene) Draw(cam *Camera) {
-	if s == nil || s.adapter == nil || s.gameMap == nil {
+	if s == nil || s.renderer == nil || s.gameMap == nil {
 		return
 	}
 	if cam == nil {
@@ -187,23 +193,24 @@ func (s *Scene) Draw(cam *Camera) {
 	if cam == nil {
 		return
 	}
-	s.lastDrawStats = s.adapter.drawPreparedScene(s.renderScene, *cam)
-}
-
-func (s *Scene) resolveRenderer() *tilerender.Renderer {
-	if rt := currentRuntime(); rt != nil {
-		if tile := rt.currentTile(); tile != nil && tile.renderer != nil {
-			return tile.renderer
-		}
-	}
-	return tilerender.NewRenderer(tilerender.RenderHooks{})
+	s.lastDrawStats = s.renderer.DrawPreparedScene(
+		s.renderScene,
+		visibility.Camera{
+			X:      cam.X,
+			Y:      cam.Y,
+			Width:  cam.Width,
+			Height: cam.Height,
+		},
+	)
 }
 
 func (s *Scene) configureRenderer() {
-	if s == nil || s.adapter == nil {
+	if s == nil || s.renderer == nil || s.bridge == nil {
 		return
 	}
-	s.adapter.configure()
+	s.renderer.SetHooks(tilerender.RenderHooks{
+		Executor: s.bridge,
+	})
 }
 
 func collectParsedSheets(sheets []*Sheet) []format.ParsedSheet {

@@ -25,7 +25,7 @@ func (g *Game) Init() {
 	}
 
 	g.scene = scene
-	g.camera = &gosprite64.Camera{Width: 128, Height: 96}
+	g.camera = &gosprite64.Camera{Width: 288, Height: 216}
 }
 
 func (g *Game) Update() {

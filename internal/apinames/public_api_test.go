@@ -233,10 +233,14 @@ func TestTileEngineCameraAndSceneHooks(t *testing.T) {
 
 func TestTileEnginePolicyControls(t *testing.T) {
 	assetPolicy := mustReadRepoFile(t, "asset_policy.go")
-	requireContains(t, assetPolicy, "type CompressionMode uint8")
-	requireContains(t, assetPolicy, "CompressionDefault CompressionMode = iota")
-	requireContains(t, assetPolicy, "CompressionDisabled")
-	requireContains(t, assetPolicy, "Compression CompressionMode")
+	requireContains(t, assetPolicy, "type RuntimeStats struct {")
+	requireContains(t, assetPolicy, "VisibleTiles  int")
+	requireContains(t, assetPolicy, "SheetCount    int")
+	requireContains(t, assetPolicy, "LayerCount    int")
+	requireContains(t, assetPolicy, "UploadCount   int")
+	requireNotContains(t, assetPolicy, "type CompressionMode")
+	requireNotContains(t, assetPolicy, "type AssetPolicy struct")
+	requireNotContains(t, assetPolicy, "type SceneOptions struct")
 }
 
 func TestTileEngineRuntimeStatsSurface(t *testing.T) {

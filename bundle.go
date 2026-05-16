@@ -32,13 +32,6 @@ func OpenBundleWithLoader(path string, l tileloader.Loader) (*Bundle, error) {
 	}, nil
 }
 
-func (b *Bundle) ManifestCount() int {
-	if b == nil {
-		return 0
-	}
-	return len(b.manifest.Entries)
-}
-
 func (b *Bundle) LoadSheet(name string) (*Sheet, error) {
 	entry, err := b.entryByKindAndName(format.BundleKindSheet, name)
 	if err != nil {

@@ -362,6 +362,16 @@ func TestPublicTile2DFilesDoNotImportInternalPackages(t *testing.T) {
 	}
 }
 
+func TestSpriteSheetAPI(t *testing.T) {
+	ss := mustReadRepoFile(t, "sprite_sheet.go")
+	requireContains(t, ss, "type SpriteSheet struct {")
+	requireContains(t, ss, "func LoadSpriteSheet(path string) (*SpriteSheet, error)")
+	requireContains(t, ss, "func (s *SpriteSheet) FrameCount() int")
+	requireContains(t, ss, "func (s *SpriteSheet) FrameWidth() int")
+	requireContains(t, ss, "func (s *SpriteSheet) FrameHeight() int")
+	requireNotContains(t, ss, "image.Image")
+}
+
 func requireContains(t *testing.T, content, snippet string) {
 	t.Helper()
 	if !strings.Contains(content, snippet) {

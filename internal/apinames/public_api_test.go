@@ -392,6 +392,28 @@ func requireContains(t *testing.T, content, snippet string) {
 	}
 }
 
+func TestSpriteSystemGuardrails(t *testing.T) {
+	ss := mustReadRepoFile(t, "sprite_sheet.go")
+	requireNotContains(t, ss, "image.Image")
+
+	sd := mustReadRepoFile(t, "sprite_draw.go")
+	requireContains(t, sd, "OriginX")
+	requireContains(t, sd, "OriginY")
+	requireContains(t, sd, "Rotation")
+	requireContains(t, sd, "effectiveScaleX")
+	requireContains(t, sd, "effectiveScaleY")
+	requireContains(t, sd, "effectiveAlpha")
+
+	example := mustReadRepoFile(t, "examples/sprite_demo/main.go")
+	requireContains(t, example, "gosprite64.LoadSpriteSheet(")
+	requireContains(t, example, "gosprite64.DrawSpriteWithOptions(")
+	requireContains(t, example, "gosprite64.DrawWorldSpriteWithOptions(")
+	requireContains(t, example, "NewAnimationPlayer()")
+	requireContains(t, example, "FlipH:")
+	requireContains(t, example, "Blend:")
+	requireContains(t, example, "scene.Draw(")
+}
+
 func requireNotContains(t *testing.T, content, snippet string) {
 	t.Helper()
 	if strings.Contains(content, snippet) {

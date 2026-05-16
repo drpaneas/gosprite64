@@ -539,12 +539,21 @@ func TestAnimationPlayerFPSAbove60(t *testing.T) {
 	clip := AnimationClip{Name: "flash", FPS: 120, Frames: []uint16{0, 1, 2}}
 	p := NewAnimationPlayer()
 	p.Play(clip)
+
 	p.Advance(1)
 	if p.Frame() != 2 {
-		t.Fatalf("FPS 120 non-looping: after 1 tick expected frame 2 (advances 2 frames), got %d", p.Frame())
+		t.Fatalf("FPS 120 non-looping: after 1 tick expected frame 2, got %d", p.Frame())
+	}
+	if p.Done() {
+		t.Fatal("should not be done when landing exactly on the last frame")
+	}
+
+	p.Advance(1)
+	if p.Frame() != 2 {
+		t.Fatalf("after advancing past the end, Frame() = %d, want 2", p.Frame())
 	}
 	if !p.Done() {
-		t.Fatal("FPS 120 non-looping 3-frame clip: should be done after 1 tick")
+		t.Fatal("should be done after advancing past the last frame")
 	}
 }
 

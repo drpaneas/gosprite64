@@ -1,0 +1,22 @@
+{
+  "clips": [
+    {
+      "name": "idle",
+      "fps": 4,
+      "frames": [
+        0,
+        1
+      ]
+    },
+    {
+      "name": "walk",
+      "fps": 8,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ]
+    }
+  ]
+}

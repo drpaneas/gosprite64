@@ -54,11 +54,16 @@ func (p *sceneRenderPreparer) primaryTileHeight() int {
 	return 8
 }
 
-func (p *sceneRenderPreparer) sheetFor(sheetID uint16) *Sheet {
-	if p == nil || p.scene == nil {
-		return nil
+func nonZeroCount(prepared [][]tilerender.PreparedTile) int {
+	n := 0
+	for _, row := range prepared {
+		for _, tile := range row {
+			if tile.TileID != 0 {
+				n++
+			}
+		}
 	}
-	return p.scene.SheetByID(sheetID)
+	return n
 }
 
 func (p *sceneRenderPreparer) prepareLayerTiles(layer sceneRenderLayerSource) [][]tilerender.PreparedTile {
@@ -79,7 +84,7 @@ func (p *sceneRenderPreparer) prepareLayerTiles(layer sceneRenderLayerSource) []
 				TileID:  tileID,
 				SheetID: sheetID,
 			}
-			if sheet := p.sheetFor(sheetID); sheet != nil {
+			if sheet := p.scene.SheetByID(sheetID); sheet != nil {
 				entry.Source = sheet.tileImage(tileID)
 			}
 			prepared[y][x] = entry
@@ -89,7 +94,7 @@ func (p *sceneRenderPreparer) prepareLayerTiles(layer sceneRenderLayerSource) []
 }
 
 func (p *sceneRenderPreparer) prepareLayerDraws(prepared [][]tilerender.PreparedTile) []tilerender.PreparedDraw {
-	var draws []tilerender.PreparedDraw
+	draws := make([]tilerender.PreparedDraw, 0, nonZeroCount(prepared))
 	for y := range prepared {
 		for x, tile := range prepared[y] {
 			if tile.TileID == 0 {
@@ -106,7 +111,7 @@ func (p *sceneRenderPreparer) prepareLayerDraws(prepared [][]tilerender.Prepared
 }
 
 func (p *sceneRenderPreparer) prepareLayerRuns(prepared [][]tilerender.PreparedTile) []tilerender.PreparedRun {
-	var runs []tilerender.PreparedRun
+	runs := make([]tilerender.PreparedRun, 0, nonZeroCount(prepared))
 	for y := range prepared {
 		row := prepared[y]
 		for x := 0; x < len(row); {

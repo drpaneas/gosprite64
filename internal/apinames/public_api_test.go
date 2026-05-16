@@ -328,6 +328,26 @@ func requireMissingRepoFile(t *testing.T, name string) {
 	}
 }
 
+func TestPublicTile2DFilesDoNotImportInternalPackages(t *testing.T) {
+	publicFiles := []string{
+		"bundle.go",
+		"camera.go",
+		"asset_policy.go",
+		"sprite.go",
+	}
+	for _, path := range publicFiles {
+		content := mustReadRepoFile(t, path)
+		for _, banned := range []string{
+			`"github.com/drpaneas/gosprite64/internal/tile2d/render"`,
+			`"github.com/drpaneas/gosprite64/internal/tile2d/visibility"`,
+			`"github.com/drpaneas/gosprite64/internal/tile2d/residency"`,
+			`"github.com/drpaneas/gosprite64/internal/tile2d/stats"`,
+		} {
+			requireNotContains(t, content, banned)
+		}
+	}
+}
+
 func requireContains(t *testing.T, content, snippet string) {
 	t.Helper()
 	if !strings.Contains(content, snippet) {

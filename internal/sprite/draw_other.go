@@ -13,7 +13,7 @@ import (
 // RenderSprite draws a sprite using software rendering on the host.
 // Flip and scale options are ignored; the image is drawn at the given position.
 func RenderSprite(fb *texture.Texture, src image.Image, x, y int,
-	_ bool, _ bool, _ float32, _ float32) {
+	_ bool, _ bool, _ float32, _ float32, blendMode uint8, _ float32) {
 
 	if fb == nil || src == nil {
 		return
@@ -38,7 +38,12 @@ func RenderSprite(fb *texture.Texture, src image.Image, x, y int,
 		srcBounds.Min.X+(clipped.Min.X-logicalDst.Min.X),
 		srcBounds.Min.Y+(clipped.Min.Y-logicalDst.Min.Y),
 	)
-	draw.Src.Draw(
+
+	op := draw.Src
+	if blendMode >= 1 {
+		op = draw.Over
+	}
+	op.Draw(
 		fb,
 		image.Rect(framebufferRect.Min.X, framebufferRect.Min.Y,
 			framebufferRect.Max.X+1, framebufferRect.Max.Y+1),

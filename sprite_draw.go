@@ -86,7 +86,7 @@ func DrawSpriteWithOptions(sheet *SpriteSheet, frame int, x, y float32, opts Dra
 		return
 	}
 	sprite.RenderSprite(video.Framebuffer, img, int(ox), int(oy),
-		opts.FlipH, opts.FlipV, sx, sy)
+		opts.FlipH, opts.FlipV, sx, sy, uint8(opts.Blend), opts.effectiveAlpha())
 }
 
 func DrawWorldSprite(sheet *SpriteSheet, frame int, worldX, worldY float32, cam *Camera) {

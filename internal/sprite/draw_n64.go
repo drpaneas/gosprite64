@@ -4,10 +4,16 @@ package sprite
 
 import (
 	"image"
+	"image/color"
 
 	"github.com/clktmr/n64/rcp/rdp"
 	"github.com/clktmr/n64/rcp/texture"
 	"github.com/drpaneas/gosprite64/internal/rendergeom"
+)
+
+const (
+	blendMasked = 1
+	blendAlpha  = 2
 )
 
 var blendSrcSprites = rdp.BlendMode{
@@ -17,12 +23,19 @@ var blendSrcSprites = rdp.BlendMode{
 	B1: rdp.BlenderBZero,
 }
 
-// RenderSprite draws a sprite frame via the RDP with flip and scale support.
+var blendOverSprites = rdp.BlendMode{
+	P1: rdp.BlenderPMColorCombiner,
+	A1: rdp.BlenderAColorCombinerAlpha,
+	M1: rdp.BlenderPMFramebuffer,
+	B1: rdp.BlenderBOneMinusAlphaA,
+}
+
+// RenderSprite draws a sprite frame via the RDP with flip, scale, and blend support.
 // Flip is implemented using the RDP's native MirrorS/MirrorT tile flags,
 // which requires power-of-2 texture dimensions. For non-power-of-2 textures,
 // flip flags are silently ignored.
 func RenderSprite(fb *texture.Texture, src image.Image, x, y int,
-	flipH, flipV bool, scaleX, scaleY float32) {
+	flipH, flipV bool, scaleX, scaleY float32, blendMode uint8, alpha float32) {
 
 	tex, ok := src.(*texture.Texture)
 	if !ok || tex == nil || fb == nil {
@@ -48,22 +61,7 @@ func RenderSprite(fb *texture.Texture, src image.Image, x, y int,
 	rdp.RDP.SetColorImage(fb)
 	rdp.RDP.SetScissor(image.Rectangle{Max: fb.Bounds().Size()}, rdp.InterlaceNone)
 
-	alphaSource := rdp.CombineTex0
-	if !tex.HasAlpha() {
-		alphaSource = rdp.CombineDAlphaOne
-	}
-
-	rdp.RDP.SetOtherModes(
-		rdp.ForceBlend|rdp.BiLerp0,
-		rdp.CycleTypeOne, rdp.RGBDitherNone, rdp.AlphaDitherNone,
-		rdp.ZmodeOpaque, rdp.CvgDestClamp, blendSrcSprites,
-	)
-	rdp.RDP.SetCombineMode(rdp.CombineMode{
-		Two: rdp.CombinePass{
-			RGB:   rdp.CombineParams{0, 0, 0, rdp.CombineTex0},
-			Alpha: rdp.CombineParams{0, 0, 0, alphaSource},
-		},
-	})
+	setupBlendMode(tex, blendMode, alpha)
 
 	tileDesc := rdp.TileDescriptor{
 		Format: tex.Format(),
@@ -128,6 +126,72 @@ func RenderSprite(fb *texture.Texture, src image.Image, x, y int,
 		image.Point{X: rdpScaleX, Y: rdpScaleY},
 		drawIdx,
 	)
+}
+
+func setupBlendMode(tex *texture.Texture, blendMode uint8, alpha float32) {
+	alphaSource := rdp.CombineTex0
+	if !tex.HasAlpha() {
+		alphaSource = rdp.CombineDAlphaOne
+	}
+
+	switch blendMode {
+	case blendMasked:
+		rdp.RDP.SetOtherModes(
+			rdp.AlphaCompare|rdp.ForceBlend|rdp.ImageRead|rdp.BiLerp0,
+			rdp.CycleTypeOne, rdp.RGBDitherNone, rdp.AlphaDitherNone,
+			rdp.ZmodeOpaque, rdp.CvgDestClamp, blendOverSprites,
+		)
+		rdp.RDP.SetBlendColor(color.NRGBA{A: 1})
+		rdp.RDP.SetCombineMode(rdp.CombineMode{
+			Two: rdp.CombinePass{
+				RGB:   rdp.CombineParams{0, 0, 0, rdp.CombineTex0},
+				Alpha: rdp.CombineParams{0, 0, 0, alphaSource},
+			},
+		})
+
+	case blendAlpha:
+		a := uint8(clampf(alpha, 0, 1) * 255)
+		rdp.RDP.SetEnvironmentColor(color.NRGBA{R: 255, G: 255, B: 255, A: a})
+		rdp.RDP.SetOtherModes(
+			rdp.ForceBlend|rdp.ImageRead|rdp.BiLerp0,
+			rdp.CycleTypeOne, rdp.RGBDitherNone, rdp.AlphaDitherNone,
+			rdp.ZmodeOpaque, rdp.CvgDestClamp, blendOverSprites,
+		)
+		rdp.RDP.SetCombineMode(rdp.CombineMode{
+			Two: rdp.CombinePass{
+				RGB: rdp.CombineParams{0, 0, 0, rdp.CombineTex0},
+				Alpha: rdp.CombineParams{
+					A: alphaSource,
+					B: rdp.CombineAAlphaZero,
+					C: rdp.CombineEnvironment,
+					D: rdp.CombineDAlphaZero,
+				},
+			},
+		})
+
+	default:
+		rdp.RDP.SetOtherModes(
+			rdp.ForceBlend|rdp.BiLerp0,
+			rdp.CycleTypeOne, rdp.RGBDitherNone, rdp.AlphaDitherNone,
+			rdp.ZmodeOpaque, rdp.CvgDestClamp, blendSrcSprites,
+		)
+		rdp.RDP.SetCombineMode(rdp.CombineMode{
+			Two: rdp.CombinePass{
+				RGB:   rdp.CombineParams{0, 0, 0, rdp.CombineTex0},
+				Alpha: rdp.CombineParams{0, 0, 0, alphaSource},
+			},
+		})
+	}
+}
+
+func clampf(v, lo, hi float32) float32 {
+	if v < lo {
+		return lo
+	}
+	if v > hi {
+		return hi
+	}
+	return v
 }
 
 func isPowerOf2(n int) bool {

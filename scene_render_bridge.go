@@ -14,35 +14,20 @@ func (b *sceneRenderBridge) DrawPreparedRun(x, y, tileWidth, tileHeight int, run
 	if run.Count <= 0 {
 		return
 	}
-	if !b.EnsurePrepared(run.Tile) {
+	exec, ok := b.currentTexturedExecutor()
+	if !ok || !exec.EnsurePrepared(run.Tile) {
 		for i := 0; i < run.Count; i++ {
 			drawLogicalImage(run.Tile.Source, x+(i*tileWidth), y)
 		}
 		return
 	}
-
-	exec, ok := b.currentTexturedExecutor()
-	if !ok {
-		return
-	}
 	exec.BlitRun(x, y, tileWidth, run.Count)
 }
 
-func (b *sceneRenderBridge) EnsurePrepared(tile tilerender.PreparedTile) bool {
-	exec, ok := b.currentTexturedExecutor()
-	if !ok {
-		return false
-	}
-	return exec.EnsurePrepared(tile)
-}
-
 func (b *sceneRenderBridge) DrawPreparedTile(x, y, width, height int, tile tilerender.PreparedTile) {
-	if !b.EnsurePrepared(tile) {
-		drawLogicalImage(tile.Source, x, y)
-		return
-	}
 	exec, ok := b.currentTexturedExecutor()
-	if !ok || !exec.Ready() {
+	if !ok || !exec.EnsurePrepared(tile) {
+		drawLogicalImage(tile.Source, x, y)
 		return
 	}
 	exec.BlitTile(x, y)

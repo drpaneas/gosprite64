@@ -34,7 +34,7 @@ The primary design rule is:
 
 - Sprite sheets compiled from PNG atlases with configurable frame dimensions (fixed grid, matching the tile system)
 - Individual sprite drawing with position (float32), horizontal flip, vertical flip, scale, rotation, and supported masked/blended rendering paths
-- An animation player type with playback controls: play, pause, resume, stop, loop, restart, set clip
+- An animation player type with playback controls: play, pause, resume, stop, loop, restart
 - The player tracks current frame and elapsed ticks, but does not own transition logic between clips
 - Camera-aware sprite drawing (world-space sprites that respect the camera viewport)
 - RDP-accelerated rendering for the common sprite operations, including draw, flip, scale, rotation, and supported blend paths
@@ -296,9 +296,9 @@ Documentation should not teach:
 3. Implement `DrawSprite` and `DrawSpriteWithOptions` for the non-rotated fast path, with tests
 4. Get `examples/sprite_demo` generating, loading, and drawing static sprites
 5. Implement `AnimationPlayer` with full playback controls, with host-testable tests
-6. Implement rotation support through the transformed-quad path
-7. Implement blend mode support
-8. Extend the example to cover animation, flip, scale, rotation, and blending
+6. Implement blend mode support (`BlendMasked` and `BlendAlpha`)
+7. Implement rotation support through the transformed-quad path
+8. Extend the example to cover animation, flip, scale, blending, and rotation
 9. Add structural guardrails and performance validation
 10. Write documentation
 

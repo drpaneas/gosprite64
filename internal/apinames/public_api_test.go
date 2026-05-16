@@ -328,6 +328,18 @@ func requireMissingRepoFile(t *testing.T, name string) {
 	}
 }
 
+func TestTilemapExampleUsesCanonicalAPIs(t *testing.T) {
+	tilemap := mustReadRepoFile(t, "examples/tilemap/main.go")
+	requireContains(t, tilemap, `"github.com/drpaneas/gosprite64"`)
+	requireContains(t, tilemap, "gosprite64.OpenBundle(")
+	requireContains(t, tilemap, "gosprite64.LoadScene(")
+	requireContains(t, tilemap, "gosprite64.Camera{")
+	requireContains(t, tilemap, "scene.Draw(")
+	requireContains(t, tilemap, "gosprite64.ClearScreen()")
+	requireContains(t, tilemap, "gosprite64.DrawText(")
+	requireNotContains(t, tilemap, `import . "github.com/drpaneas/gosprite64"`)
+}
+
 func TestPublicTile2DFilesDoNotImportInternalPackages(t *testing.T) {
 	publicFiles := []string{
 		"bundle.go",

@@ -130,12 +130,17 @@ func (p *Player) Tick(sampleRate uint32) []NoteEvent {
 
 	p.position += samplesPerTick
 
-	if p.loopCount != 0 && p.position >= uint32(len(p.Data)) {
-		p.position = p.loopStart
-		if p.loopCount > 0 {
-			p.loopCount--
-		}
-		if p.loopCount == 0 {
+	if p.position >= uint32(len(p.Data)) {
+		if p.loopCount != 0 {
+			p.position = p.loopStart
+			if p.loopCount > 0 {
+				p.loopCount--
+			}
+			if p.loopCount == 0 {
+				p.playing = false
+				return nil
+			}
+		} else {
 			p.playing = false
 			return nil
 		}

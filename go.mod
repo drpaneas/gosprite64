@@ -13,3 +13,5 @@ require (
 	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
 	golang.org/x/text v0.14.0 // indirect
 )
+
+replace github.com/clktmr/n64 v0.1.2 => /Users/pgeorgia/gocode/src/github.com/clktmr/n64

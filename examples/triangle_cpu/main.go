@@ -5,7 +5,6 @@ package main
 import (
 	"image"
 	"image/color"
-	"math"
 	"time"
 
 	n64draw "github.com/clktmr/n64/drivers/draw"
@@ -19,12 +18,7 @@ import (
 	"github.com/drpaneas/gosprite64/internal/rendergeom"
 )
 
-const (
-	screenW = 320
-	screenH = 240
-)
-
-var blendSrc = rdp.BlendMode{
+var blendSrcTriangles = rdp.BlendMode{
 	P1: rdp.BlenderPMColorCombiner,
 	A1: rdp.BlenderAColorCombinerAlpha,
 	M1: rdp.BlenderPMColorCombiner,
@@ -37,12 +31,13 @@ func main() {
 
 	fbBounds := rendergeom.FramebufferBounds()
 	disp := display.NewDisplay(fbBounds.Size(), video.BPP16)
+	tex := makeCheckerTexture()
 	var angle float32
 
 	for {
 		fb := disp.Swap()
-		drawFrame(fb, angle)
-		angle += 1.0
+		drawFrame(fb, tex, angle)
+		angle += 1.5
 		if angle >= 360 {
 			angle -= 360
 		}
@@ -50,65 +45,54 @@ func main() {
 	}
 }
 
-func drawFrame(fb *texture.Texture, angle float32) {
+func drawFrame(fb *texture.Texture, tex *texture.Texture, angle float32) {
 	n64draw.Src.Draw(fb, fb.Bounds(), image.NewUniform(color.RGBA{R: 20, G: 20, B: 40, A: 255}), image.Point{})
 
 	rdp.RDP.SetColorImage(fb)
 	rdp.RDP.SetScissor(image.Rectangle{Max: fb.Bounds().Size()}, rdp.InterlaceNone)
-
-	// Red face
 	rdp.RDP.SetOtherModes(
-		rdp.ForceBlend,
+		rdp.ForceBlend|rdp.BiLerp0,
 		rdp.CycleTypeOne,
 		rdp.RGBDitherNone,
 		rdp.AlphaDitherNone,
 		rdp.ZmodeOpaque,
 		rdp.CvgDestClamp,
-		blendSrc,
+		blendSrcTriangles,
 	)
 	rdp.RDP.SetCombineMode(rdp.CombineMode{
 		Two: rdp.CombinePass{
-			RGB:   rdp.CombineParams{0, 0, 0, rdp.CombinePrimitive},
-			Alpha: rdp.CombineParams{0, 0, 0, rdp.CombineDAlphaOne},
+			RGB:   rdp.CombineParams{0, 0, 0, rdp.CombineTex0},
+			Alpha: rdp.CombineParams{0, 0, 0, rdp.CombineTex0},
 		},
 	})
+	rdp.RDP.SetTextureImage(tex)
+	loadIdx, drawIdx := rdp.RDP.SetTile(rdp.TileDescriptor{
+		Format: tex.Format(),
+		Addr:   0x0,
+		Line:   uint16(tex.Format().TMEMWords(tex.Bounds().Dx())),
+	})
+	rdp.RDP.LoadTile(loadIdx, tex.Bounds())
 
-	// 3D vertices with Z spread
-	type vert3 struct{ x, y, z float32 }
-	worldVerts := [3]vert3{
-		{0, 80, -50},
-		{-80, -50, 50},
-		{80, -50, 30},
-	}
-
-	rad := angle * math.Pi / 180.0
-	sinA := float32(math.Sin(float64(rad)))
-	cosA := float32(math.Cos(float64(rad)))
-	cameraZ := float32(300)
-	focal := float32(250)
-
-	var sv [3][2]float32
-	allVisible := true
-	for i, v := range worldVerts {
-		rotX := v.x*cosA + v.z*sinA
-		rotZ := -v.x*sinA + v.z*cosA
-		viewZ := rotZ + cameraZ
-		if viewZ < 1 {
-			allVisible = false
-			break
-		}
-		sv[i][0] = float32(screenW)/2 + (rotX/viewZ)*focal
-		sv[i][1] = float32(screenH)/2 - (v.y/viewZ)*focal
-	}
-
-	if allVisible {
-		rdp.RDP.SetPrimitiveColor(color.RGBA{R: 255, G: 50, B: 50, A: 255})
-		rdp.RDP.Push(rdp.SyncPipe)
-		cmds := rdpcpu.FillTriangle(sv[0], sv[1], sv[2])
-		gfx.PushRaw(cmds...)
-	}
-
+	verts := buildProjectedTriangle(angle)
+	packet := rdpcpu.BuildTexturedTriangle(drawIdx, 0, verts[0], verts[1], verts[2])
+	gfx.PushRaw(packet...)
 	rdp.RDP.Flush()
+}
+
+func makeCheckerTexture() *texture.Texture {
+	img := image.NewRGBA(image.Rect(0, 0, 16, 16))
+	c0 := color.RGBA{R: 255, G: 96, B: 96, A: 255}
+	c1 := color.RGBA{R: 255, G: 240, B: 96, A: 255}
+	c2 := color.RGBA{R: 96, G: 192, B: 255, A: 255}
+	c3 := color.RGBA{R: 96, G: 255, B: 160, A: 255}
+	palette := [4]color.RGBA{c0, c1, c2, c3}
+	for y := 0; y < 16; y++ {
+		for x := 0; x < 16; x++ {
+			idx := ((x / 4) + (y / 4)) & 0x3
+			img.SetRGBA(x, y, palette[idx])
+		}
+	}
+	return texture.NewTextureFromImage(img)
 }
 
 func squarePixelPresentationRect() image.Rectangle {

@@ -25,6 +25,9 @@ const (
 	ButtonCRight    = joybus.ButtonCRight
 )
 
+// ButtonMask is the type used for button bitmasks.
+type ButtonMask = joybus.ButtonMask
+
 // MaxControllers is the number of controller ports on the N64.
 const MaxControllers = 4
 

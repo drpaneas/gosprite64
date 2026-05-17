@@ -1,10 +1,8 @@
 package gosprite64
 
-import "github.com/clktmr/n64/rcp/serial/joybus"
-
 // FrameInput captures the controller state for one player in one frame.
 type FrameInput struct {
-	Buttons joybus.ButtonMask
+	Buttons ButtonMask
 	StickX  int8
 	StickY  int8
 }

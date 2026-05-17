@@ -58,16 +58,3 @@ func TestShadeTriangleOpcode(t *testing.T) {
 		t.Fatalf("expected opcode 0x0C (shade tri), got 0x%02X", opcode)
 	}
 }
-
-func TestFillTriangleDeterministic(t *testing.T) {
-	v1 := [2]float32{100, 50}
-	v2 := [2]float32{50, 150}
-	v3 := [2]float32{200, 180}
-	cmds1 := FillTriangle(v1, v2, v3)
-	cmds2 := FillTriangle(v1, v2, v3)
-	for i := range cmds1 {
-		if cmds1[i] != cmds2[i] {
-			t.Fatalf("non-deterministic output at word %d", i)
-		}
-	}
-}

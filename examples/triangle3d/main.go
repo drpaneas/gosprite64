@@ -50,13 +50,36 @@ func main() {
 	}
 }
 
+var bgColor = image.NewUniform(color.RGBA{R: 20, G: 20, B: 40, A: 255})
+
+var combineMode = rdp.CombineMode{
+	Two: rdp.CombinePass{
+		RGB:   rdp.CombineParams{0, 0, 0, rdp.CombinePrimitive},
+		Alpha: rdp.CombineParams{0, 0, 0, rdp.CombineDAlphaOne},
+	},
+}
+
+const (
+	halfW   = float32(screenW) / 2
+	halfH   = float32(screenH) / 2
+	cameraZ = float32(300)
+	focal   = float32(250)
+)
+
+type vert3 struct{ x, y, z float32 }
+
+var worldVerts = [3]vert3{
+	{0, 80, -50},
+	{-80, -50, 50},
+	{80, -50, 30},
+}
+
 func drawFrame(fb *texture.Texture, angle float32) {
-	n64draw.Src.Draw(fb, fb.Bounds(), image.NewUniform(color.RGBA{R: 20, G: 20, B: 40, A: 255}), image.Point{})
+	n64draw.Src.Draw(fb, fb.Bounds(), bgColor, image.Point{})
 
 	rdp.RDP.SetColorImage(fb)
 	rdp.RDP.SetScissor(image.Rectangle{Max: fb.Bounds().Size()}, rdp.InterlaceNone)
 
-	// Red face
 	rdp.RDP.SetOtherModes(
 		rdp.ForceBlend,
 		rdp.CycleTypeOne,
@@ -66,26 +89,11 @@ func drawFrame(fb *texture.Texture, angle float32) {
 		rdp.CvgDestClamp,
 		blendSrc,
 	)
-	rdp.RDP.SetCombineMode(rdp.CombineMode{
-		Two: rdp.CombinePass{
-			RGB:   rdp.CombineParams{0, 0, 0, rdp.CombinePrimitive},
-			Alpha: rdp.CombineParams{0, 0, 0, rdp.CombineDAlphaOne},
-		},
-	})
-
-	// 3D vertices with Z spread
-	type vert3 struct{ x, y, z float32 }
-	worldVerts := [3]vert3{
-		{0, 80, -50},
-		{-80, -50, 50},
-		{80, -50, 30},
-	}
+	rdp.RDP.SetCombineMode(combineMode)
 
 	rad := angle * math.Pi / 180.0
 	sinA := float32(math.Sin(float64(rad)))
 	cosA := float32(math.Cos(float64(rad)))
-	cameraZ := float32(300)
-	focal := float32(250)
 
 	var sv [3][2]float32
 	allVisible := true
@@ -97,8 +105,8 @@ func drawFrame(fb *texture.Texture, angle float32) {
 			allVisible = false
 			break
 		}
-		sv[i][0] = float32(screenW)/2 + (rotX/viewZ)*focal
-		sv[i][1] = float32(screenH)/2 - (v.y/viewZ)*focal
+		sv[i][0] = halfW + (rotX/viewZ)*focal
+		sv[i][1] = halfH - (v.y/viewZ)*focal
 	}
 
 	if allVisible {

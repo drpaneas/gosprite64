@@ -1,11 +1,5 @@
 package rdpcpu
 
-import "math"
-
-// Ported from libdragon's rdpq_tri.c (rdpq_triangle_cpu path).
-// Computes RDP edge coefficients on the CPU and packs them into
-// raw 64-bit words that can be fed directly to rdp.RDP.PushRaw().
-
 func floatToS16_16(f float32) int32 {
 	if f >= 32768.0 {
 		return 0x7FFFFFFF
@@ -13,7 +7,15 @@ func floatToS16_16(f float32) int32 {
 	if f < -32768.0 {
 		return -0x80000000
 	}
-	return int32(math.Floor(float64(f) * 65536.0))
+	v := f * 65536.0
+	if v >= 0 {
+		return int32(v)
+	}
+	i := int32(v)
+	if float32(i) > v {
+		i--
+	}
+	return i
 }
 
 func clampI32(v, lo, hi int32) int32 {
@@ -25,6 +27,26 @@ func clampI32(v, lo, hi int32) int32 {
 	}
 	return v
 }
+
+func absF32(v float32) float32 {
+	if v < 0 {
+		return -v
+	}
+	return v
+}
+
+func floorF32(v float32) float32 {
+	i := int32(v)
+	if float32(i) > v {
+		i--
+	}
+	return float32(i)
+}
+
+func hiWord(v int32) uint32  { return uint32(v) & 0xFFFF0000 }
+func loWord(v int32) uint32  { return uint32(v) & 0x0000FFFF }
+func shr16(v int32) uint32   { return uint32(v>>16) & 0xFFFF }
+func shl16(v int32) uint32   { return uint32(v<<16) & 0xFFFF0000 }
 
 type edgeData struct {
 	hx, hy, mx, my float32
@@ -81,14 +103,13 @@ func ShadeTriangle(v1, v2, v3 [2]float32, c1, c2, c3 [4]float32) []uint64 {
 
 func writeEdgeCoeffs(data *edgeData, cmdID uint8, tile, mipmaps uint8, v1, v2, v3 [2]float32) []uint64 {
 	x1, x2, x3 := v1[0], v2[0], v3[0]
-	y1 := float32(math.Floor(float64(v1[1])*4)) / 4
-	y2 := float32(math.Floor(float64(v2[1])*4)) / 4
-	y3 := float32(math.Floor(float64(v3[1])*4)) / 4
+	y1 := floorF32(v1[1]*4) / 4
+	y2 := floorF32(v2[1]*4) / 4
+	y3 := floorF32(v3[1]*4) / 4
 
-	toFixed := float32(4.0)
-	y1f := clampI32(int32(math.Floor(float64(v1[1]*toFixed))), -4096*4, 4095*4)
-	y2f := clampI32(int32(math.Floor(float64(v2[1]*toFixed))), -4096*4, 4095*4)
-	y3f := clampI32(int32(math.Floor(float64(v3[1]*toFixed))), -4096*4, 4095*4)
+	y1f := clampI32(int32(floorF32(v1[1]*4)), -4096*4, 4095*4)
+	y2f := clampI32(int32(floorF32(v2[1]*4)), -4096*4, 4095*4)
+	y3f := clampI32(int32(floorF32(v3[1]*4)), -4096*4, 4095*4)
 
 	data.hx = x3 - x1
 	data.hy = y3 - y1
@@ -98,7 +119,7 @@ func writeEdgeCoeffs(data *edgeData, cmdID uint8, tile, mipmaps uint8, v1, v2, v
 	ly := y3 - y2
 
 	nz := data.hx*data.my - data.hy*data.mx
-	if math.Abs(float64(nz)) > math.SmallestNonzeroFloat32 {
+	if absF32(nz) > 1e-38 {
 		data.attrFactor = -1.0 / nz
 	} else {
 		data.attrFactor = 0
@@ -108,20 +129,20 @@ func writeEdgeCoeffs(data *edgeData, cmdID uint8, tile, mipmaps uint8, v1, v2, v
 		lft = 1
 	}
 
-	if math.Abs(float64(data.hy)) > math.SmallestNonzeroFloat32 {
+	if absF32(data.hy) > 1e-38 {
 		data.ish = data.hx / data.hy
 	} else {
 		data.ish = 0
 	}
 	var ism float32
-	if math.Abs(float64(data.my)) > math.SmallestNonzeroFloat32 {
+	if absF32(data.my) > 1e-38 {
 		ism = data.mx / data.my
 	}
 	var isl float32
-	if math.Abs(float64(ly)) > math.SmallestNonzeroFloat32 {
+	if absF32(ly) > 1e-38 {
 		isl = lx / ly
 	}
-	data.fy = float32(math.Floor(float64(y1))) - y1
+	data.fy = floorF32(y1) - y1
 
 	xh := x1 + data.fy*data.ish
 	xm := x1 + data.fy*ism
@@ -253,20 +274,15 @@ func writeTexCoeffs(data *edgeData, t1, t2, t3 [3]float32) []uint64 {
 	DtDyF := floatToS16_16(DtDy)
 	DwDyF := floatToS16_16(DwDy)
 
-	hi := func(v int32) uint32 { return uint32(v) & 0xFFFF0000 }
-	lo := func(v int32) uint32 { return uint32(v) & 0x0000FFFF }
-	shr16 := func(v int32) uint32 { return uint32(v>>16) & 0xFFFF }
-	shl16 := func(v int32) uint32 { return uint32(v<<16) & 0xFFFF0000 }
-
 	return []uint64{
-		packU64(hi(finalS)|shr16(finalT), hi(finalW)),
-		packU64(hi(DsDxF)|shr16(DtDxF), hi(DwDxF)),
-		packU64(shl16(finalS)|lo(finalT), shl16(finalW)),
-		packU64(shl16(DsDxF)|lo(DtDxF), shl16(DwDxF)),
-		packU64(hi(DsDeF)|shr16(DtDeF), hi(DwDeF)),
-		packU64(hi(DsDyF)|shr16(DtDyF), hi(DwDyF)),
-		packU64(shl16(DsDeF)|lo(DtDeF), shl16(DwDeF)),
-		packU64(shl16(DsDyF)|lo(DtDyF), shl16(DwDyF)),
+		packU64(hiWord(finalS)|shr16(finalT), hiWord(finalW)),
+		packU64(hiWord(DsDxF)|shr16(DtDxF), hiWord(DwDxF)),
+		packU64(shl16(finalS)|loWord(finalT), shl16(finalW)),
+		packU64(shl16(DsDxF)|loWord(DtDxF), shl16(DwDxF)),
+		packU64(hiWord(DsDeF)|shr16(DtDeF), hiWord(DwDeF)),
+		packU64(hiWord(DsDyF)|shr16(DtDyF), hiWord(DwDyF)),
+		packU64(shl16(DsDeF)|loWord(DtDeF), shl16(DwDeF)),
+		packU64(shl16(DsDyF)|loWord(DtDyF), shl16(DwDyF)),
 	}
 }
 
@@ -321,19 +337,14 @@ func writeShadeCoeffs(data *edgeData, c1, c2, c3 [4]float32) []uint64 {
 	dbDyF := floatToS16_16(DbDy)
 	daDyF := floatToS16_16(DaDy)
 
-	hi := func(v int32) uint32 { return uint32(v) & 0xFFFF0000 }
-	lo := func(v int32) uint32 { return uint32(v) & 0x0000FFFF }
-	shr16 := func(v int32) uint32 { return uint32(v>>16) & 0xFFFF }
-	shl16 := func(v int32) uint32 { return uint32(v<<16) & 0xFFFF0000 }
-
 	return []uint64{
-		packU64(hi(finalR)|shr16(finalG), hi(finalB)|shr16(finalA)),
-		packU64(hi(drDxF)|shr16(dgDxF), hi(dbDxF)|shr16(daDxF)),
-		packU64(shl16(finalR)|lo(finalG), shl16(finalB)|lo(finalA)),
-		packU64(shl16(drDxF)|lo(dgDxF), shl16(dbDxF)|lo(daDxF)),
-		packU64(hi(drDeF)|shr16(dgDeF), hi(dbDeF)|shr16(daDeF)),
-		packU64(hi(drDyF)|shr16(dgDyF), hi(dbDyF)|shr16(daDyF)),
-		packU64(shl16(drDeF)|lo(dgDeF), shl16(dbDeF)|lo(daDeF)),
-		packU64(shl16(drDyF)|lo(dgDyF), shl16(dbDyF)|lo(daDyF)),
+		packU64(hiWord(finalR)|shr16(finalG), hiWord(finalB)|shr16(finalA)),
+		packU64(hiWord(drDxF)|shr16(dgDxF), hiWord(dbDxF)|shr16(daDxF)),
+		packU64(shl16(finalR)|loWord(finalG), shl16(finalB)|loWord(finalA)),
+		packU64(shl16(drDxF)|loWord(dgDxF), shl16(dbDxF)|loWord(daDxF)),
+		packU64(hiWord(drDeF)|shr16(dgDeF), hiWord(dbDeF)|shr16(daDeF)),
+		packU64(hiWord(drDyF)|shr16(dgDyF), hiWord(dbDyF)|shr16(daDyF)),
+		packU64(shl16(drDeF)|loWord(dgDeF), shl16(dbDeF)|loWord(daDeF)),
+		packU64(shl16(drDyF)|loWord(dgDyF), shl16(dbDyF)|loWord(daDyF)),
 	}
 }

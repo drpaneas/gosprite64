@@ -544,3 +544,13 @@ func TestTimerAPI(t *testing.T) {
 	requireContains(t, src, "func (rt *RepeatingTimer) Tick() bool")
 	requireContains(t, src, "func (rt *RepeatingTimer) Count() int")
 }
+
+func TestDrawRegionAPI(t *testing.T) {
+	src := mustReadRepoFile(t, "draw_region.go")
+	requireContains(t, src, "type DrawRegion struct {")
+	requireContains(t, src, "func SetDrawRegion(x, y, w, h int)")
+	requireContains(t, src, "func ResetDrawRegion()")
+	requireContains(t, src, "func (r DrawRegion) Active() bool")
+	requireContains(t, src, "func (r DrawRegion) Offset(x, y int) (int, int)")
+	requireContains(t, src, "func (r DrawRegion) Clip(")
+}

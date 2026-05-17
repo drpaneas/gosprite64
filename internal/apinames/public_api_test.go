@@ -447,3 +447,19 @@ func TestMath2dAPI(t *testing.T) {
 	requireContains(t, easing, "func Lerp(")
 	requireContains(t, easing, "func MoveToward(")
 }
+
+func TestStateMachineAPI(t *testing.T) {
+	src := mustReadRepoFile(t, "state.go")
+	requireContains(t, src, "type GameState interface {")
+	requireContains(t, src, "Enter()")
+	requireContains(t, src, "Update()")
+	requireContains(t, src, "Draw()")
+	requireContains(t, src, "Exit()")
+	requireContains(t, src, "type StateMachine struct {")
+	requireContains(t, src, "func NewStateMachine(initial GameState) *StateMachine")
+	requireContains(t, src, "func (sm *StateMachine) Switch(state GameState)")
+	requireContains(t, src, "func (sm *StateMachine) Push(state GameState)")
+	requireContains(t, src, "func (sm *StateMachine) Pop()")
+	requireContains(t, src, "func (sm *StateMachine) Current() GameState")
+	requireContains(t, src, "func (sm *StateMachine) Depth() int")
+}

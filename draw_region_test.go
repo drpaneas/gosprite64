@@ -66,3 +66,40 @@ func TestCurrentDrawRegionDefault(t *testing.T) {
 		t.Fatal("default draw region should not be active")
 	}
 }
+
+func TestSetResetDrawRegionNesting(t *testing.T) {
+	drawRegionStack = nil
+
+	SetDrawRegion(10, 10, 100, 100)
+	if currentDrawRegion().X != 10 {
+		t.Fatal("first region should be active")
+	}
+
+	SetDrawRegion(20, 20, 50, 50)
+	if currentDrawRegion().X != 20 {
+		t.Fatal("nested region should be active")
+	}
+	if len(drawRegionStack) != 2 {
+		t.Fatalf("expected stack depth 2, got %d", len(drawRegionStack))
+	}
+
+	ResetDrawRegion()
+	if currentDrawRegion().X != 10 {
+		t.Fatal("after pop, first region should be active")
+	}
+
+	ResetDrawRegion()
+	if currentDrawRegion().Active() {
+		t.Fatal("after second pop, should be back to full screen")
+	}
+
+	drawRegionStack = nil
+}
+
+func TestResetDrawRegionEmptyStack(t *testing.T) {
+	drawRegionStack = nil
+	ResetDrawRegion()
+	if len(drawRegionStack) != 0 {
+		t.Fatal("resetting empty stack should not panic or grow")
+	}
+}

@@ -33,15 +33,20 @@ func generateGlyphSource(fontName, pkgName string, glyphs map[rune]glyphInfo, li
 
 	for _, r := range runes {
 		g := glyphs[r]
-		fmt.Fprintf(&b, "\t'%s': gosprite64.Glyph{Frame: %d, Width: %d, Advance: %d},\n",
-			escapeRune(r), g.Frame, g.Width, g.Advance)
+		if g.OffsetX != 0 || g.OffsetY != 0 {
+			fmt.Fprintf(&b, "\t'%s': gosprite64.Glyph{Frame: %d, Width: %d, Advance: %d, OffsetX: %d, OffsetY: %d},\n",
+				escapeRune(r), g.Frame, g.Width, g.Advance, g.OffsetX, g.OffsetY)
+		} else {
+			fmt.Fprintf(&b, "\t'%s': gosprite64.Glyph{Frame: %d, Width: %d, Advance: %d},\n",
+				escapeRune(r), g.Frame, g.Width, g.Advance)
+		}
 	}
 
 	fmt.Fprintf(&b, "}\n")
 
 	formatted, err := format.Source([]byte(b.String()))
 	if err != nil {
-		return b.String(), nil
+		return "", fmt.Errorf("format generated source: %w", err)
 	}
 	return string(formatted), nil
 }

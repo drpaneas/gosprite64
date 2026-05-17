@@ -63,3 +63,47 @@ func TestParseFontSpecBothCharsAndGlyphs(t *testing.T) {
 		t.Fatal("specifying both chars and glyphs should fail")
 	}
 }
+
+func TestBuildGlyphsSkipsMultiRuneEntry(t *testing.T) {
+	json := `{
+		"cell_width": 8,
+		"cell_height": 10,
+		"glyphs": [
+			{"char": "A", "width": 7},
+			{"char": "AB", "width": 5},
+			{"char": "C", "width": 6}
+		]
+	}`
+	spec, err := parseFontSpec([]byte(json))
+	if err != nil {
+		t.Fatal(err)
+	}
+	glyphs := spec.BuildGlyphs()
+	if len(glyphs) != 2 {
+		t.Fatalf("expected 2 glyphs (AB skipped), got %d", len(glyphs))
+	}
+	if _, ok := glyphs['A']; !ok {
+		t.Fatal("A should be present")
+	}
+	if _, ok := glyphs['C']; !ok {
+		t.Fatal("C should be present")
+	}
+}
+
+func TestBuildGlyphsWithOffsets(t *testing.T) {
+	json := `{
+		"cell_width": 8,
+		"cell_height": 10,
+		"glyphs": [
+			{"char": "g", "width": 7, "offset_x": 0, "offset_y": 2}
+		]
+	}`
+	spec, err := parseFontSpec([]byte(json))
+	if err != nil {
+		t.Fatal(err)
+	}
+	glyphs := spec.BuildGlyphs()
+	if glyphs['g'].OffsetY != 2 {
+		t.Fatalf("expected OffsetY=2, got %d", glyphs['g'].OffsetY)
+	}
+}

@@ -136,3 +136,46 @@ func TestRepeatingTimerReset(t *testing.T) {
 		t.Fatalf("count should be 0 after reset, got %d", rt.Count())
 	}
 }
+
+func TestTimerNegativeDuration(t *testing.T) {
+	tm := NewTimer(-5)
+	if !tm.Done() {
+		t.Fatal("negative duration should clamp to 0 and be immediately done")
+	}
+	if tm.Duration() != 0 {
+		t.Fatalf("expected duration 0, got %d", tm.Duration())
+	}
+}
+
+func TestTimerNilReceiver(t *testing.T) {
+	var tm *Timer
+	tm.Tick()
+	tm.Reset()
+	tm.ResetWith(5)
+	if !tm.Done() {
+		t.Fatal("nil timer Done() should return true")
+	}
+	if tm.Elapsed() != 0 {
+		t.Fatal("nil timer Elapsed() should return 0")
+	}
+	if tm.Remaining() != 0 {
+		t.Fatal("nil timer Remaining() should return 0")
+	}
+	if tm.Progress() != 1 {
+		t.Fatal("nil timer Progress() should return 1")
+	}
+	if tm.Duration() != 0 {
+		t.Fatal("nil timer Duration() should return 0")
+	}
+}
+
+func TestRepeatingTimerNilReceiver(t *testing.T) {
+	var rt *RepeatingTimer
+	if rt.Tick() {
+		t.Fatal("nil RepeatingTimer Tick() should return false")
+	}
+	if rt.Count() != 0 {
+		t.Fatal("nil RepeatingTimer Count() should return 0")
+	}
+	rt.Reset()
+}

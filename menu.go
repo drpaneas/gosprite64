@@ -71,6 +71,7 @@ func (m *Menu) Selected() MenuItem {
 }
 
 // MoveDown moves the cursor down, skipping disabled items.
+// If all items are disabled, the cursor stays where it is.
 func (m *Menu) MoveDown() {
 	if m == nil || len(m.items) == 0 {
 		return
@@ -82,7 +83,7 @@ func (m *Menu) MoveDown() {
 			if m.Wrap {
 				m.cursor = 0
 			} else {
-				m.cursor = len(m.items) - 1
+				m.cursor = start
 				return
 			}
 		}
@@ -96,6 +97,7 @@ func (m *Menu) MoveDown() {
 }
 
 // MoveUp moves the cursor up, skipping disabled items.
+// If all items are disabled, the cursor stays where it is.
 func (m *Menu) MoveUp() {
 	if m == nil || len(m.items) == 0 {
 		return
@@ -107,7 +109,7 @@ func (m *Menu) MoveUp() {
 			if m.Wrap {
 				m.cursor = len(m.items) - 1
 			} else {
-				m.cursor = 0
+				m.cursor = start
 				return
 			}
 		}

@@ -6,8 +6,10 @@ import (
 )
 
 type glyphEntry struct {
-	Char  string `json:"char"`
-	Width int    `json:"width"`
+	Char    string `json:"char"`
+	Width   int    `json:"width"`
+	OffsetX int    `json:"offset_x"`
+	OffsetY int    `json:"offset_y"`
 }
 
 type fontSpec struct {
@@ -21,6 +23,8 @@ type glyphInfo struct {
 	Frame   int
 	Width   int
 	Advance int
+	OffsetX int
+	OffsetY int
 }
 
 func parseFontSpec(data []byte) (*fontSpec, error) {
@@ -67,6 +71,8 @@ func (s *fontSpec) BuildGlyphs() map[rune]glyphInfo {
 			Frame:   i,
 			Width:   w,
 			Advance: w,
+			OffsetX: entry.OffsetX,
+			OffsetY: entry.OffsetY,
 		}
 	}
 	return result

@@ -8,7 +8,11 @@ type Timer struct {
 }
 
 // NewTimer creates a timer that runs for the given number of frames.
+// Negative durations are clamped to 0 (immediately done).
 func NewTimer(durationFrames int) *Timer {
+	if durationFrames < 0 {
+		durationFrames = 0
+	}
 	return &Timer{duration: durationFrames}
 }
 

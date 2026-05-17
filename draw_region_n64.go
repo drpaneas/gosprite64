@@ -18,6 +18,10 @@ func applyScissor(r DrawRegion) {
 	rdp.RDP.SetScissor(image.Rect(sx, sy, sx+sw, sy+sh), rdp.InterlaceNone)
 }
 
+// clearScissor resets the RDP scissor to allow drawing across the full
+// framebuffer. The 2x multiplier matches the scissor set in gameloop.go's
+// Run(), which uses fb*2 to account for the RDP's 10.2 fixed-point
+// coordinate format where scissor bounds are in subpixels.
 func clearScissor() {
 	fb := rendergeom.FramebufferBounds()
 	rdp.RDP.SetScissor(image.Rect(0, 0, fb.Dx()*2, fb.Dy()*2), rdp.InterlaceNone)

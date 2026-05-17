@@ -180,3 +180,36 @@ func TestMenuDisabledItemSkippedUp(t *testing.T) {
 		t.Fatalf("disabled item should be skipped going up, cursor should be 0, got %d", m.Cursor())
 	}
 }
+
+func TestMenuAllDisabledNoWrap(t *testing.T) {
+	m := NewMenu([]MenuItem{
+		{Label: "A", Disabled: true},
+		{Label: "B", Disabled: true},
+		{Label: "C", Disabled: true},
+	})
+	m.MoveDown()
+	if m.Cursor() != 0 {
+		t.Fatalf("all disabled: MoveDown should stay at 0, got %d", m.Cursor())
+	}
+	m.MoveUp()
+	if m.Cursor() != 0 {
+		t.Fatalf("all disabled: MoveUp should stay at 0, got %d", m.Cursor())
+	}
+	m.Confirm()
+}
+
+func TestMenuAllDisabledWrap(t *testing.T) {
+	m := NewMenu([]MenuItem{
+		{Label: "A", Disabled: true},
+		{Label: "B", Disabled: true},
+	})
+	m.Wrap = true
+	m.MoveDown()
+	if m.Cursor() != 0 {
+		t.Fatalf("all disabled wrap: MoveDown should stay at 0, got %d", m.Cursor())
+	}
+	m.MoveUp()
+	if m.Cursor() != 0 {
+		t.Fatalf("all disabled wrap: MoveUp should stay at 0, got %d", m.Cursor())
+	}
+}

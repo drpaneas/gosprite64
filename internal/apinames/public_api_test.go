@@ -463,3 +463,23 @@ func TestStateMachineAPI(t *testing.T) {
 	requireContains(t, src, "func (sm *StateMachine) Current() GameState")
 	requireContains(t, src, "func (sm *StateMachine) Depth() int")
 }
+
+func TestCollisionAPI(t *testing.T) {
+	col := mustReadRepoFile(t, "math2d/collision.go")
+	requireContains(t, col, "func AABBOverlap(a, b Rect) bool")
+	requireContains(t, col, "func AABBPenetration(a, b Rect) (Vec2, bool)")
+	requireContains(t, col, "func AABBResolve(a, b Rect) Rect")
+	requireContains(t, col, "func AABBSweep(a Rect, vel Vec2, b Rect) (bool, float32, Vec2)")
+
+	grid := mustReadRepoFile(t, "math2d/grid.go")
+	requireContains(t, grid, "type Grid[T comparable] struct {")
+	requireContains(t, grid, "func NewGrid[T comparable](cols, rows int) *Grid[T]")
+	requireContains(t, grid, "func (g *Grid[T]) ScanRow(")
+	requireContains(t, grid, "func (g *Grid[T]) ScanCol(")
+	requireContains(t, grid, "type Run struct {")
+
+	layer := mustReadRepoFile(t, "math2d/layer.go")
+	requireContains(t, layer, "type Layer uint32")
+	requireContains(t, layer, "type Collider struct {")
+	requireContains(t, layer, "func ColliderOverlap(a, b Collider) bool")
+}

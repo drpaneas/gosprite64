@@ -554,3 +554,17 @@ func TestDrawRegionAPI(t *testing.T) {
 	requireContains(t, src, "func (r DrawRegion) Offset(x, y int) (int, int)")
 	requireContains(t, src, "func (r DrawRegion) Clip(")
 }
+
+func TestMenuAPI(t *testing.T) {
+	src := mustReadRepoFile(t, "menu.go")
+	requireContains(t, src, "type Menu struct {")
+	requireContains(t, src, "type MenuItem struct {")
+	requireContains(t, src, "func NewMenu(items []MenuItem) *Menu")
+	requireContains(t, src, "func (m *Menu) MoveDown()")
+	requireContains(t, src, "func (m *Menu) MoveUp()")
+	requireContains(t, src, "func (m *Menu) Confirm()")
+	requireContains(t, src, "func (m *Menu) Selected() MenuItem")
+	requireContains(t, src, "func (m *Menu) HandleInput() bool")
+	requireContains(t, src, "func (m *Menu) Draw()")
+	requireContains(t, src, "Disabled")
+}

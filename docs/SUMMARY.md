@@ -10,4 +10,7 @@
 - [Sprites](sprites.md)
 - [2D Math](math2d.md)
 - [Game State Machine](state_machine.md)
+- [Timers](timers.md)
+- [Draw Regions (Split-Screen)](draw_regions.md)
+- [Menus](menus.md)
 - [Input Recording and Replay](input_replay.md)

@@ -497,3 +497,21 @@ func TestCameraEnhancedAPI(t *testing.T) {
 	requireContains(t, src, "func (c *Camera) AddTrauma(")
 	requireContains(t, src, "func (c *Camera) ShakeOffset()")
 }
+
+func TestFontAPI(t *testing.T) {
+	src := mustReadRepoFile(t, "font.go")
+	requireContains(t, src, "type Font struct {")
+	requireContains(t, src, "type Glyph struct {")
+	requireContains(t, src, "func NewFont(")
+	requireContains(t, src, "func (f *Font) GlyphFor(r rune) (Glyph, bool)")
+	requireContains(t, src, "func (f *Font) MeasureText(text string) (width int, height int)")
+	requireContains(t, src, "func (f *Font) DrawTextEx(")
+	requireContains(t, src, "func FormatScore(")
+
+	align := mustReadRepoFile(t, "text_align.go")
+	requireContains(t, align, "type TextAlign int")
+	requireContains(t, align, "AlignLeft")
+	requireContains(t, align, "AlignCenter")
+	requireContains(t, align, "AlignRight")
+	requireContains(t, align, "func (f *Font) WrapText(")
+}

@@ -530,3 +530,17 @@ func TestReplayAPI(t *testing.T) {
 	requireContains(t, src, "func (p *InputPlayer) Done() bool")
 	requireContains(t, src, "func (p *InputPlayer) Reset()")
 }
+
+func TestTimerAPI(t *testing.T) {
+	src := mustReadRepoFile(t, "timer.go")
+	requireContains(t, src, "type Timer struct {")
+	requireContains(t, src, "func NewTimer(durationFrames int) *Timer")
+	requireContains(t, src, "func (t *Timer) Tick() bool")
+	requireContains(t, src, "func (t *Timer) Done() bool")
+	requireContains(t, src, "func (t *Timer) Progress() float32")
+	requireContains(t, src, "func (t *Timer) Reset()")
+	requireContains(t, src, "type RepeatingTimer struct {")
+	requireContains(t, src, "func NewRepeatingTimer(intervalFrames int) *RepeatingTimer")
+	requireContains(t, src, "func (rt *RepeatingTimer) Tick() bool")
+	requireContains(t, src, "func (rt *RepeatingTimer) Count() int")
+}

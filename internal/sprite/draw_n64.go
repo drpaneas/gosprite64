@@ -7,10 +7,11 @@ import (
 	"image/color"
 	"math"
 
-	n64draw "github.com/clktmr/n64/drivers/draw"
 	"github.com/clktmr/n64/rcp/rdp"
 	"github.com/clktmr/n64/rcp/texture"
+	"github.com/drpaneas/gosprite64/gfx"
 	"github.com/drpaneas/gosprite64/internal/rendergeom"
+	"github.com/drpaneas/gosprite64/internal/rdpcpu"
 )
 
 const (
@@ -34,8 +35,7 @@ var blendOverSprites = rdp.BlendMode{
 
 // RenderSprite draws a sprite frame via the RDP with flip, scale, blend, and rotation.
 // For non-rotated sprites, the fast TextureRectangle path is used. For rotated
-// sprites, a software rotation fallback composites a transformed NRGBA image
-// onto the framebuffer (higher cost, but correct for phase 1).
+// sprites, a CPU triangle setup path emits two textured RDP triangles.
 func RenderSprite(fb *texture.Texture, src image.Image, x, y int,
 	flipH, flipV bool, scaleX, scaleY float32, blendMode uint8, alpha float32,
 	rotation, originX, originY float32) {
@@ -137,112 +137,84 @@ func RenderSprite(fb *texture.Texture, src image.Image, x, y int,
 	)
 }
 
-// renderRotatedSprite creates a software-rotated NRGBA image and composites it
-// onto the framebuffer. The RDP cannot draw rotated rectangles directly, so this
-// path samples the source texture through an inverse rotation transform.
+// renderRotatedSprite draws a rotated sprite as two textured triangles.
 func renderRotatedSprite(fb *texture.Texture, tex *texture.Texture,
 	drawX, drawY int, flipH, flipV bool, scaleX, scaleY float32,
-	_ uint8, _ float32, rotation, originX, originY float32) {
+	blendMode uint8, alpha float32, rotation, originX, originY float32) {
 
 	srcBounds := tex.Bounds()
-	srcW := float64(srcBounds.Dx())
-	srcH := float64(srcBounds.Dy())
-	sx := float64(scaleX)
-	sy := float64(scaleY)
-	ox := float64(originX)
-	oy := float64(originY)
+	srcW := srcBounds.Dx()
+	srcH := srcBounds.Dy()
+	maxTile := rdp.MaxTileSize(tex.Format())
+	if srcW > maxTile.Dx() || srcH > maxTile.Dy() {
+		return
+	}
 
-	cos := math.Cos(float64(rotation))
-	sin := math.Sin(float64(rotation))
+	rdp.RDP.SetColorImage(fb)
+	rdp.RDP.SetScissor(image.Rectangle{Max: fb.Bounds().Size()}, rdp.InterlaceNone)
+	setupBlendMode(tex, blendMode, alpha)
 
+	tileDesc := rdp.TileDescriptor{
+		Format: tex.Format(),
+		Addr:   0x0,
+		Line:   uint16(tex.Format().TMEMWords(srcW)),
+	}
+	rdp.RDP.SetTextureImage(tex)
+	loadIdx, drawIdx := rdp.RDP.SetTile(tileDesc)
+	rdp.RDP.LoadTile(loadIdx, srcBounds)
+
+	frameOrigin := rendergeom.Origin()
+	quad := rotatedQuad(float64(drawX+frameOrigin.X), float64(drawY+frameOrigin.Y),
+		float64(srcW), float64(srcH), float64(scaleX), float64(scaleY),
+		float64(rotation), float64(originX), float64(originY))
+	st := textureCoords(float32(srcW), float32(srcH), flipH, flipV)
+
+	packet1 := rdpcpu.BuildTexturedTriangle(drawIdx, 0,
+		rdpcpu.TexVertex{X: float32(quad[0][0]), Y: float32(quad[0][1]), S: st[0][0], T: st[0][1], InvW: 1},
+		rdpcpu.TexVertex{X: float32(quad[1][0]), Y: float32(quad[1][1]), S: st[1][0], T: st[1][1], InvW: 1},
+		rdpcpu.TexVertex{X: float32(quad[2][0]), Y: float32(quad[2][1]), S: st[2][0], T: st[2][1], InvW: 1},
+	)
+	packet2 := rdpcpu.BuildTexturedTriangle(drawIdx, 0,
+		rdpcpu.TexVertex{X: float32(quad[0][0]), Y: float32(quad[0][1]), S: st[0][0], T: st[0][1], InvW: 1},
+		rdpcpu.TexVertex{X: float32(quad[2][0]), Y: float32(quad[2][1]), S: st[2][0], T: st[2][1], InvW: 1},
+		rdpcpu.TexVertex{X: float32(quad[3][0]), Y: float32(quad[3][1]), S: st[3][0], T: st[3][1], InvW: 1},
+	)
+	gfx.PushRaw(packet1...)
+	gfx.PushRaw(packet2...)
+}
+
+func rotatedQuad(drawX, drawY, srcW, srcH, scaleX, scaleY, rotation, originX, originY float64) [4][2]float64 {
+	cos := math.Cos(rotation)
+	sin := math.Sin(rotation)
 	corners := [4][2]float64{
 		{0, 0}, {srcW, 0}, {srcW, srcH}, {0, srcH},
 	}
-
-	var minX, minY, maxX, maxY float64
+	var quad [4][2]float64
 	for i, c := range corners {
-		px := (c[0] - ox) * sx
-		py := (c[1] - oy) * sy
+		px := (c[0] - originX) * scaleX
+		py := (c[1] - originY) * scaleY
 		rx := px*cos - py*sin
 		ry := px*sin + py*cos
-		if i == 0 {
-			minX, maxX = rx, rx
-			minY, maxY = ry, ry
-		} else {
-			minX = min(minX, rx)
-			maxX = max(maxX, rx)
-			minY = min(minY, ry)
-			maxY = max(maxY, ry)
-		}
+		quad[i] = [2]float64{drawX + rx, drawY + ry}
 	}
+	return quad
+}
 
-	dstW := int(math.Ceil(maxX-minX)) + 1
-	dstH := int(math.Ceil(maxY-minY)) + 1
-	if dstW <= 0 || dstH <= 0 {
-		return
+func textureCoords(srcW, srcH float32, flipH, flipV bool) [4][2]float32 {
+	left, right := float32(0), srcW
+	top, bottom := float32(0), srcH
+	if flipH {
+		left, right = right, left
 	}
-
-	rotated := image.NewNRGBA(image.Rect(0, 0, dstW, dstH))
-
-	invCos := cos
-	invSin := -sin
-
-	for dy := 0; dy < dstH; dy++ {
-		for dx := 0; dx < dstW; dx++ {
-			rx := float64(dx) + minX
-			ry := float64(dy) + minY
-
-			px := rx*invCos - ry*invSin
-			py := rx*invSin + ry*invCos
-
-			srcX := px/sx + ox
-			srcY := py/sy + oy
-
-			if flipH {
-				srcX = srcW - srcX
-			}
-			if flipV {
-				srcY = srcH - srcY
-			}
-
-			ix := int(srcX)
-			iy := int(srcY)
-			if ix < 0 || iy < 0 || ix >= int(srcW) || iy >= int(srcH) {
-				continue
-			}
-
-			c := tex.At(srcBounds.Min.X+ix, srcBounds.Min.Y+iy)
-			rotated.Set(dx, dy, c)
-		}
+	if flipV {
+		top, bottom = bottom, top
 	}
-
-	logX := drawX + int(minX)
-	logY := drawY + int(minY)
-	logicalDst := image.Rect(logX, logY, logX+dstW, logY+dstH)
-	clipped := logicalDst.Intersect(rendergeom.LogicalBounds())
-	if clipped.Empty() {
-		return
+	return [4][2]float32{
+		{left, top},
+		{right, top},
+		{right, bottom},
+		{left, bottom},
 	}
-
-	framebufferRect, ok := rendergeom.MapRectInclusive(image.Rectangle{
-		Min: clipped.Min,
-		Max: clipped.Max.Sub(image.Pt(1, 1)),
-	})
-	if !ok {
-		return
-	}
-
-	srcPt := image.Pt(
-		clipped.Min.X-logicalDst.Min.X,
-		clipped.Min.Y-logicalDst.Min.Y,
-	)
-	n64draw.Over.Draw(
-		fb,
-		image.Rect(framebufferRect.Min.X, framebufferRect.Min.Y,
-			framebufferRect.Max.X+1, framebufferRect.Max.Y+1),
-		rotated,
-		srcPt,
-	)
 }
 
 func setupBlendMode(tex *texture.Texture, blendMode uint8, alpha float32) {

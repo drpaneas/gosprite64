@@ -37,5 +37,5 @@ func SubmitTask(task *OSTask, bootCode []byte) {
 
 // WaitTaskDone blocks until the RSP breaks (task complete).
 func WaitTaskDone() {
-	rsp.IntBreak.Sleep()
+	rsp.IntBreak.Wait(0)
 }

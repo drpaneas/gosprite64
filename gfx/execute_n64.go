@@ -6,17 +6,44 @@ import (
 	"encoding/binary"
 	"image"
 	"image/color"
+	_ "unsafe"
 
 	"github.com/clktmr/n64/rcp/cpu"
 	"github.com/clktmr/n64/rcp/rdp"
 	"github.com/drpaneas/gosprite64/rspq"
 )
 
+type rawRDPCommand uint64
+
+//go:linkname rdpPush github.com/clktmr/n64/rcp/rdp.(*DisplayList).Push
+func rdpPush(dl *rdp.DisplayList, cmds ...rawRDPCommand)
+
+func pushRawRDP(words []uint64) {
+	if len(words) == 0 {
+		return
+	}
+	cmds := make([]rawRDPCommand, len(words))
+	for i, w := range words {
+		cmds[i] = rawRDPCommand(w)
+	}
+	rdpPush(&rdp.RDP, cmds...)
+}
+
+// PushRaw submits one or more fully packed raw RDP command words.
+func PushRaw(words ...uint64) {
+	pushRawRDP(words)
+}
+
 // Execute walks the display list and translates DP opcodes into rdp.RDP calls.
 // SP commands (vertex, triangle, matrix) are skipped - this is an HLE path
 // that only handles the RDP-direct subset.
 func Execute(dl *DisplayList) {
 	for _, cmd := range dl.Commands() {
+		if len(cmd.Raw) > 0 {
+			pushRawRDP(cmd.Raw)
+			continue
+		}
+
 		opcode := cmd.W0 >> 24
 
 		switch opcode {

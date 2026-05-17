@@ -150,8 +150,11 @@ func (g *Game) Draw() {
 
 	if g.prevX != g.playerX || g.prevY != g.playerY {
 		gosprite64.DrawWorldSpriteWithOptions(g.charSS, frame, g.prevX, g.prevY, g.camera, gosprite64.DrawSpriteOptions{
-			Blend: gosprite64.BlendAlpha,
-			Alpha: 0.5,
+			Blend:    gosprite64.BlendAlpha,
+			Alpha:    0.5,
+			Rotation: 0.45,
+			OriginX:  8,
+			OriginY:  8,
 		})
 	}
 

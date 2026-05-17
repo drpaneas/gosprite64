@@ -25,5 +25,5 @@ func IsStopped() bool {
 }
 
 func WaitDone() {
-	rsp.IntBreak.Sleep()
+	rsp.IntBreak.Wait(0)
 }

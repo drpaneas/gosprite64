@@ -86,3 +86,21 @@ func TestDisplayListSetColorImage(t *testing.T) {
 		t.Errorf("W1 = 0x%08X, want 0x%08X", cmd.W1, addr)
 	}
 }
+
+func TestDisplayListRawPacket(t *testing.T) {
+	dl := NewDisplayList(4)
+	dl.DPRaw(0xc800000000000001, 0x123456789abcdef0)
+	if dl.Len() != 1 {
+		t.Fatalf("expected 1 raw packet entry, got %d", dl.Len())
+	}
+	cmd := dl.Commands()[0]
+	if len(cmd.Raw) != 2 {
+		t.Fatalf("raw packet len = %d, want 2", len(cmd.Raw))
+	}
+	if cmd.Raw[0] != 0xc800000000000001 {
+		t.Fatalf("raw[0] = 0x%016x, want 0xc800000000000001", cmd.Raw[0])
+	}
+	if cmd.Raw[1] != 0x123456789abcdef0 {
+		t.Fatalf("raw[1] = 0x%016x, want 0x123456789abcdef0", cmd.Raw[1])
+	}
+}

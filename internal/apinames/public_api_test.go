@@ -483,3 +483,17 @@ func TestCollisionAPI(t *testing.T) {
 	requireContains(t, layer, "type Collider struct {")
 	requireContains(t, layer, "func ColliderOverlap(a, b Collider) bool")
 }
+
+func TestCameraEnhancedAPI(t *testing.T) {
+	src := mustReadRepoFile(t, "camera.go")
+	requireContains(t, src, "Zoom float32")
+	requireContains(t, src, "FollowTarget")
+	requireContains(t, src, "FollowSpeed")
+	requireContains(t, src, "Bounds")
+	requireContains(t, src, "func (c *Camera) EffectiveZoom() float32")
+	requireContains(t, src, "func (c *Camera) WorldToScreen(")
+	requireContains(t, src, "func (c *Camera) UpdateFollow()")
+	requireContains(t, src, "func (c *Camera) ClampToBounds()")
+	requireContains(t, src, "func (c *Camera) AddTrauma(")
+	requireContains(t, src, "func (c *Camera) ShakeOffset()")
+}

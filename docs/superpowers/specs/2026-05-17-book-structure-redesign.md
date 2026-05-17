@@ -23,9 +23,9 @@ The new SUMMARY.md will have this hierarchy:
 - Feature Overview (new)
 
 ### Part 2: Getting Started
-- Installation (from existing getting_started.md)
+- Installation (from existing getting_started.md - keeps everything except the Cursor/VS Code section)
 - Hello World (from existing hello_world.md)
-- Editor Setup (extracted from getting_started.md)
+- Editor Setup (extracted from getting_started.md - the "Cursor / VS Code" section starting at the `## Cursor / VS Code` heading through the end of the `.vscode/settings.json` instructions)
 
 ### Part 3: Tutorial - Build a Platformer
 - Step 1: Start the Engine (stub)
@@ -82,12 +82,12 @@ The new SUMMARY.md will have this hierarchy:
 - Save Data (new)
 
 ### Part 10: 2D Math
-- Vectors (from existing math2d.md, split)
-- Rectangles (new)
-- Collision Detection (new)
-- Easing Functions (new)
-- Grid Utilities (new)
-- Random Numbers (new)
+- Vectors (from existing math2d.md, the "Vec2" section)
+- Rectangles (from existing math2d.md, the "Rect" section)
+- Collision Detection (new - covers math2d.AABBOverlap, AABBPenetration, AABBResolve, AABBSweep, Collider, Layer)
+- Easing Functions (from existing math2d.md, the "Easing and interpolation" section)
+- Grid Utilities (new - covers math2d.Grid, Run, GridCell)
+- Random Numbers (from existing math2d.md, the "Rand" section)
 
 ### Part 11: 3D Graphics
 - 3D Math (new)
@@ -108,11 +108,19 @@ The new SUMMARY.md will have this hierarchy:
 
 ## File Layout
 
-mdbook supports subdirectories. Each part gets its own directory:
+mdbook supports subdirectories. The `book.toml` already has `src = "docs"` which means mdbook reads from the `docs/` directory. Subdirectories inside `docs/` are fully supported and require no config changes.
+
+Each part gets its own directory:
 
 ```
 docs/
   SUMMARY.md
+  images/                         <-- shared image directory
+    logo.png                      (moved from docs/logo.png)
+    fixed-resolution-calibration.png  (moved from docs/)
+    par-comparison.png            (moved from docs/)
+    canvas-layout.png             (moved from docs/)
+    rendering-pipeline.png        (moved from docs/)
   01-welcome/
     why-gosprite64.md
     feature-overview.md
@@ -188,24 +196,76 @@ docs/
     api-quick-reference.md
     performance-notes.md
     troubleshooting.md
+  superpowers/                    <-- excluded from book, kept as-is
+    specs/
+    plans/
 ```
 
-## Migration Rules
+## Image Migration
 
-- Existing pages keep their content intact and are moved to new paths
-- Each stub page contains exactly: a title, a one-sentence description of the feature, and "This page is under construction."
-- The tutorial section (Part 3) gets stubs with step titles but no tutorial content yet
-- `first_tile_game.md` content moves into `03-tutorial/02-draw-a-tilemap.md` as the seed for the multi-step tutorial
-- Old top-level doc files are removed after their content is moved
+All images currently in `docs/` are moved to a shared `docs/images/` directory. Image references in moved pages are updated to use relative paths from their new location:
+
+| Image | Current location | New location |
+|-------|-----------------|--------------|
+| `logo.png` | `docs/logo.png` | `docs/images/logo.png` |
+| `fixed-resolution-calibration.png` | `docs/` | `docs/images/` |
+| `par-comparison.png` | `docs/` | `docs/images/` |
+| `canvas-layout.png` | `docs/` | `docs/images/` |
+| `rendering-pipeline.png` | `docs/` | `docs/images/` |
+
+Pages that reference these images must update their paths. For example, `square_pixels.md` moves to `04-core-concepts/square-pixels.md`, so its reference `![...](par-comparison.png)` becomes `![...](../images/par-comparison.png)`.
+
+The `introduction.md` reference `![Gopher](../logo.png)` becomes `![Gopher](../images/logo.png)` after the page moves to `01-welcome/`.
+
+## Content Extraction Rules
+
+### getting_started.md split
+
+- **installation.md** gets: everything from `# Getting Started` through the end of step 5 ("Build all examples"), the `n64.env` explanation, the resolution/canvas paragraph, the calibration screenshot, the Windows section, and the Linux Fallback section.
+- **editor-setup.md** gets: the `## Cursor / VS Code` section including all `.vscode/settings.json` instructions, the `go.alternateTools` note, and the "restart language server" instruction.
+
+### math2d.md split
+
+| New page | Content from math2d.md |
+|----------|----------------------|
+| `vectors.md` | The `## Vec2` section (lines 11-96) |
+| `rectangles.md` | The `## Rect` section (lines 98-157) |
+| `collision-detection.md` | New stub - covers `math2d.AABBOverlap`, `AABBPenetration`, `AABBResolve`, `AABBSweep`, `Collider`, `Layer` |
+| `easing-functions.md` | The `## Easing and interpolation` section (lines 224-313) |
+| `grid-utilities.md` | New stub - covers `math2d.Grid[T]`, `Run`, `GridCell`, `ScanRow`, `ScanCol` |
+| `random-numbers.md` | The `## Rand` section (lines 159-222) |
+
+Each split page keeps the package import instruction and the introductory sentence from math2d.md.
+
+### first_tile_game.md migration
+
+The full content moves to `03-tutorial/02-draw-a-tilemap.md`. References to `examples/simplegame` and `examples/tilemap` stay intact since those paths are repository-relative, not doc-relative.
+
+## Excluded Directories
+
+The `docs/superpowers/` directory (containing specs and plans) is not part of the mdbook build. It is not listed in SUMMARY.md and mdbook ignores unlisted files. This directory stays in place and is not moved.
+
+## Stub Page Format
+
+Each stub page contains:
+
+```markdown
+# [Feature Name]
+
+[One sentence describing what this feature does and why you would use it.]
+
+> This page is under construction. The feature is available in the codebase but documentation has not been written yet.
+```
+
+The blockquote format renders as a visible callout in mdbook without looking unprofessional.
 
 ## Verification
 
 The spec is complete when:
 
-- `mdbook build` succeeds with the new SUMMARY.md
-- All existing content is accessible under its new path
+- `mdbook build` succeeds with the new SUMMARY.md and produces no warnings about missing files
+- All existing content is accessible under its new path with no broken image references
 - Every exported feature in the codebase has at least a stub page in the book
-- No broken internal links
 - The book renders with a clear multi-level navigation sidebar
 
 ## Non-Goals
@@ -219,10 +279,14 @@ This sub-project does not include:
 
 ## Rollout
 
-1. Create the directory structure under `docs/`
-2. Write the new `SUMMARY.md` with all parts and pages
-3. Move existing doc content to new paths
+1. Create all subdirectories under `docs/`
+2. Create `docs/images/` and move all image files there
+3. Copy existing doc files to their new paths, updating image references
 4. Create stub pages for all undocumented features
-5. Remove old top-level doc files
-6. Verify `mdbook build` succeeds
-7. Commit
+5. Split `getting_started.md` into `installation.md` and `editor-setup.md`
+6. Split `math2d.md` into the 4 content pages plus 2 stub pages
+7. Write the new `SUMMARY.md` pointing at all new paths
+8. Verify `mdbook build` succeeds with no warnings
+9. Remove old top-level doc files that have been moved
+10. Verify `mdbook build` still succeeds after cleanup
+11. Commit

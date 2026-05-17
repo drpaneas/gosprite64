@@ -515,3 +515,18 @@ func TestFontAPI(t *testing.T) {
 	requireContains(t, align, "AlignRight")
 	requireContains(t, align, "func (f *Font) WrapText(")
 }
+
+func TestReplayAPI(t *testing.T) {
+	src := mustReadRepoFile(t, "replay.go")
+	requireContains(t, src, "type FrameInput struct {")
+	requireContains(t, src, "type ReplayData struct {")
+	requireContains(t, src, "type InputRecorder struct {")
+	requireContains(t, src, "type InputPlayer struct {")
+	requireContains(t, src, "func NewInputRecorder(playerCount int) *InputRecorder")
+	requireContains(t, src, "func (r *InputRecorder) CaptureFrame(")
+	requireContains(t, src, "func (r *InputRecorder) Finish() *ReplayData")
+	requireContains(t, src, "func NewInputPlayer(data *ReplayData) *InputPlayer")
+	requireContains(t, src, "func (p *InputPlayer) NextFrame(")
+	requireContains(t, src, "func (p *InputPlayer) Done() bool")
+	requireContains(t, src, "func (p *InputPlayer) Reset()")
+}

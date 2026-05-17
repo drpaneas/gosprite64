@@ -420,3 +420,30 @@ func requireNotContains(t *testing.T, content, snippet string) {
 		t.Fatalf("unexpected %q", snippet)
 	}
 }
+
+func TestMath2dAPI(t *testing.T) {
+	vec2 := mustReadRepoFile(t, "math2d/vec2.go")
+	requireContains(t, vec2, "type Vec2 struct {")
+	requireContains(t, vec2, "func (v Vec2) Add(other Vec2) Vec2")
+	requireContains(t, vec2, "func (v Vec2) Normalize() Vec2")
+	requireContains(t, vec2, "func (v Vec2) Lerp(other Vec2, t float32) Vec2")
+	requireContains(t, vec2, "func (v Vec2) Rotate(radians float64) Vec2")
+	requireContains(t, vec2, "func (v Vec2) Distance(other Vec2) float32")
+
+	rect := mustReadRepoFile(t, "math2d/rect.go")
+	requireContains(t, rect, "type Rect struct {")
+	requireContains(t, rect, "func (r Rect) Overlaps(other Rect) bool")
+	requireContains(t, rect, "func (r Rect) Intersection(other Rect) (Rect, bool)")
+	requireContains(t, rect, "func (r Rect) ContainsPoint(p Vec2) bool")
+
+	rng := mustReadRepoFile(t, "math2d/rand.go")
+	requireContains(t, rng, "type Rand struct {")
+	requireContains(t, rng, "func NewRand(seed uint64) *Rand")
+	requireContains(t, rng, "func (r *Rand) Intn(n int) int")
+	requireContains(t, rng, "func (r *Rand) Float32() float32")
+
+	easing := mustReadRepoFile(t, "math2d/easing.go")
+	requireContains(t, easing, "func Clamp(")
+	requireContains(t, easing, "func Lerp(")
+	requireContains(t, easing, "func MoveToward(")
+}

@@ -25,58 +25,72 @@ const (
 	ButtonCRight    = joybus.ButtonCRight
 )
 
+// MaxControllers is the number of controller ports on the N64.
+const MaxControllers = 4
+
 var (
-	// Controller state buffer owned by this package.
-	states [4]controller.Controller
-	// Current button state (bitmask)
-	buttons joybus.ButtonMask
-	// Previous button state (for detecting button presses)
-	prevButtons joybus.ButtonMask
-	// Mutex for thread safety
+	states      [MaxControllers]controller.Controller
+	buttons     [MaxControllers]joybus.ButtonMask
+	prevButtons [MaxControllers]joybus.ButtonMask
+
 	controllerMutex sync.Mutex
 )
 
-// updateControllerState updates the current and previous button states.
 func updateControllerState() {
 	controllerMutex.Lock()
 	defer controllerMutex.Unlock()
 
 	controller.Poll(&states)
 
-	prevButtons = buttons
-
-	if states[0].Present() {
-		buttons = states[0].Down()
-	} else {
-		buttons = 0
+	for i := 0; i < MaxControllers; i++ {
+		prevButtons[i] = buttons[i]
+		if states[i].Present() {
+			buttons[i] = states[i].Down()
+		} else {
+			buttons[i] = 0
+		}
 	}
 }
 
-// IsButtonDown reports whether the specified button is currently pressed.
-func IsButtonDown(button joybus.ButtonMask) bool {
+// --- Per-port multiplayer API ---
+
+// PlayerButtonDown reports whether the specified button is currently pressed
+// on the controller at the given port (0-3).
+func PlayerButtonDown(port int, button joybus.ButtonMask) bool {
+	if port < 0 || port >= MaxControllers {
+		return false
+	}
 	controllerMutex.Lock()
 	defer controllerMutex.Unlock()
-	return (buttons & button) != 0
+	return (buttons[port] & button) != 0
 }
 
-// IsButtonJustPressed reports whether the button transitioned from up to down this frame.
-func IsButtonJustPressed(button joybus.ButtonMask) bool {
+// PlayerButtonJustPressed reports whether the button transitioned from up to
+// down this frame on the controller at the given port (0-3).
+func PlayerButtonJustPressed(port int, button joybus.ButtonMask) bool {
+	if port < 0 || port >= MaxControllers {
+		return false
+	}
 	controllerMutex.Lock()
 	defer controllerMutex.Unlock()
-	return (buttons&button != 0) && (prevButtons&button == 0)
+	return (buttons[port]&button != 0) && (prevButtons[port]&button == 0)
 }
 
-// StickPosition returns the analog stick position in the range [-1.0, 1.0].
-func StickPosition(deadzone float64) (float64, float64) {
+// PlayerStickPosition returns the analog stick position in the range [-1.0, 1.0]
+// for the controller at the given port (0-3).
+func PlayerStickPosition(port int, deadzone float64) (float64, float64) {
+	if port < 0 || port >= MaxControllers {
+		return 0, 0
+	}
 	controllerMutex.Lock()
 	defer controllerMutex.Unlock()
 
-	if !states[0].Present() {
+	if !states[port].Present() {
 		return 0, 0
 	}
 
-	x := float64(states[0].X()) / 128.0
-	y := -float64(states[0].Y()) / 128.0
+	x := float64(states[port].X()) / 128.0
+	y := -float64(states[port].Y()) / 128.0
 
 	if x < deadzone && x > -deadzone {
 		x = 0
@@ -97,4 +111,60 @@ func StickPosition(deadzone float64) (float64, float64) {
 	}
 
 	return x, y
+}
+
+// IsControllerConnected reports whether the controller at the given port (0-3)
+// is currently connected.
+func IsControllerConnected(port int) bool {
+	if port < 0 || port >= MaxControllers {
+		return false
+	}
+	controllerMutex.Lock()
+	defer controllerMutex.Unlock()
+	return states[port].Present()
+}
+
+// ConnectedControllers returns the number of controllers currently connected.
+func ConnectedControllers() int {
+	controllerMutex.Lock()
+	defer controllerMutex.Unlock()
+	count := 0
+	for i := 0; i < MaxControllers; i++ {
+		if states[i].Present() {
+			count++
+		}
+	}
+	return count
+}
+
+// --- Port 0 convenience wrappers (backward-compatible API) ---
+
+// IsButtonDown reports whether the specified button is currently pressed on port 0.
+func IsButtonDown(button joybus.ButtonMask) bool {
+	return PlayerButtonDown(0, button)
+}
+
+// IsButtonJustPressed reports whether the button transitioned from up to down
+// this frame on port 0.
+func IsButtonJustPressed(button joybus.ButtonMask) bool {
+	return PlayerButtonJustPressed(0, button)
+}
+
+// StickPosition returns the analog stick position in the range [-1.0, 1.0]
+// for port 0.
+func StickPosition(deadzone float64) (float64, float64) {
+	return PlayerStickPosition(0, deadzone)
+}
+
+// SetRumble enables or disables the rumble pak on the given port (0-3).
+func SetRumble(port int, enabled bool) {
+	if port < 0 || port >= MaxControllers {
+		return
+	}
+	controllerMutex.Lock()
+	defer controllerMutex.Unlock()
+	if !states[port].Present() {
+		return
+	}
+	rumbleWrite(port, enabled)
 }

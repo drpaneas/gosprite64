@@ -76,6 +76,12 @@ func LoadScene(bundle *Bundle) (*Scene, error) {
 		return nil, err
 	}
 
+	if len(scene.sheets) > 0 && scene.gameMap != nil {
+		info := scene.sheets[0].Info()
+		scene.gameMap.tileW = info.TileWidth
+		scene.gameMap.tileH = info.TileHeight
+	}
+
 	scene.configureRenderer()
 	scene.renderScene = scene.preparer.buildScene()
 

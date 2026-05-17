@@ -6,9 +6,6 @@ import (
 	"github.com/drpaneas/gosprite64/internal/tile2d/format"
 )
 
-const supportedTileWidth = 8
-const supportedTileHeight = 8
-
 func OpenBundle(path string, l Loader) (format.ParsedBundle, error) {
 	raw, err := l.ReadAsset(path)
 	if err != nil {
@@ -46,16 +43,21 @@ func ValidateSceneAssets(m format.ParsedMap, sheets []format.ParsedSheet) error 
 		return nil
 	}
 
-	for sheetIdx, sheet := range sheets {
-		if int(sheet.TileWidth) != supportedTileWidth || int(sheet.TileHeight) != supportedTileHeight {
-			return fmt.Errorf(
-				"scene validation: sheet %d uses unsupported tile size %dx%d, want %dx%d",
-				sheetIdx+1,
-				sheet.TileWidth,
-				sheet.TileHeight,
-				supportedTileWidth,
-				supportedTileHeight,
-			)
+	if len(sheets) > 0 {
+		refW, refH := sheets[0].TileWidth, sheets[0].TileHeight
+		if refW == 0 || refH == 0 {
+			return fmt.Errorf("scene validation: sheet 1 has zero tile size %dx%d", refW, refH)
+		}
+		for i := 1; i < len(sheets); i++ {
+			if sheets[i].TileWidth == 0 || sheets[i].TileHeight == 0 {
+				return fmt.Errorf("scene validation: sheet %d has zero tile size %dx%d", i+1, sheets[i].TileWidth, sheets[i].TileHeight)
+			}
+			if sheets[i].TileWidth != refW || sheets[i].TileHeight != refH {
+				return fmt.Errorf(
+					"scene validation: sheet %d tile size %dx%d differs from sheet 1 tile size %dx%d",
+					i+1, sheets[i].TileWidth, sheets[i].TileHeight, refW, refH,
+				)
+			}
 		}
 	}
 

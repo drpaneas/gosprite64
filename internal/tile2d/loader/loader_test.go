@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 
 	"github.com/drpaneas/gosprite64/internal/tile2d/format"
@@ -149,7 +148,7 @@ func TestValidateSceneAssetsRejectsTileOutOfRange(t *testing.T) {
 	}
 }
 
-func TestValidateSceneAssetsRejectsUnsupportedTileSize(t *testing.T) {
+func TestValidateSceneAssetsAcceptsNon8x8TileSize(t *testing.T) {
 	rawMap, err := format.BuildMap(format.MapConfig{
 		Width:       1,
 		Height:      1,
@@ -179,11 +178,8 @@ func TestValidateSceneAssetsRejectsUnsupportedTileSize(t *testing.T) {
 	}
 
 	err = ValidateSceneAssets(parsedMap, []format.ParsedSheet{sheet})
-	if err == nil {
-		t.Fatal("expected unsupported tile-size validation error")
-	}
-	if !strings.Contains(err.Error(), "unsupported tile size") {
-		t.Fatalf("ValidateSceneAssets() error = %v, want unsupported tile size", err)
+	if err != nil {
+		t.Fatalf("should accept non-8x8 tile size: %v", err)
 	}
 }
 

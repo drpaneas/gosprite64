@@ -8,6 +8,8 @@ import (
 type Map struct {
 	parsed          format.ParsedMap
 	cachedLayerInfo []MapLayerInfo
+	tileW           int
+	tileH           int
 }
 
 type MapLayerInfo struct {
@@ -48,11 +50,17 @@ func (m *Map) Height() int {
 }
 
 func (m *Map) TileWidth() int {
-	return 8
+	if m == nil || m.tileW <= 0 {
+		return 8
+	}
+	return m.tileW
 }
 
 func (m *Map) TileHeight() int {
-	return 8
+	if m == nil || m.tileH <= 0 {
+		return 8
+	}
+	return m.tileH
 }
 
 func (m *Map) LayerCount() int {

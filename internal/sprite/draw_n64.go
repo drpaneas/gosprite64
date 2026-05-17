@@ -90,11 +90,15 @@ func RenderSprite(fb *texture.Texture, src image.Image, x, y int,
 	loadIdx, drawIdx := rdp.RDP.SetTile(tileDesc)
 	rdp.RDP.LoadTile(loadIdx, srcBounds)
 
-	rdpScaleX := max(1, int(scaleX+0.5))
-	rdpScaleY := max(1, int(scaleY+0.5))
+	if scaleX < 1 {
+		scaleX = 1
+	}
+	if scaleY < 1 {
+		scaleY = 1
+	}
 
-	destW := srcW * rdpScaleX
-	destH := srcH * rdpScaleY
+	destW := int(float32(srcW) * scaleX)
+	destH := int(float32(srcH) * scaleY)
 
 	logicalDst := image.Rect(x, y, x+destW, y+destH)
 	clipped := logicalDst.Intersect(rendergeom.LogicalBounds())
@@ -123,8 +127,11 @@ func RenderSprite(fb *texture.Texture, src image.Image, x, y int,
 		srcPtY = srcBounds.Min.Y + srcH
 	}
 
-	srcPtX += clipOffsetX / rdpScaleX
-	srcPtY += clipOffsetY / rdpScaleY
+	srcPtX += int(float32(clipOffsetX) / scaleX)
+	srcPtY += int(float32(clipOffsetY) / scaleY)
+
+	rdpScaleX := max(1, int(scaleX+0.5))
+	rdpScaleY := max(1, int(scaleY+0.5))
 
 	rdp.RDP.TextureRectangle(
 		image.Rect(

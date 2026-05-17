@@ -3,10 +3,13 @@
 package gfx
 
 import (
+	"encoding/binary"
 	"image"
 	"image/color"
 
+	"github.com/clktmr/n64/rcp/cpu"
 	"github.com/clktmr/n64/rcp/rdp"
+	"github.com/drpaneas/gosprite64/rspq"
 )
 
 // Execute walks the display list and translates DP opcodes into rdp.RDP calls.
@@ -88,4 +91,52 @@ func Execute(dl *DisplayList) {
 // Flush submits any buffered RDP commands to the hardware.
 func Flush() {
 	rdp.RDP.Flush()
+}
+
+// ExecuteViaRSP submits a display list to the RSP for processing by
+// F3DEX2 microcode. This is the real 3D path.
+func ExecuteViaRSP(dl *DisplayList, bootCode, ucodeText, ucodeData []byte) {
+	if dl == nil || dl.Len() == 0 {
+		return
+	}
+
+	cmds := dl.Commands()
+
+	gfxBytes := cpu.MakePaddedSlice[byte](len(cmds) * 8)
+	for i, cmd := range cmds {
+		binary.BigEndian.PutUint32(gfxBytes[i*8:], cmd.W0)
+		binary.BigEndian.PutUint32(gfxBytes[i*8+4:], cmd.W1)
+	}
+	cpu.WritebackSlice(gfxBytes)
+
+	dramStack := cpu.MakePaddedSlice[byte](1024)
+	outputBuf := cpu.MakePaddedSlice[byte](4096)
+	yieldBuf := cpu.MakePaddedSlice[byte](0xC00)
+
+	ucText := cpu.CopyPaddedSlice(ucodeText)
+	ucData := cpu.CopyPaddedSlice(ucodeData)
+	cpu.WritebackSlice(ucText)
+	cpu.WritebackSlice(ucData)
+
+	task := rspq.OSTask{
+		Type:          rspq.TaskGfx,
+		Flags:         0,
+		UcodeBoot:     0,
+		UcodeBootSize: uint32(len(bootCode)),
+		Ucode:         uint32(cpu.PhysicalAddressSlice(ucText)),
+		UcodeSize:     uint32(len(ucText)),
+		UcodeData:     uint32(cpu.PhysicalAddressSlice(ucData)),
+		UcodeDataSize: uint32(len(ucData)),
+		DRAMStack:     uint32(cpu.PhysicalAddressSlice(dramStack)),
+		DRAMStackSize: uint32(len(dramStack)),
+		OutputBuff:    uint32(cpu.PhysicalAddressSlice(outputBuf)),
+		OutputBuffEnd: uint32(cpu.PhysicalAddressSlice(outputBuf)) + uint32(len(outputBuf)),
+		DataPtr:       uint32(cpu.PhysicalAddressSlice(gfxBytes)),
+		DataSize:      uint32(len(gfxBytes)),
+		YieldDataPtr:  uint32(cpu.PhysicalAddressSlice(yieldBuf)),
+		YieldDataSize: uint32(len(yieldBuf)),
+	}
+
+	rspq.SubmitTask(&task, bootCode)
+	rspq.WaitTaskDone()
 }

@@ -35,6 +35,9 @@ func Remap(v, inMin, inMax, outMin, outMax float32) float32 {
 
 // MoveToward moves current toward target by at most maxDelta.
 func MoveToward(current, target, maxDelta float32) float32 {
+	if maxDelta <= 0 {
+		return current
+	}
 	diff := target - current
 	if float32(math.Abs(float64(diff))) <= maxDelta {
 		return target

@@ -98,3 +98,78 @@ func TestRemap(t *testing.T) {
 		t.Fatalf("Remap(5, 0,10, 100,200) = %f, want 150", v)
 	}
 }
+
+func TestMoveTowardNegativeDelta(t *testing.T) {
+	v := MoveToward(5, 10, -1)
+	if v != 5 {
+		t.Fatalf("negative maxDelta should return current, got %f", v)
+	}
+}
+
+func TestMoveTowardZeroDelta(t *testing.T) {
+	v := MoveToward(5, 10, 0)
+	if v != 5 {
+		t.Fatalf("zero maxDelta should return current, got %f", v)
+	}
+}
+
+func TestEaseInCubic(t *testing.T) {
+	if !almostEqual(EaseInCubic(0), 0, 0.001) {
+		t.Fatal("EaseInCubic(0) should be 0")
+	}
+	if !almostEqual(EaseInCubic(1), 1, 0.001) {
+		t.Fatal("EaseInCubic(1) should be 1")
+	}
+	if !almostEqual(EaseInCubic(0.5), 0.125, 0.001) {
+		t.Fatalf("EaseInCubic(0.5) = %f, want 0.125", EaseInCubic(0.5))
+	}
+}
+
+func TestEaseOutCubic(t *testing.T) {
+	if !almostEqual(EaseOutCubic(0), 0, 0.001) {
+		t.Fatalf("EaseOutCubic(0) = %f, want 0", EaseOutCubic(0))
+	}
+	if !almostEqual(EaseOutCubic(1), 1, 0.001) {
+		t.Fatal("EaseOutCubic(1) should be 1")
+	}
+	if !almostEqual(EaseOutCubic(0.5), 0.875, 0.001) {
+		t.Fatalf("EaseOutCubic(0.5) = %f, want 0.875", EaseOutCubic(0.5))
+	}
+}
+
+func TestEaseInOutCubic(t *testing.T) {
+	if !almostEqual(EaseInOutCubic(0), 0, 0.001) {
+		t.Fatal("EaseInOutCubic(0) should be 0")
+	}
+	if !almostEqual(EaseInOutCubic(1), 1, 0.001) {
+		t.Fatal("EaseInOutCubic(1) should be 1")
+	}
+	if !almostEqual(EaseInOutCubic(0.5), 0.5, 0.001) {
+		t.Fatalf("EaseInOutCubic(0.5) = %f, want 0.5", EaseInOutCubic(0.5))
+	}
+}
+
+func TestSmoothStep(t *testing.T) {
+	if !almostEqual(SmoothStep(0, 1, -1), 0, 0.001) {
+		t.Fatal("SmoothStep below edge0 should be 0")
+	}
+	if !almostEqual(SmoothStep(0, 1, 2), 1, 0.001) {
+		t.Fatal("SmoothStep above edge1 should be 1")
+	}
+	if !almostEqual(SmoothStep(0, 1, 0.5), 0.5, 0.001) {
+		t.Fatalf("SmoothStep(0,1,0.5) = %f, want 0.5", SmoothStep(0, 1, 0.5))
+	}
+	if !almostEqual(SmoothStep(0, 1, 0), 0, 0.001) {
+		t.Fatal("SmoothStep at edge0 should be 0")
+	}
+	if !almostEqual(SmoothStep(0, 1, 1), 1, 0.001) {
+		t.Fatal("SmoothStep at edge1 should be 1")
+	}
+}
+
+func TestClampLoGreaterThanHi(t *testing.T) {
+	v := Clamp(5, 10, 0)
+	if v != 10 {
+		t.Fatalf("Clamp(5, lo=10, hi=0) with lo>hi returns lo, got %f", v)
+	}
+}

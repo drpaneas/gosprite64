@@ -68,6 +68,22 @@ func TestVec2NormalizeZero(t *testing.T) {
 	}
 }
 
+func TestVec2NormalizeNearZero(t *testing.T) {
+	v := Vec2{X: 1e-20, Y: 1e-20}
+	n := v.Normalize()
+	if n.X != 0 || n.Y != 0 {
+		t.Fatalf("normalizing near-zero vector should return zero, got %v", n)
+	}
+}
+
+func TestVec2RotateNegative(t *testing.T) {
+	v := Vec2{X: 0, Y: 1}
+	r := v.Rotate(-math.Pi / 2)
+	if !almostEqual(r.X, 1, 0.001) || !almostEqual(r.Y, 0, 0.001) {
+		t.Fatalf("expected {1, 0}, got %v", r)
+	}
+}
+
 func TestVec2Dot(t *testing.T) {
 	a := Vec2{X: 1, Y: 0}
 	b := Vec2{X: 0, Y: 1}
@@ -105,16 +121,29 @@ func TestVec2Lerp(t *testing.T) {
 	}
 }
 
-func TestVec2LerpClamp(t *testing.T) {
+func TestVec2LerpExtrapolation(t *testing.T) {
 	a := Vec2{X: 0, Y: 0}
 	b := Vec2{X: 10, Y: 20}
 	over := a.Lerp(b, 1.5)
-	if !almostEqual(over.X, 10, 0.001) || !almostEqual(over.Y, 20, 0.001) {
-		t.Fatalf("lerp t>1 should clamp to b, got %v", over)
+	if !almostEqual(over.X, 15, 0.001) || !almostEqual(over.Y, 30, 0.001) {
+		t.Fatalf("lerp t=1.5 should extrapolate to {15, 30}, got %v", over)
 	}
 	under := a.Lerp(b, -0.5)
-	if !almostEqual(under.X, 0, 0.001) || !almostEqual(under.Y, 0, 0.001) {
-		t.Fatalf("lerp t<0 should clamp to a, got %v", under)
+	if !almostEqual(under.X, -5, 0.001) || !almostEqual(under.Y, -10, 0.001) {
+		t.Fatalf("lerp t=-0.5 should extrapolate to {-5, -10}, got %v", under)
+	}
+}
+
+func TestVec2LerpBoundaries(t *testing.T) {
+	a := Vec2{X: 3, Y: 7}
+	b := Vec2{X: 13, Y: 27}
+	at0 := a.Lerp(b, 0)
+	if at0.X != 3 || at0.Y != 7 {
+		t.Fatalf("lerp t=0 should be a, got %v", at0)
+	}
+	at1 := a.Lerp(b, 1)
+	if at1.X != 13 || at1.Y != 27 {
+		t.Fatalf("lerp t=1 should be b, got %v", at1)
 	}
 }
 

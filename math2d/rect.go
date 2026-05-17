@@ -30,7 +30,7 @@ func (r Rect) ContainsPoint(p Vec2) bool {
 }
 
 func (r Rect) ContainsRect(other Rect) bool {
-	return other.W > 0 && other.H > 0 &&
+	return r.W > 0 && r.H > 0 && other.W > 0 && other.H > 0 &&
 		other.X >= r.X && other.Right() <= r.Right() &&
 		other.Y >= r.Y && other.Bottom() <= r.Bottom()
 }
@@ -47,10 +47,10 @@ func (r Rect) Intersection(other Rect) (Rect, bool) {
 	if !r.Overlaps(other) {
 		return Rect{}, false
 	}
-	x := max32(r.X, other.X)
-	y := max32(r.Y, other.Y)
-	right := min32(r.Right(), other.Right())
-	bottom := min32(r.Bottom(), other.Bottom())
+	x := max(r.X, other.X)
+	y := max(r.Y, other.Y)
+	right := min(r.Right(), other.Right())
+	bottom := min(r.Bottom(), other.Bottom())
 	return Rect{X: x, Y: y, W: right - x, H: bottom - y}, true
 }
 
@@ -64,16 +64,3 @@ func (r Rect) Expand(amount float32) Rect {
 	}
 }
 
-func min32(a, b float32) float32 {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func max32(a, b float32) float32 {
-	if a > b {
-		return a
-	}
-	return b
-}

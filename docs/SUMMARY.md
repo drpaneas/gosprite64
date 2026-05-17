@@ -8,3 +8,4 @@
 - [Using Audio in GoSprite64](audio.md)
 - [Using the Tile2D Scene Pipeline](tile2d.md)
 - [Sprites](sprites.md)
+- [2D Math](math2d.md)

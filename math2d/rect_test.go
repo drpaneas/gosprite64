@@ -112,3 +112,30 @@ func TestRectZeroSize(t *testing.T) {
 		t.Fatal("zero-size rect should not overlap anything")
 	}
 }
+
+func TestRectZeroSizeContainsRect(t *testing.T) {
+	r := Rect{X: 5, Y: 5, W: 0, H: 0}
+	inner := Rect{X: 5, Y: 5, W: 1, H: 1}
+	if r.ContainsRect(inner) {
+		t.Fatal("zero-size rect should not contain anything")
+	}
+}
+
+func TestRectExpandNegative(t *testing.T) {
+	r := Rect{X: 10, Y: 10, W: 20, H: 20}
+	e := r.Expand(-5)
+	if e.X != 15 || e.Y != 15 || e.W != 10 || e.H != 10 {
+		t.Fatalf("expected {15,15,10,10}, got %v", e)
+	}
+}
+
+func TestRectExpandNegativeCollapse(t *testing.T) {
+	r := Rect{X: 10, Y: 10, W: 4, H: 4}
+	e := r.Expand(-5)
+	if e.W >= 0 || e.H >= 0 {
+		t.Logf("shrinking past zero produces negative W/H: %v (expected)", e)
+	}
+	if e.Overlaps(Rect{X: 0, Y: 0, W: 100, H: 100}) {
+		t.Fatal("collapsed rect should not overlap anything")
+	}
+}

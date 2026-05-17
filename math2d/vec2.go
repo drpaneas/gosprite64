@@ -39,10 +39,11 @@ func (v Vec2) Length() float32 {
 }
 
 func (v Vec2) Normalize() Vec2 {
-	l := v.Length()
-	if l == 0 {
+	lsq := v.LengthSq()
+	if lsq < 1e-12 {
 		return Vec2{}
 	}
+	l := float32(math.Sqrt(float64(lsq)))
 	return Vec2{X: v.X / l, Y: v.Y / l}
 }
 
@@ -58,13 +59,10 @@ func (v Vec2) DistanceSq(other Vec2) float32 {
 	return v.Sub(other).LengthSq()
 }
 
+// Lerp linearly interpolates between v and other by t.
+// t is unclamped, matching the scalar Lerp in easing.go.
+// Use Clamp on t beforehand if you need clamped behavior.
 func (v Vec2) Lerp(other Vec2, t float32) Vec2 {
-	if t < 0 {
-		t = 0
-	}
-	if t > 1 {
-		t = 1
-	}
 	return Vec2{
 		X: v.X + (other.X-v.X)*t,
 		Y: v.Y + (other.Y-v.Y)*t,

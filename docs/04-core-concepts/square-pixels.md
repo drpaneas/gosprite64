@@ -92,7 +92,7 @@ Each pixel is 20% wider than it is tall. A 40x40 rect now looks like a wide, squ
 
 Here is the same `gosprite64.FillRect(0, 0, 39, 39, gosprite64.Red)` call rendered at three different pixel aspect ratios:
 
-![The same 40x40 rect at PAR 1.0, 0.5, and 1.2](par-comparison.png)
+![The same 40x40 rect at PAR 1.0, 0.5, and 1.2](../images/par-comparison.png)
 
 The code is identical in all three cases. The pixels just have different physical shapes.
 
@@ -137,7 +137,7 @@ That matches the display aspect ratio exactly. Since the framebuffer is presente
 
 Here is how the canvas sits inside the framebuffer:
 
-![The 288x216 logical canvas centered inside the 320x240 framebuffer](canvas-layout.png)
+![The 288x216 logical canvas centered inside the 320x240 framebuffer](../images/canvas-layout.png)
 
 The surrounding 16px/12px borders are the framebuffer gutters. `ClearScreen` fills the entire 320x240 framebuffer, so the gutters take on the clear color. But game drawing APIs are clipped to the inner 288x216 canvas and cannot address the gutters directly.
 
@@ -153,7 +153,7 @@ If you are already a pro at N64 development and you want raw framebuffer access 
 
 Here is what the calibration example looks like in the ares emulator:
 
-![Calibration scene showing the fixed 288x216 logical canvas in ares](fixed-resolution-calibration.png)
+![Calibration scene showing the fixed 288x216 logical canvas in ares](../images/fixed-resolution-calibration.png)
 
 The white border marks the 288x216 canvas. The corner markers sit at the four logical corners. The center box is a perfect square. The diagonal lines form a symmetric X. If any of those look distorted, something is wrong with the presentation scaling.
 
@@ -161,7 +161,7 @@ The white border marks the 288x216 canvas. The corner markers sit at the four lo
 
 Let's trace a single drawing call through the entire rendering pipeline, step by step.
 
-![The six-step rendering pipeline from game code to display](rendering-pipeline.png)
+![The six-step rendering pipeline from game code to display](../images/rendering-pipeline.png)
 
 ### Step 1: Logical space (288x216)
 

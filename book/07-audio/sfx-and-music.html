@@ -1,0 +1,503 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Sound Effects and Music - GoSprite64 Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Technical reference for the GoSprite64 library to help you make 2D games for Nintendo64.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../css/general-2459343d.css">
+        <link rel="stylesheet" href="../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "../";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc-a38ee8ab.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">GoSprite64 Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="using-audio-in-gosprite64"><a class="header" href="#using-audio-in-gosprite64">Using Audio in GoSprite64</a></h1>
+<p>This chapter covers how to add audio to your game and how the audio system works behind the scenes.</p>
+<h2 id="part-1-adding-audio-to-your-game"><a class="header" href="#part-1-adding-audio-to-your-game">Part 1: Adding audio to your game</a></h2>
+<h3 id="quick-start"><a class="header" href="#quick-start">Quick start</a></h3>
+<p>GoSprite64 uses a build-time pipeline. You provide <code>.wav</code> files, the <code>audiogen</code> tool compresses them into a compact format, and the engine plays them at runtime. You never deal with codecs, sample rates, or streaming in your gameplay code.</p>
+<p>Three steps:</p>
+<ol>
+<li>Put your <code>.wav</code> files in the right directories.</li>
+<li>Run <code>go generate</code>.</li>
+<li>Call <code>gosprite64.PlaySoundEffect</code> or <code>gosprite64.PlayMusic</code> from your game.</li>
+</ol>
+<h3 id="project-layout"><a class="header" href="#project-layout">Project layout</a></h3>
+<p>Organize audio files under <code>assets/audio/</code> with separate subdirectories for sound effects and music:</p>
+<pre><code class="language-text">mygame/
+  main.go
+  audio_embed.go        (generated)
+  assets/
+    audio/
+      sfx/
+        jump.wav
+        coin.wav
+        hit.wav
+      music/
+        overworld.wav
+        boss.wav
+  sfx/
+    ids.go              (generated)
+  music/
+    ids.go              (generated)
+  build/
+    audio_v1.bin         (generated)
+    audio_v1_aux.bin     (generated)
+    audio_report.json    (generated)
+  n64.env
+</code></pre>
+<p>The <code>.wav</code> files are your source assets. Everything in <code>build/</code>, <code>sfx/</code>, <code>music/</code>, and <code>audio_embed.go</code> is generated and should not be edited by hand.</p>
+<h3 id="setting-up-audiogen"><a class="header" href="#setting-up-audiogen">Setting up audiogen</a></h3>
+<p>Add a <code>go:generate</code> line to your <code>main.go</code>:</p>
+<pre><code class="language-go">//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir .
+</code></pre>
+<p>Then run:</p>
+<pre><code class="language-bash">go generate ./...
+</code></pre>
+<p>This will:</p>
+<ul>
+<li>scan <code>assets/audio/sfx/</code> and <code>assets/audio/music/</code> for <code>.wav</code> files</li>
+<li>convert each WAV to mono, resample to the target rate, and compress with VADPCM</li>
+<li>generate typed ID constants in <code>sfx/ids.go</code> and <code>music/ids.go</code></li>
+<li>generate <code>audio_embed.go</code> which registers all assets with the engine at startup</li>
+<li>write a size and performance report to <code>build/audio_report.json</code></li>
+</ul>
+<h3 id="wav-file-requirements"><a class="header" href="#wav-file-requirements">WAV file requirements</a></h3>
+<p><code>audiogen</code> accepts:</p>
+<ul>
+<li>PCM WAV files</li>
+<li>16-bit samples</li>
+<li>mono or stereo input (stereo is downmixed to mono automatically)</li>
+<li>any sample rate (resampled automatically to the target rate)</li>
+</ul>
+<p>If the file is not PCM 16-bit, <code>audiogen</code> rejects it with a clear error message.</p>
+<h3 id="playing-sound-effects"><a class="header" href="#playing-sound-effects">Playing sound effects</a></h3>
+<p>Import the generated <code>sfx</code> package and call <code>gosprite64.PlaySoundEffect</code>:</p>
+<pre><code class="language-go">import "github.com/drpaneas/gosprite64/examples/pong/sfx"
+
+func (g *Game) Update() {
+    if playerScored {
+        gosprite64.PlaySoundEffect(sfx.ScorePlayer)
+    }
+    if ballHitWall {
+        gosprite64.PlaySoundEffect(sfx.Wall)
+    }
+}
+</code></pre>
+<p><code>gosprite64.PlaySoundEffect</code> returns <code>true</code> if the sound was accepted, <code>false</code> if it was dropped (engine not ready or command ring full). Sound effects are one-shot and can overlap. The same effect can play up to 4 times simultaneously. If you trigger a 5th instance, the oldest one is evicted.</p>
+<h3 id="playing-background-music"><a class="header" href="#playing-background-music">Playing background music</a></h3>
+<p>Import the generated <code>music</code> package and call <code>gosprite64.PlayMusic</code>:</p>
+<pre><code class="language-go">import "github.com/drpaneas/gosprite64/examples/mygame/music"
+
+func (g *Game) Init() {
+    gosprite64.PlayMusic(music.Overworld)
+}
+</code></pre>
+<p>Music always loops. If a different track is already playing, it stops and the new one starts. Calling <code>gosprite64.PlayMusic</code> with the same track that is already playing does nothing.</p>
+<p>To stop music:</p>
+<pre><code class="language-go">gosprite64.StopMusic()
+</code></pre>
+<h3 id="volume-control"><a class="header" href="#volume-control">Volume control</a></h3>
+<pre><code class="language-go">gosprite64.SetSoundEffectVolume(0.5)  // SFX at half volume
+gosprite64.SetMusicVolume(0.8)        // music at 80%
+</code></pre>
+<p>Volume is a <code>float32</code> from 0.0 (silent) to 1.0 (full). Values outside that range are clamped. Music and SFX volumes are independent.</p>
+<h3 id="complete-example-pong"><a class="header" href="#complete-example-pong">Complete example: Pong</a></h3>
+<p>Here is how the Pong example uses audio:</p>
+<pre><code class="language-go">//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir .
+
+package main
+
+import (
+    "github.com/drpaneas/gosprite64"
+    "github.com/drpaneas/gosprite64/examples/pong/sfx"
+)
+
+func (g *Game) Init() {
+    switch g.Scored {
+    case "Player":
+        gosprite64.PlaySoundEffect(sfx.ScorePlayer)
+    case "Computer":
+        gosprite64.PlaySoundEffect(sfx.ScoreComputer)
+    default:
+        gosprite64.PlaySoundEffect(sfx.Start)
+    }
+}
+
+func (g *Game) Update() {
+    if collide(g.ball, g.computer) {
+        gosprite64.PlaySoundEffect(sfx.PaddleComputer)
+    }
+    if collide(g.ball, g.player) {
+        gosprite64.PlaySoundEffect(sfx.PaddlePlayer)
+    }
+    if g.ball.y &lt;= courtTop || g.ball.y &gt;= courtBottom {
+        gosprite64.PlaySoundEffect(sfx.Wall)
+    }
+}
+</code></pre>
+<p>The generated <code>sfx/ids.go</code> provides typed constants like <code>sfx.PaddleComputer</code>, <code>sfx.Wall</code>, etc. No strings, no maps, no runtime lookups.</p>
+<h3 id="build-budget-flags"><a class="header" href="#build-budget-flags">Build budget flags</a></h3>
+<p><code>audiogen</code> enforces size budgets by default. If your audio exceeds the limits, the build fails with a clear message. You can override the defaults:</p>
+<pre><code class="language-go">//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir . -rom-budget=1048576 -sfx-resident-budget=65536
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Flag</th><th>Default</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>-rom-budget</code></td><td>524,288 bytes (512 KB)</td><td>Maximum total size for all audio data in ROM</td></tr>
+<tr><td><code>-sfx-resident-budget</code></td><td>32,768 bytes (32 KB)</td><td>Maximum compressed SFX data resident in memory</td></tr>
+</tbody>
+</table>
+</div>
+<p>The budget report at <code>build/audio_report.json</code> shows exactly where your audio bytes are going.</p>
+<h2 id="part-2-how-it-works-behind-the-scenes"><a class="header" href="#part-2-how-it-works-behind-the-scenes">Part 2: How it works behind the scenes</a></h2>
+<h3 id="the-pipeline-at-a-glance"><a class="header" href="#the-pipeline-at-a-glance">The pipeline at a glance</a></h3>
+<pre><code class="language-text">                   BUILD TIME                          RUNTIME
+  .wav files --&gt; audiogen --&gt; VADPCM compressed --&gt; embedded in ROM
+                                                        |
+                                                   pure Go mixer
+                                                        |
+                                                   48 kHz stereo
+                                                        |
+                                                    N64 DAC out
+</code></pre>
+<p>At build time, <code>audiogen</code> converts WAV files into 4-bit VADPCM compressed mono audio. At runtime, a pure Go software mixer decodes, resamples, mixes, and writes stereo output to the N64 DAC at 48 kHz.</p>
+<h3 id="vadpcm-compression"><a class="header" href="#vadpcm-compression">VADPCM compression</a></h3>
+<p>GoSprite64 uses 4-bit VADPCM (Vector Adaptive Differential Pulse Code Modulation), the same compression family used by Nintendo for N64 audio. Each 9-byte compressed block decodes to 16 mono samples.</p>
+<p>The codec achieves roughly 3.5:1 compression on the raw PCM data. Combined with mono downmix (2x) and lower sample rates (up to 3x), the total size reduction compared to the old 48 kHz stereo raw format is typically around 20x.</p>
+<p>For the Pong example with 6 sound effects:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>Old system</th><th>New system</th></tr>
+</thead>
+<tbody>
+<tr><td>Format</td><td>48 kHz stereo raw PCM</td><td>16 kHz mono VADPCM</td></tr>
+<tr><td>Total audio ROM</td><td>662,896 bytes</td><td>31,863 bytes</td></tr>
+<tr><td>Reduction</td><td>-</td><td>20.8x smaller (95.2%)</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="sample-rates"><a class="header" href="#sample-rates">Sample rates</a></h3>
+<p>Assets are resampled at build time. Gameplay code never sees sample rates.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Asset class</th><th>Native rate</th><th>Rationale</th></tr>
+</thead>
+<tbody>
+<tr><td>SFX</td><td>16,000 Hz</td><td>Short effects do not need high fidelity. 16 kHz is clean 3x resampling to 48 kHz.</td></tr>
+<tr><td>Music</td><td>22,050 Hz</td><td>Longer tracks benefit from slightly higher quality.</td></tr>
+<tr><td>DAC output</td><td>48,000 Hz</td><td>Hardware output rate, unchanged from previous versions.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="voice-model"><a class="header" href="#voice-model">Voice model</a></h3>
+<p>The engine pre-allocates a fixed set of voices at startup:</p>
+<ul>
+<li><strong>1 music voice</strong> - reserved, never stolen by sound effects</li>
+<li><strong>8 SFX voices</strong> - shared pool with priority-based stealing</li>
+</ul>
+<p>When all 8 SFX voices are busy and a new effect is triggered, the oldest playing SFX is evicted. Music is never a victim.</p>
+<p>The same SFX can overlap up to 4 times. If a 5th instance is triggered, the oldest instance of that specific effect is evicted first.</p>
+<h3 id="memory-usage"><a class="header" href="#memory-usage">Memory usage</a></h3>
+<p>The engine uses a fixed memory budget that does not grow after initialization:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Component</th><th>Size</th></tr>
+</thead>
+<tbody>
+<tr><td>Voice states</td><td>144 bytes</td></tr>
+<tr><td>Source decode buffers</td><td>288 bytes</td></tr>
+<tr><td>Source structs</td><td>2,304 bytes</td></tr>
+<tr><td>Mixer accumulator</td><td>2,048 bytes</td></tr>
+<tr><td>Output buffer</td><td>2,048 bytes</td></tr>
+<tr><td>Command ring</td><td>96 bytes</td></tr>
+<tr><td><strong>Fixed runtime total</strong></td><td><strong>6,928 bytes</strong></td></tr>
+</tbody>
+</table>
+</div>
+<p>SFX data stays resident in compressed form. For the Pong example, that is 31 KB of compressed audio in ROM versus 663 KB of raw PCM that the old system loaded into RDRAM.</p>
+<h3 id="zero-allocations-after-init"><a class="header" href="#zero-allocations-after-init">Zero allocations after init</a></h3>
+<p>Every hot-path operation runs with zero heap allocations:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Operation</th><th>Time (Apple M2 Pro)</th><th>Allocations</th></tr>
+</thead>
+<tbody>
+<tr><td>Decode one VADPCM block (16 samples)</td><td>135 ns</td><td>0</td></tr>
+<tr><td>Mix 9 voices, 512 output frames</td><td>9.0 us</td><td>0</td></tr>
+<tr><td>Fill 256 decoded samples from source</td><td>2.4 us</td><td>0</td></tr>
+<tr><td>Command ring push + pop</td><td>15 ns</td><td>0</td></tr>
+</tbody>
+</table>
+</div>
+<p>The old system allocated memory on the first play of every SFX (about 114 KB per 50 KB asset for the read + cache copy).</p>
+<h3 id="concurrency"><a class="header" href="#concurrency">Concurrency</a></h3>
+<p>Gameplay code and the audio feeder run in separate goroutines. They communicate through a lock-free single-producer single-consumer command ring. Gameplay calls like <code>gosprite64.PlaySoundEffect</code> push a small command struct into the ring. The feeder drains all pending commands at the top of each fill cycle before touching any voice state. No mutexes are used in the audio hot path.</p>
+<h3 id="the-feeder-loop"><a class="header" href="#the-feeder-loop">The feeder loop</a></h3>
+<p>A background goroutine runs continuously:</p>
+<ol>
+<li>Drain all pending commands from the ring (play, stop, volume changes).</li>
+<li>For each active voice, decode enough VADPCM blocks to fill the source buffer.</li>
+<li>The mixer resamples each voice from its native rate to 48 kHz using linear interpolation, applies bus gain, and mixes into a stereo output buffer.</li>
+<li>Write the output buffer to the N64 DAC. The hardware write blocks until the DAC is ready for more data, which naturally paces the loop at the output sample rate.</li>
+</ol>
+<h3 id="anti-click-ramp"><a class="header" href="#anti-click-ramp">Anti-click ramp</a></h3>
+<p>When music is stopped via <code>gosprite64.StopMusic()</code>, the engine applies a short linear ramp to zero over 1-2 ms (about 22-44 samples) before releasing the voice. This prevents the audible click that would otherwise occur from abruptly zeroing a playing waveform.</p>
+<h3 id="loop-handling"><a class="header" href="#loop-handling">Loop handling</a></h3>
+<p>Music assets always loop. Loop boundaries are enforced at build time by <code>audiogen</code>:</p>
+<ul>
+<li>Only forward loops are supported</li>
+<li>Loop start and length must be aligned to 16 decoded samples (one VADPCM block)</li>
+<li>The decoder state at the loop start is captured and saved during encoding</li>
+<li>At runtime, when the source reaches the loop end, it restores the saved decoder state and jumps to the loop start</li>
+</ul>
+<p>This avoids any “decode from the beginning” logic or runtime loop repair.</p>
+<h3 id="build-time-budget-report"><a class="header" href="#build-time-budget-report">Build-time budget report</a></h3>
+<p>Every <code>audiogen</code> run produces <code>build/audio_report.json</code> with metrics including:</p>
+<ul>
+<li>Total ROM bytes used by audio</li>
+<li>SFX resident vs music streamed breakdown</li>
+<li>Estimated streaming bandwidth for active music (about 12.4 KB/sec at 22,050 Hz VADPCM)</li>
+<li>Estimated decode CPU cost per 10 ms of audio</li>
+<li>Fixed runtime RAM breakdown by component</li>
+</ul>
+<p>If any hard budget limit is exceeded, <code>audiogen</code> exits with a non-zero status so CI catches the problem.</p>
+<h3 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h3>
+<p>If audio does not work, check these first:</p>
+<ul>
+<li><code>audio_embed.go</code> exists and was generated from your current assets</li>
+<li>your <code>.wav</code> files are in <code>assets/audio/sfx/</code> or <code>assets/audio/music/</code></li>
+<li>your <code>.wav</code> files are 16-bit PCM (not 24-bit, not float, not compressed)</li>
+<li>the <code>build/</code> directory contains <code>audio_v1.bin</code> and <code>audio_v1_aux.bin</code></li>
+<li>your build uses the current <code>n64.env</code> with <code>n64go toolexec</code></li>
+<li>check <code>build/audio_report.json</code> for budget violations</li>
+</ul>
+<p>If you hear distortion or clicking, verify that <code>go generate</code> ran successfully after your last asset change.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../06-input/input-replay.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="../07-audio/sequence-player.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../06-input/input-replay.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="../07-audio/sequence-player.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../mark-09e88c2c.min.js"></script>
+        <script src="../searcher-c2a407aa.js"></script>
+
+        <script src="../clipboard-1626706a.min.js"></script>
+        <script src="../highlight-abc7f01d.js"></script>
+        <script src="../book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

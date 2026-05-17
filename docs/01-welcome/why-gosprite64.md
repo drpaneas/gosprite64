@@ -1,6 +1,6 @@
 # Introduction
 
-![Gopher](../logo.png)
+![Gopher](../images/logo.png)
 
 **GoSprite64** is your portal to building retro-fueled 2D games for the **Nintendo 64**, using the modern power of **Go**. With clean APIs, minimal setup (Linux, Mac, Windows are all supported), and a rebellious retro soul, it lets you bring your pixel dreams to life—on real N64 hardware.
 
@@ -27,7 +27,7 @@ That is the public rendering contract for gameplay code. The runtime centers the
 
 If you build and run `examples/calibration`, you should see this reference frame:
 
-![Calibration scene showing the fixed 288x216 logical canvas](fixed-resolution-calibration.png)
+![Calibration scene showing the fixed 288x216 logical canvas](../images/fixed-resolution-calibration.png)
 
 For a deep dive into why pixels on the N64 are not always square and how GoSprite64 solves this, read the [Square Pixels and the Fixed Canvas](square_pixels.md) chapter.
 
@@ -37,7 +37,7 @@ Go is a clean, fast, pragmatic and efficient language.
 By using Go for Nintendo 64 development, `GoSprite64` opens the door for cloud developers to create retro-style games with confidence and speed.  
 The library bridges modern programming concepts with the raw power of a classic console.
 
-## What’s in this book?
+## What's in this book?
 
 This book introduces you to GoSprite64, guiding you through everything from setup to building full 2D games.  
 

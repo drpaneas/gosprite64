@@ -1,0 +1,2660 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>GoSprite64 Documentation</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="Technical reference for the GoSprite64 library to help you make 2D games for Nintendo64.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-ee6d4e87.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-a38ee8ab.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">GoSprite64 Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p><img src="images/logo.png" alt="Gopher"></p>
+<p><strong>GoSprite64</strong> is your portal to building retro-fueled 2D games for the <strong>Nintendo 64</strong>, using the modern power of <strong>Go</strong>. With clean APIs, minimal setup (Linux, Mac, Windows are all supported), and a rebellious retro soul, it lets you bring your pixel dreams to life—on real N64 hardware.</p>
+<blockquote>
+<p>The information here is targeted at homebrew development. This project just got born, expect heavy changes along the way…</p>
+</blockquote>
+<h2 id="whats-gosprite64"><a class="header" href="#whats-gosprite64">What’s GoSprite64?</a></h2>
+<p><code>GoSprite64</code> is a Go library for making 2D games that run natively on the Nintendo 64. It wraps low-level N64 quirks in a modern API inspired by modern game engines, so you can focus on your game logic – not the hardware headaches.</p>
+<p>Designed for developers who love Go and grew up on cartridges, GoSprite64 makes retro dev surprisingly fun and productive.</p>
+<p>you can:</p>
+<ul>
+<li>🚀 A friendly API built on top of <code>clktmr/n64</code> and <code>embedded-go</code></li>
+<li>🗺️ Tile2D scene pipeline for authoring and rendering tile-based worlds</li>
+<li>🔊 VADPCM audio pipeline for compressed sound effects and music</li>
+<li>💾 Builds real N64 ROMs you can flash and play (yes, on real hardware!)</li>
+</ul>
+<h2 id="fixed-resolution"><a class="header" href="#fixed-resolution">Fixed Resolution</a></h2>
+<p>GoSprite64 exposes one official fixed resolution and drawing space: <code>288x216</code> logical pixels.</p>
+<p>That is the public rendering contract for gameplay code. The runtime centers the canvas inside the framebuffer and presents it with square pixels, while public drawing APIs such as <code>gosprite64.FillRect</code>, <code>gosprite64.DrawRect</code>, <code>gosprite64.DrawLine</code>, and <code>gosprite64.DrawText</code> all operate in that same logical space.</p>
+<p>If you build and run <code>examples/calibration</code>, you should see this reference frame:</p>
+<p><img src="images/fixed-resolution-calibration.png" alt="Calibration scene showing the fixed 288x216 logical canvas"></p>
+<p>For a deep dive into why pixels on the N64 are not always square and how GoSprite64 solves this, read the <a href="01-welcome/square_pixels.html">Square Pixels and the Fixed Canvas</a> chapter.</p>
+<h2 id="why-go"><a class="header" href="#why-go">Why Go?</a></h2>
+<p>Go is a clean, fast, pragmatic and efficient language.
+By using Go for Nintendo 64 development, <code>GoSprite64</code> opens the door for cloud developers to create retro-style games with confidence and speed.<br>The library bridges modern programming concepts with the raw power of a classic console.</p>
+<h2 id="whats-in-this-book"><a class="header" href="#whats-in-this-book">What’s in this book?</a></h2>
+<p>This book introduces you to GoSprite64, guiding you through everything from setup to building full 2D games.</p>
+<p>You’ll learn how to:</p>
+<ul>
+<li>Build and flash N64 ROMs</li>
+<li>Draw and move sprites</li>
+<li>Design and scroll tilemaps</li>
+<li>Handle input</li>
+<li>and more …</li>
+</ul>
+<p>Whether you’re nostalgic for the era or just curious about console programming, this book aims to get you productive with GoSprite64 as fast as possible.</p>
+<h2 id="who-is-this-book-for"><a class="header" href="#who-is-this-book-for">Who is this book for?</a></h2>
+<p>This book is for:</p>
+<ul>
+<li>Developers interested in retro console programming</li>
+<li>Go programmers curious about low-level game development</li>
+<li>Hobbyists or indie devs looking to make something fun for the Nintendo 64</li>
+</ul>
+<p>Some experience with Go is recommended. If you’re brand new to game development or Go, consider starting with a simpler platform or tutorial first.</p>
+<h2 id="helpful-links"><a class="header" href="#helpful-links">Helpful links</a></h2>
+<ul>
+<li><a href="https://github.com/drpaneas/gosprite64">GoSprite64 GitHub</a> – main development repo</li>
+<li><a href="https://gosprite64.dev">GoSprite64 Website</a> – official docs and examples</li>
+<li><a href="https://github.com/drpaneas/gosprite64/discussions">GoSprite64 Discussions</a> – get help, share ideas, or show off your projects</li>
+<li><a href="https://github.com/clktmr/n64">clktmr/n64</a> – low-level Go SDK for N64</li>
+<li><a href="https://github.com/embeddedgo/go">Embedded-Go</a> – support for N64’s architecture</li>
+<li><a href="https://github.com/shiftclock/awesome-n64dev">Awesome N64 Dev</a> – great collection of tools, docs, and inspiration</li>
+</ul>
+<p>This book also includes step-by-step guides and real-world examples to help you build your own Nintendo 64 games using Go.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="feature-overview"><a class="header" href="#feature-overview">Feature Overview</a></h1>
+<p>A summary of every feature GoSprite64 provides, from graphics and input to audio, tile scenes, and low-level N64 access.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
+<p>This repository supports one setup path: build natively with <code>go1.24.5-embedded</code> and <code>n64go@v0.1.2</code>. If that native bootstrap is unavailable on your host, use the Linux fallback below.</p>
+<h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
+<ol>
+<li>Clone the repository:</li>
+</ol>
+<pre><code class="language-bash">git clone https://github.com/drpaneas/gosprite64.git
+cd gosprite64
+</code></pre>
+<ol start="2">
+<li>Install the EmbeddedGo toolchain:</li>
+</ol>
+<pre><code class="language-bash">go install github.com/embeddedgo/dl/go1.24.5-embedded@latest
+go1.24.5-embedded download
+</code></pre>
+<ol start="3">
+<li>If macOS aborts with the <code>__DATA</code> / <code>__DWARF</code> dyld error, retry once with:</li>
+</ol>
+<pre><code class="language-bash">BOOT_GO_LDFLAGS=-w go1.24.5-embedded download
+</code></pre>
+<ol start="4">
+<li>Install <code>n64go</code>:</li>
+</ol>
+<pre><code class="language-bash">go install github.com/clktmr/n64/tools/n64go@v0.1.2
+</code></pre>
+<ol start="5">
+<li>Build all examples with the supported native-first workflow:</li>
+</ol>
+<pre><code class="language-bash">chmod +x ./build_examples.sh
+./build_examples.sh
+</code></pre>
+<p><code>n64.env</code> is the only tracked toolchain configuration file:</p>
+<pre><code class="language-bash">GOTOOLCHAIN=go1.24.5-embedded
+GOOS=noos
+GOARCH=mips64
+GOFLAGS='-tags=n64' '-trimpath' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
+</code></pre>
+<p>GoSprite64 exposes one official fixed resolution and drawing canvas: <code>288x216</code> logical pixels. The runtime centers that canvas and handles presentation scaling for you, so gameplay code should not manage borders, safe areas, or video-mode presets directly.</p>
+<p>If you want to verify the fixed-resolution presentation visually, run <code>examples/calibration/game.z64</code> in <code>ares</code> after the build. The expected calibration frame looks like this:</p>
+<p><img src="images/fixed-resolution-calibration.png" alt="Calibration scene showing the fixed 288x216 logical canvas"></p>
+<h3 id="windows"><a class="header" href="#windows">Windows</a></h3>
+<p>On Windows, install <a href="https://gitforwindows.org/">Git for Windows</a> and run all commands from a Git Bash terminal. The same steps above apply - Git Bash provides the bash environment the build scripts require.</p>
+<h3 id="linux-fallback"><a class="header" href="#linux-fallback">Linux Fallback</a></h3>
+<p>If the native bootstrap fails on your macOS host, <code>./build_examples.sh</code> prints Linux fallback instructions and exits. Run the Linux fallback yourself:</p>
+<pre><code class="language-bash">docker run --rm --platform linux/arm64 \
+  -v "$PWD:/workspace/gosprite64" \
+  -v gosprite64-gomod:/go/pkg/mod \
+  -v gosprite64-gobuild:/root/.cache/go-build \
+  -v gosprite64-sdk:/root/sdk \
+  -w /workspace/gosprite64 \
+  golang:1.26-bookworm \
+  bash ./scripts/dev-linux-build.sh
+</code></pre>
+<p>The generated <code>*.z64</code> ROMs are written under <code>examples/</code> and can be run with your emulator, for example <code>ares</code>. If you want to verify the square-pixel layout visually, start with <code>examples/calibration/game.z64</code>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="hello-world"><a class="header" href="#hello-world">Hello World</a></h1>
+<p>This guide walks you through creating a standalone N64 game project from scratch using GoSprite64. By the end you will have a blue screen ROM that proves your toolchain is set up correctly.</p>
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<p>Complete the <a href="02-getting-started/getting_started.html">Getting Started</a> guide first. You need:</p>
+<ul>
+<li><code>go</code> (standard Go, for dependency resolution)</li>
+<li><code>go1.24.5-embedded</code> (EmbeddedGo toolchain, for building)</li>
+<li><code>n64go</code> (ROM tool)</li>
+</ul>
+<h2 id="create-the-project"><a class="header" href="#create-the-project">Create the project</a></h2>
+<pre><code class="language-bash">mkdir -p ~/gocode/src/github.com/yourname/mygame
+cd ~/gocode/src/github.com/yourname/mygame
+</code></pre>
+<h2 id="initialize-the-module"><a class="header" href="#initialize-the-module">Initialize the module</a></h2>
+<pre><code class="language-bash">go mod init github.com/yourname/mygame
+</code></pre>
+<h2 id="write-maingo"><a class="header" href="#write-maingo">Write main.go</a></h2>
+<p>Create <code>main.go</code> with the following content:</p>
+<pre><code class="language-go">package main
+
+import "github.com/drpaneas/gosprite64"
+
+type Game struct{}
+
+func (g *Game) Init()   {}
+func (g *Game) Update() {}
+func (g *Game) Draw()   { gosprite64.ClearScreenWith(gosprite64.Blue) }
+
+func main() { gosprite64.Run(&amp;Game{}) }
+</code></pre>
+<p>Every GoSprite64 game implements three methods on a struct:</p>
+<ul>
+<li><code>Init()</code> runs once at startup</li>
+<li><code>Update()</code> runs every frame for game logic</li>
+<li><code>Draw()</code> runs every frame for rendering</li>
+</ul>
+<p><code>gosprite64.Run()</code> starts the game loop and never returns.</p>
+<p>GoSprite64 exposes one official fixed resolution and drawing space: <code>288x216</code> logical pixels. <code>gosprite64.ClearScreen()</code> is the frame-start background clear, while drawing helpers such as <code>gosprite64.FillRect</code>, <code>gosprite64.DrawRect</code>, <code>gosprite64.DrawLine</code>, and <code>gosprite64.DrawText</code> use logical coordinates inside that fixed canvas.</p>
+<h2 id="add-the-n64env-file"><a class="header" href="#add-the-n64env-file">Add the n64.env file</a></h2>
+<p>Create <code>n64.env</code> in the project root:</p>
+<pre><code>GOTOOLCHAIN=go1.24.5-embedded
+GOOS=noos
+GOARCH=mips64
+GOFLAGS='-tags=n64' '-trimpath' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
+</code></pre>
+<p>This tells the Go toolchain to cross-compile for the N64 (MIPS64, no OS).</p>
+<h2 id="resolve-dependencies"><a class="header" href="#resolve-dependencies">Resolve dependencies</a></h2>
+<p>Run <code>go mod tidy</code> with a clean Go environment to avoid interference from any inherited N64 variables:</p>
+<pre><code class="language-bash">env -u GOENV -u GOOS -u GOARCH -u GOFLAGS -u GOTOOLCHAIN go mod tidy
+</code></pre>
+<p>This downloads GoSprite64 and its transitive dependencies.</p>
+<h2 id="build"><a class="header" href="#build">Build</a></h2>
+<p>Compile the project and produce the ROM:</p>
+<pre><code class="language-bash">GOENV=n64.env go1.24.5-embedded build -o game.elf .
+GOENV=n64.env n64go rom game.elf
+</code></pre>
+<p>The first command cross-compiles your code for the N64 (MIPS64, no OS) using the settings in <code>n64.env</code>, producing <code>game.elf</code>. The second converts the ELF into an N64 ROM (<code>game.z64</code>).</p>
+<h2 id="run"><a class="header" href="#run">Run</a></h2>
+<p>Load <code>game.z64</code> in an emulator like <a href="https://ares-emu.net/">ares</a> to see a blue screen. When you want to inspect the canvas boundaries and square-pixel presentation, compare it with the repository’s <code>examples/calibration</code> ROM.</p>
+<h2 id="editor-support"><a class="header" href="#editor-support">Editor support</a></h2>
+<p>If <code>gopls</code> reports <code>embedded/*</code> packages as missing or does not recognize files guarded by <code>//go:build n64</code>, see the editor setup section in <a href="02-getting-started/getting_started.html">Getting Started</a>.</p>
+<h2 id="project-structure"><a class="header" href="#project-structure">Project structure</a></h2>
+<p>Your project should now look like this:</p>
+<pre><code>mygame/
+  main.go       # your game code
+  go.mod        # module definition + dependencies
+  go.sum        # dependency checksums (auto-generated)
+  n64.env       # N64 build target configuration
+  game.elf      # compiled binary (after build)
+  game.z64      # N64 ROM (after build)
+</code></pre>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next steps</a></h2>
+<p>Now that your toolchain works, try changing <code>gosprite64.ClearScreenWith(gosprite64.Blue)</code> to another color like <code>gosprite64.Red</code>, <code>gosprite64.Green</code>, or <code>gosprite64.DarkPurple</code> and rebuild. Then explore the <a href="https://github.com/drpaneas/gosprite64/tree/main/examples">examples</a> in the GoSprite64 repository to learn about input handling, drawing shapes, text rendering, and audio.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="editor-setup"><a class="header" href="#editor-setup">Editor Setup</a></h1>
+<h2 id="cursor--vs-code"><a class="header" href="#cursor--vs-code">Cursor / VS Code</a></h2>
+<p>If <code>gopls</code> reports <code>embedded/*</code> packages as missing or does not recognize files guarded by <code>//go:build n64</code>, configure the workspace so the editor uses the same build tag and toolchain environment as the terminal.</p>
+<p>Create <code>.vscode/settings.json</code> in the repository with:</p>
+<pre><code class="language-json">{
+  "go.buildTags": "n64",
+  "go.toolsEnvVars": {
+    "GOENV": "${workspaceFolder}/n64.env"
+  },
+  "gopls": {
+    "build.buildFlags": ["-tags=n64"],
+    "env": {
+      "GOENV": "${workspaceFolder}/n64.env"
+    }
+  }
+}
+</code></pre>
+<p>If the Go extension still invokes the wrong <code>go</code> binary for editor actions, add:</p>
+<pre><code class="language-json">"go.alternateTools": {
+  "go": "go1.24.5-embedded"
+}
+</code></pre>
+<p>After changing the settings, run <code>Go: Restart Language Server</code> or <code>Developer: Reload Window</code>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="step-1-start-the-engine"><a class="header" href="#step-1-start-the-engine">Step 1: Start the Engine</a></h1>
+<p>Set up a minimal GoSprite64 project that compiles and runs as an N64 ROM.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="your-first-tile-game"><a class="header" href="#your-first-tile-game">Your First Tile Game</a></h1>
+<p>This tutorial walks you through building a complete tile-based game for the Nintendo 64 from scratch. By the end you will have a scrollable tile world with a green grass border, brown dirt patches, controller input, and a debug overlay - all running as a real N64 ROM.</p>
+<p>No prior game development experience is required. You should be comfortable with basic Go (variables, structs, functions) and the command line.</p>
+<h2 id="what-you-will-build"><a class="header" href="#what-you-will-build">What you will build</a></h2>
+<p>A simple top-down tile world where:</p>
+<ul>
+<li>The screen shows a portion of a larger tile map</li>
+<li>You scroll the camera around with the D-pad</li>
+<li>Green tiles form walls around the edges</li>
+<li>Brown tiles form dirt patches scattered inside</li>
+<li>A debug overlay shows how many tiles are visible</li>
+</ul>
+<p>This is the simplest possible tile game, but it uses the same pipeline you would use for a real project: authored assets, offline compilation, bundle loading, scene rendering, and camera control.</p>
+<h2 id="prerequisites-1"><a class="header" href="#prerequisites-1">Prerequisites</a></h2>
+<p>Complete the <a href="03-tutorial/getting_started.html">Getting Started</a> guide first. You need these tools installed:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Tool</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td><code>go</code></td><td>Standard Go (dependency resolution, code generation)</td></tr>
+<tr><td><code>go1.24.5-embedded</code></td><td>EmbeddedGo toolchain (cross-compiles for N64)</td></tr>
+<tr><td><code>n64go</code></td><td>Converts compiled ELF binaries into N64 ROM files</td></tr>
+<tr><td>An emulator</td><td><a href="https://ares-emu.net/">ares</a> is recommended for testing</td></tr>
+</tbody>
+</table>
+</div>
+<p>Verify your tools work by running <code>./build_examples.sh</code> in the GoSprite64 repository. If that prints “All examples built successfully!”, you are ready.</p>
+<h2 id="step-1-create-the-project"><a class="header" href="#step-1-create-the-project">Step 1: Create the project</a></h2>
+<p>Create a new directory for your game and initialize a Go module:</p>
+<pre><code class="language-bash">mkdir -p ~/gocode/src/github.com/yourname/myfirstgame
+cd ~/gocode/src/github.com/yourname/myfirstgame
+go mod init github.com/yourname/myfirstgame
+</code></pre>
+<p>Replace <code>yourname</code> with your GitHub username or any name you like.</p>
+<h2 id="step-2-create-the-toolchain-config"><a class="header" href="#step-2-create-the-toolchain-config">Step 2: Create the toolchain config</a></h2>
+<p>Every GoSprite64 project needs an <code>n64.env</code> file that tells Go how to cross-compile for the N64. Create it in your project root:</p>
+<pre><code>GOTOOLCHAIN=go1.24.5-embedded
+GOOS=noos
+GOARCH=mips64
+GOFLAGS='-tags=n64' '-trimpath' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
+</code></pre>
+<p>You will never need to edit this file. It is the same for every GoSprite64 project.</p>
+<h2 id="step-3-draw-your-tilesheet"><a class="header" href="#step-3-draw-your-tilesheet">Step 3: Draw your tilesheet</a></h2>
+<p>A tilesheet is a small PNG image that contains all the tile graphics your game uses, arranged in a grid. Each tile is a fixed-size square (8x8 pixels by default).</p>
+<p>Create a <code>assets-src/</code> directory and draw a <code>tiles.png</code> file:</p>
+<pre><code class="language-bash">mkdir -p assets-src
+</code></pre>
+<p>Using any pixel editor (Aseprite, GIMP, Pixelorama, or even MS Paint), create a <strong>16x8 pixel PNG</strong> with two 8x8 tiles side by side:</p>
+<pre><code>+--------+--------+
+| tile 1 | tile 2 |
+| green  | brown  |
+| (grass)| (dirt) |
++--------+--------+
+  8x8 px   8x8 px
+</code></pre>
+<ul>
+<li><strong>Tile 1</strong> (left half): Fill with a green color like <code>#228B22</code></li>
+<li><strong>Tile 2</strong> (right half): Fill with a brown color like <code>#8B5A2B</code></li>
+</ul>
+<p>Save it as <code>assets-src/tiles.png</code>.</p>
+<p>The important rules for tilesheets:</p>
+<ul>
+<li>The image width must be divisible by the tile width (8)</li>
+<li>The image height must be divisible by the tile height (8)</li>
+<li>Tile IDs start at 1 (tile 1 is top-left, tile 2 is next to the right, and so on)</li>
+<li>Tile ID 0 means “empty” - nothing is drawn</li>
+</ul>
+<h2 id="step-4-design-your-map"><a class="header" href="#step-4-design-your-map">Step 4: Design your map</a></h2>
+<p>A map is a grid of tile IDs that describes what your world looks like. Create <code>assets-src/level.json</code>:</p>
+<pre><code class="language-json">{
+  "width": 48,
+  "height": 36,
+  "layer_count": 1,
+  "cell_bits": 16,
+  "chunk_width": 8,
+  "chunk_height": 8,
+  "layers": [
+    {
+      "sheet_id": 1,
+      "cells": [
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,1,
+        1,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+      ]
+    }
+  ]
+}
+</code></pre>
+<p>Here is what the numbers mean:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Tile ID</th><th>What it draws</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0</code></td><td>Nothing (empty space, black background)</td></tr>
+<tr><td><code>1</code></td><td>Green grass tile (from the left half of your tilesheet)</td></tr>
+<tr><td><code>2</code></td><td>Brown dirt tile (from the right half of your tilesheet)</td></tr>
+</tbody>
+</table>
+</div>
+<p>The map is 48 tiles wide and 36 tiles tall. At 8 pixels per tile, that is 384x288 pixels - larger than the 288x216 screen, so you will be able to scroll around.</p>
+<p>Understanding the JSON fields:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>What it means</th></tr>
+</thead>
+<tbody>
+<tr><td><code>width</code></td><td>How many tiles wide the map is</td></tr>
+<tr><td><code>height</code></td><td>How many tiles tall the map is</td></tr>
+<tr><td><code>layer_count</code></td><td>How many layers (we use 1 for simplicity)</td></tr>
+<tr><td><code>cell_bits</code></td><td>How many bits per tile ID (16 allows up to 65535 tile types)</td></tr>
+<tr><td><code>chunk_width</code> / <code>chunk_height</code></td><td>Internal rendering optimization (8 is a good default)</td></tr>
+<tr><td><code>sheet_id</code></td><td>Which tilesheet this layer uses (1 = first sheet)</td></tr>
+<tr><td><code>cells</code></td><td>The actual tile data, read left-to-right, top-to-bottom</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="step-5-write-the-game-code"><a class="header" href="#step-5-write-the-game-code">Step 5: Write the game code</a></h2>
+<p>Your game needs three files. Here is the first and most important one.</p>
+<p>Create <code>main.go</code>:</p>
+<pre><code class="language-go">//go:generate sh -c "mkdir -p assets &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dsheet -in assets-src/tiles.png -out assets/tiles.sheet -tile-width 8 -tile-height 8 &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dmap -in assets-src/level.json -out assets/level.map &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dbundle -sheet assets/tiles.sheet -map assets/level.map -out assets/level.bundle"
+
+package main
+
+import (
+	"fmt"
+
+	"github.com/drpaneas/gosprite64"
+)
+
+type Game struct {
+	scene  *gosprite64.Scene
+	camera *gosprite64.Camera
+}
+
+func (g *Game) Init() {
+	bundle, err := gosprite64.OpenBundle("assets/level.bundle")
+	if err != nil {
+		panic(err)
+	}
+
+	scene, err := gosprite64.LoadScene(bundle)
+	if err != nil {
+		panic(err)
+	}
+
+	g.scene = scene
+	g.camera = &amp;gosprite64.Camera{Width: 288, Height: 216}
+}
+
+func (g *Game) Update() {
+	if g.camera == nil {
+		return
+	}
+
+	speed := 1
+
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadUp) {
+		g.camera.Y -= speed
+	}
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadDown) {
+		g.camera.Y += speed
+	}
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadLeft) {
+		g.camera.X -= speed
+	}
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadRight) {
+		g.camera.X += speed
+	}
+
+	m := g.scene.Map()
+	if m == nil {
+		return
+	}
+
+	maxX := m.PixelWidth() - g.camera.Width
+	maxY := m.PixelHeight() - g.camera.Height
+	if g.camera.X &lt; 0 {
+		g.camera.X = 0
+	}
+	if g.camera.Y &lt; 0 {
+		g.camera.Y = 0
+	}
+	if g.camera.X &gt; maxX {
+		g.camera.X = maxX
+	}
+	if g.camera.Y &gt; maxY {
+		g.camera.Y = maxY
+	}
+}
+
+func (g *Game) Draw() {
+	gosprite64.ClearScreen()
+
+	if g.scene != nil &amp;&amp; g.camera != nil {
+		g.scene.Draw(g.camera)
+	}
+
+	if g.scene != nil {
+		stats := g.scene.Stats()
+		gosprite64.DrawText(fmt.Sprintf("vis:%d", stats.VisibleTiles), 2, 2, gosprite64.White)
+	}
+}
+
+func main() {
+	gosprite64.Run(&amp;Game{})
+}
+</code></pre>
+<p>Let’s walk through what each part does:</p>
+<h3 id="the-gogenerate-line"><a class="header" href="#the-gogenerate-line">The <code>//go:generate</code> line</a></h3>
+<pre><code class="language-go">//go:generate sh -c "mkdir -p assets &amp;&amp; go run .../mk2dsheet ... &amp;&amp; go run .../mk2dmap ... &amp;&amp; go run .../mk2dbundle ..."
+</code></pre>
+<p>This tells Go’s <code>go generate</code> command to run three tools in sequence:</p>
+<ol>
+<li><code>mk2dsheet</code> converts your <code>tiles.png</code> into a compiled <code>.sheet</code> file</li>
+<li><code>mk2dmap</code> converts your <code>level.json</code> into a compiled <code>.map</code> file</li>
+<li><code>mk2dbundle</code> packages the <code>.sheet</code> and <code>.map</code> into one <code>.bundle</code> manifest</li>
+</ol>
+<p>You run this once after changing your assets. You do not run it every build.</p>
+<h3 id="the-game-struct"><a class="header" href="#the-game-struct">The <code>Game</code> struct</a></h3>
+<pre><code class="language-go">type Game struct {
+	scene  *gosprite64.Scene
+	camera *gosprite64.Camera
+}
+</code></pre>
+<p>Every GoSprite64 game is a struct that implements three methods: <code>Init</code>, <code>Update</code>, and <code>Draw</code>. The <code>scene</code> holds your loaded tile world. The <code>camera</code> defines which portion of the world is visible on screen.</p>
+<h3 id="init---load-your-world"><a class="header" href="#init---load-your-world">Init - load your world</a></h3>
+<pre><code class="language-go">func (g *Game) Init() {
+	bundle, err := gosprite64.OpenBundle("assets/level.bundle")
+	scene, err := gosprite64.LoadScene(bundle)
+	g.scene = scene
+	g.camera = &amp;gosprite64.Camera{Width: 288, Height: 216}
+}
+</code></pre>
+<p><code>OpenBundle</code> reads the bundle manifest. <code>LoadScene</code> loads all the sheets and map data into memory and prepares them for rendering. The camera is set to 288x216 - the full screen size - so the scene fills the entire display.</p>
+<h3 id="update---handle-input"><a class="header" href="#update---handle-input">Update - handle input</a></h3>
+<pre><code class="language-go">func (g *Game) Update() {
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadUp) {
+		g.camera.Y -= speed
+	}
+	// ... same for Down, Left, Right
+}
+</code></pre>
+<p><code>Update</code> runs every frame (60 times per second). Here we check the D-pad and move the camera. The camera position is then clamped so it cannot scroll past the edges of the map.</p>
+<h3 id="draw---render-the-frame"><a class="header" href="#draw---render-the-frame">Draw - render the frame</a></h3>
+<pre><code class="language-go">func (g *Game) Draw() {
+	gosprite64.ClearScreen()
+	g.scene.Draw(g.camera)
+	gosprite64.DrawText(fmt.Sprintf("vis:%d", stats.VisibleTiles), 2, 2, gosprite64.White)
+}
+</code></pre>
+<p><code>ClearScreen</code> fills the screen with black. <code>scene.Draw(camera)</code> renders only the tiles visible through the camera viewport - not the entire map. <code>DrawText</code> overlays debug info showing how many tiles are currently visible.</p>
+<h2 id="step-6-write-the-asset-embed-file"><a class="header" href="#step-6-write-the-asset-embed-file">Step 6: Write the asset embed file</a></h2>
+<p>The N64 loads assets from cartridge storage. Go’s <code>//go:embed</code> directive bakes your compiled assets into the ROM binary. Create <code>assets_embed.go</code>:</p>
+<pre><code class="language-go">package main
+
+import (
+	"embed"
+
+	"github.com/clktmr/n64/drivers/cartfs"
+	"github.com/drpaneas/gosprite64"
+)
+
+//go:embed assets/*
+var embeddedAssets embed.FS
+
+var assetFS = cartfs.Embed(embeddedAssets)
+
+func init() {
+	gosprite64.RegisterAssetFS(assetFS)
+}
+</code></pre>
+<p>This file does one thing: it makes your <code>.sheet</code>, <code>.map</code>, and <code>.bundle</code> files available to <code>OpenBundle</code> at runtime. Without it, the game cannot find its assets.</p>
+<p>You write this file once. You do not need to edit it when you change your assets.</p>
+<h2 id="step-7-resolve-dependencies"><a class="header" href="#step-7-resolve-dependencies">Step 7: Resolve dependencies</a></h2>
+<pre><code class="language-bash">env -u GOENV -u GOOS -u GOARCH -u GOFLAGS -u GOTOOLCHAIN go mod tidy
+</code></pre>
+<p>The <code>env -u ...</code> prefix clears any N64-specific environment variables so <code>go mod tidy</code> runs with your normal Go toolchain. This downloads GoSprite64 and all its dependencies.</p>
+<h2 id="step-8-generate-the-compiled-assets"><a class="header" href="#step-8-generate-the-compiled-assets">Step 8: Generate the compiled assets</a></h2>
+<pre><code class="language-bash">go generate ./...
+</code></pre>
+<p>This runs the <code>//go:generate</code> line from your <code>main.go</code> and produces three files:</p>
+<pre><code>assets/
+  tiles.sheet    # compiled tilesheet (binary)
+  level.map      # compiled map (binary)
+  level.bundle   # manifest that ties them together
+</code></pre>
+<p>You should see no output if everything works. If you see an error, check that your <code>tiles.png</code> is exactly 16x8 pixels and your <code>level.json</code> is valid JSON.</p>
+<h2 id="step-9-build-the-rom"><a class="header" href="#step-9-build-the-rom">Step 9: Build the ROM</a></h2>
+<pre><code class="language-bash">GOENV=n64.env go1.24.5-embedded build -o game.elf .
+GOENV=n64.env n64go rom game.elf
+</code></pre>
+<p>The first command cross-compiles your game for the N64 (MIPS64, no operating system). The second converts the binary into a <code>.z64</code> ROM file.</p>
+<h2 id="step-10-run-it"><a class="header" href="#step-10-run-it">Step 10: Run it</a></h2>
+<p>Open <code>game.z64</code> in the ares emulator.</p>
+<p>You should see a tile world filling the entire screen: green grass forming a border with brown dirt patches scattered inside. Use the D-pad (arrow keys in most emulator keybindings) to scroll around. The <code>vis:</code> counter in the top-left shows how many tiles are being drawn each frame.</p>
+<p>If the D-pad does not work, check your emulator’s input settings. In ares, go to Settings &gt; Input and make sure the N64 D-pad buttons are mapped to your keyboard arrow keys.</p>
+<h2 id="project-structure-1"><a class="header" href="#project-structure-1">Project structure</a></h2>
+<p>Your project should now look like this:</p>
+<pre><code>myfirstgame/
+  main.go              # game code (Init, Update, Draw)
+  assets_embed.go      # embeds compiled assets into the ROM
+  assets-src/
+    tiles.png          # your hand-drawn tilesheet (source)
+    level.json         # your map layout (source)
+  assets/
+    tiles.sheet        # compiled tilesheet (generated)
+    level.map          # compiled map (generated)
+    level.bundle       # bundle manifest (generated)
+  n64.env              # N64 build settings
+  go.mod               # Go module file
+  go.sum               # dependency checksums
+  game.elf             # compiled binary (after build)
+  game.z64             # N64 ROM (after build)
+</code></pre>
+<p>Files under <code>assets-src/</code> are your source files that you edit by hand. Files under <code>assets/</code> are generated and should not be edited. Regenerate them with <code>go generate ./...</code> whenever you change your source assets.</p>
+<h2 id="what-to-try-next"><a class="header" href="#what-to-try-next">What to try next</a></h2>
+<p>Now that you have a working tile game, here are some things to experiment with:</p>
+<p><strong>Change the map layout.</strong> Edit <code>level.json</code> and rearrange the tile IDs. Run <code>go generate ./...</code> and rebuild to see your changes.</p>
+<p><strong>Add more tile types.</strong> Make your <code>tiles.png</code> wider (for example 32x8 for 4 tiles, or 16x16 for a 4-tile grid). Each new 8x8 region becomes a new tile ID. Update your map to use the new tile IDs.</p>
+<p><strong>Change the scroll speed.</strong> In <code>Update()</code>, change <code>speed := 1</code> to <code>speed := 2</code> for faster scrolling.</p>
+<p><strong>Add a second layer.</strong> Change <code>layer_count</code> to 2 in your JSON, add a second layer with its own <code>sheet_id</code> and <code>cells</code>, and create a second tilesheet for overlay tiles (like trees or rocks on top of the ground).</p>
+<p><strong>Look at the advanced example.</strong> The <code>examples/tilemap</code> directory in the GoSprite64 repository shows a more complex setup with multiple layers, overlay sheets, and tile animations.</p>
+<h2 id="key-concepts"><a class="header" href="#key-concepts">Key concepts</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Concept</th><th>What it means</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Tilesheet</strong></td><td>A PNG grid of small tile images (8x8 pixels each)</td></tr>
+<tr><td><strong>Map</strong></td><td>A grid of tile IDs that describes your world layout</td></tr>
+<tr><td><strong>Bundle</strong></td><td>A manifest that packages sheets and maps together</td></tr>
+<tr><td><strong>Scene</strong></td><td>A loaded, renderable world assembled from a bundle</td></tr>
+<tr><td><strong>Camera</strong></td><td>A viewport that controls which part of the world is visible</td></tr>
+<tr><td><strong>Tile ID</strong></td><td>A number identifying which tile graphic to draw (0 = empty)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h2>
+<p><strong>“tiles.png not found”</strong> - Make sure the file is at <code>assets-src/tiles.png</code>, not <code>assets/tiles.png</code>. Source assets go in <code>assets-src/</code>.</p>
+<p><strong>“image size not divisible by tile size”</strong> - Your PNG dimensions must be exact multiples of 8. A 16x8 image works. A 15x8 image does not.</p>
+<p><strong>“bundle has no map”</strong> - The bundle needs at least one <code>.map</code> file. Check that your <code>go generate</code> command includes the <code>mk2dmap</code> step.</p>
+<p><strong>Scene only fills part of the screen</strong> - Make sure your camera is <code>{Width: 288, Height: 216}</code>. A smaller camera means a smaller viewport.</p>
+<p><strong>D-pad does nothing</strong> - Check your emulator input settings. Also make sure your map is larger than 288x216 pixels (larger than 36x27 tiles), otherwise there is nowhere to scroll.</p>
+<p><strong>Black screen</strong> - Check that <code>assets_embed.go</code> exists and contains <code>gosprite64.RegisterAssetFS(assetFS)</code>. Without it, the game cannot load any assets.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="step-3-add-a-player-sprite"><a class="header" href="#step-3-add-a-player-sprite">Step 3: Add a Player Sprite</a></h1>
+<p>Load a sprite sheet and draw a character on top of the tile world.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="step-4-animate-the-player"><a class="header" href="#step-4-animate-the-player">Step 4: Animate the Player</a></h1>
+<p>Use the AnimationPlayer to drive idle and walk animations from clip data.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="step-5-move-with-the-d-pad"><a class="header" href="#step-5-move-with-the-d-pad">Step 5: Move with the D-Pad</a></h1>
+<p>Read controller input and move the player sprite around the tile world.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="step-6-camera-following"><a class="header" href="#step-6-camera-following">Step 6: Camera Following</a></h1>
+<p>Make the camera follow the player so the world scrolls as they move.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="step-7-add-sound-effects"><a class="header" href="#step-7-add-sound-effects">Step 7: Add Sound Effects</a></h1>
+<p>Add jump and collect sound effects using the audio pipeline.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="step-8-add-a-title-screen"><a class="header" href="#step-8-add-a-title-screen">Step 8: Add a Title Screen</a></h1>
+<p>Use the StateMachine to add a title screen before gameplay begins.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="step-9-screen-transitions"><a class="header" href="#step-9-screen-transitions">Step 9: Screen Transitions</a></h1>
+<p>Add fade-in and fade-out transitions between game states.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="step-10-score-display"><a class="header" href="#step-10-score-display">Step 10: Score Display</a></h1>
+<p>Draw a HUD overlay showing the player’s score using DrawText.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="step-11-final-polish"><a class="header" href="#step-11-final-polish">Step 11: Final Polish</a></h1>
+<p>Add a game over screen, input replay for attract mode, and final tweaks.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="the-game-loop"><a class="header" href="#the-game-loop">The Game Loop</a></h1>
+<p>How GoSprite64’s Init/Update/Draw game loop works and why it runs at a fixed 60 FPS.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="the-fixed-canvas"><a class="header" href="#the-fixed-canvas">The Fixed Canvas</a></h1>
+<p>How the 288x216 logical canvas maps to the 320x240 framebuffer and why you never need to think about video modes.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="square-pixels-and-the-fixed-canvas"><a class="header" href="#square-pixels-and-the-fixed-canvas">Square Pixels and the Fixed Canvas</a></h1>
+<h2 id="the-problem-my-square-is-a-rectangle"><a class="header" href="#the-problem-my-square-is-a-rectangle">The problem: my square is a rectangle</a></h2>
+<p>When I started building GoSprite64, one of the first things I tried was drawing a square. A simple 40x40 filled rectangle. The code was obvious:</p>
+<pre><code class="language-go">gosprite64.FillRect(100, 80, 139, 119, gosprite64.Red)
+</code></pre>
+<p>That is a 40x40 filled rectangle. It should be a square.</p>
+<p>It was not a square. On screen it looked stretched - wider than it was tall, or taller than it was wide, depending on which resolution I was testing with. I changed the resolution constants to compensate, and that fixed it for one video mode but broke it for another. No matter what I tried, I could not get a square to look like a square across both NTSC and PAL without adding aspect-ratio correction math into my game code.</p>
+<p>This was driving me nuts. I was writing a 2D game library, not a video-signal processing toolkit. If I draw 40x40 pixels, I want a square on screen. Period.</p>
+<p>It took a while to understand why this was happening, and the answer turned out to be surprisingly fundamental. The problem is that pixels are not always square.</p>
+<h2 id="why-this-happens---pixels-are-not-always-square"><a class="header" href="#why-this-happens---pixels-are-not-always-square">Why this happens - pixels are not always square</a></h2>
+<h3 id="what-is-a-pixel-aspect-ratio"><a class="header" href="#what-is-a-pixel-aspect-ratio">What is a pixel aspect ratio?</a></h3>
+<p>Every pixel on a display has a physical shape. On a modern LCD monitor, each pixel is a tiny square element in a fixed grid. One pixel wide equals one pixel tall. But on older displays - particularly CRT televisions, which is what the N64 was designed for - that is not always the case.</p>
+<p>The <strong>pixel aspect ratio</strong> (PAR) is the physical width of one pixel divided by its physical height:</p>
+<pre><code class="language-text">PAR = physical width of one pixel / physical height of one pixel
+</code></pre>
+<ul>
+<li>PAR = 1.0 means the pixel is square. A 40x40 rect looks like a square.</li>
+<li>PAR &lt; 1.0 means the pixel is taller than it is wide. A 40x40 rect looks like a tall column.</li>
+<li>PAR &gt; 1.0 means the pixel is wider than it is tall. A 40x40 rect looks like a wide bar.</li>
+</ul>
+<h3 id="the-math-for-320x240-on-ntsc"><a class="header" href="#the-math-for-320x240-on-ntsc">The math for 320x240 on NTSC</a></h3>
+<p>Let’s start with the simplest case. The N64 outputs 320 horizontal pixels and 240 vertical lines. The NTSC television standard displays this signal on a screen with a 4:3 physical aspect ratio.</p>
+<p>The <strong>display aspect ratio</strong> (DAR) is the physical shape of the screen:</p>
+<pre><code class="language-text">DAR = 4 / 3 = 1.333
+</code></pre>
+<p>The <strong>image aspect ratio</strong> is the shape of the pixel grid itself:</p>
+<pre><code class="language-text">Image AR = 320 / 240 = 4 / 3 = 1.333
+</code></pre>
+<p>The pixel aspect ratio is the relationship between these two:</p>
+<pre><code class="language-text">PAR = DAR / Image AR = (4/3) / (320/240) = (4/3) / (4/3) = 1.0
+</code></pre>
+<p>The numbers happen to line up perfectly. 320x240 on a 4:3 display gives square pixels. A 40x40 rect looks like a square. Everything is fine.</p>
+<h3 id="what-breaks-it"><a class="header" href="#what-breaks-it">What breaks it</a></h3>
+<p>The N64’s Video Interface is flexible. It can output different horizontal pixel counts: 256, 320, 512, or 640 pixels per line. But the CRT television does not change. It always stretches the signal across the same physical 4:3 screen width.</p>
+<p>When you change the horizontal pixel count, each pixel gets wider or narrower. The pixel height stays the same (it is determined by the number of scan lines). So the pixel aspect ratio changes.</p>
+<p>Let’s work through a concrete example.</p>
+<h3 id="worked-example-640x240-non-interlaced"><a class="header" href="#worked-example-640x240-non-interlaced">Worked example: 640x240 non-interlaced</a></h3>
+<p>Suppose the N64 outputs 640 horizontal pixels and 240 vertical lines (non-interlaced) onto the same 4:3 NTSC display.</p>
+<pre><code class="language-text">Image AR = 640 / 240 = 8 / 3 = 2.667
+</code></pre>
+<pre><code class="language-text">PAR = DAR / Image AR = (4/3) / (8/3) = 4 / 8 = 0.5
+</code></pre>
+<p>Each pixel is now half as wide as it is tall. If you draw a 40x40 rectangle in this mode, it has 40 pixels of width but each pixel is only half as wide as it is tall. On screen, it looks like a tall narrow column - not a square.</p>
+<h3 id="pal-makes-it-worse"><a class="header" href="#pal-makes-it-worse">PAL makes it worse</a></h3>
+<p>PAL televisions use 576 visible lines instead of NTSC’s 480. A typical PAL field for the N64 uses 288 visible lines with 320 horizontal pixels.</p>
+<pre><code class="language-text">PAR = (4/3) / (320/288) = (4/3) / (10/9) = (4/3) * (9/10) = 36/30 = 1.2
+</code></pre>
+<p>Each pixel is 20% wider than it is tall. A 40x40 rect now looks like a wide, squat bar instead of a square.</p>
+<h3 id="seeing-it-visually"><a class="header" href="#seeing-it-visually">Seeing it visually</a></h3>
+<p>Here is the same <code>gosprite64.FillRect(0, 0, 39, 39, gosprite64.Red)</code> call rendered at three different pixel aspect ratios:</p>
+<p><img src="images/par-comparison.png" alt="The same 40x40 rect at PAR 1.0, 0.5, and 1.2"></p>
+<p>The code is identical in all three cases. The pixels just have different physical shapes.</p>
+<p>The same pixel coordinates produce different shapes on screen depending on the video mode and the display standard. This is not a bug. It is how analog video works.</p>
+<h2 id="this-is-normal---it-is-how-analog-video-works"><a class="header" href="#this-is-normal---it-is-how-analog-video-works">This is normal - it is how analog video works</a></h2>
+<p>CRT televisions did not have a fixed pixel grid. There were no tiny square elements arranged in rows and columns. Instead, an electron beam swept across the screen in horizontal lines, painting brightness and color as it went. The horizontal resolution of the image was determined by how fast the signal changed during each sweep - the signal bandwidth - not by a fixed number of physical dots.</p>
+<p>The concept of “one pixel equals one square dot” is a modern assumption. It comes from LCD displays, where the screen really is a physical grid of fixed-size rectangular elements. On a CRT, a “pixel” was just one sample point along a scan line, and its effective physical shape depended entirely on how many samples the signal packed into the available screen width.</p>
+<p>Early console developers knew this. They designed their sprites with the display’s pixel aspect ratio in mind. If they needed a circle to look circular on a PAL television, they drew it as a vertical oval in the pixel grid so the wider PAL pixels would stretch it back into a circle on screen. This was not a workaround. It was standard practice for decades of console and broadcast development.</p>
+<p>The N64 is no exception. Its Video Interface was designed to be flexible across NTSC and PAL markets, and that flexibility means the pixel aspect ratio is not fixed. It depends on the video mode configuration.</p>
+<h2 id="the-gosprite64-answer---one-canvas-always-square"><a class="header" href="#the-gosprite64-answer---one-canvas-always-square">The GoSprite64 answer - one canvas, always square</a></h2>
+<p>I did not want to think about pixel aspect ratios in my game code. I did not want to adjust my sprites for NTSC versus PAL. I did not want to multiply my X coordinates by a correction factor every time I drew a rectangle.</p>
+<p>So I made it the library’s problem.</p>
+<p>This is my personal preference, and since this is my library, I can make that call. GoSprite64 exposes exactly <strong>one</strong> public coordinate space:</p>
+<p><strong>288 x 216 logical pixels.</strong></p>
+<p>One logical pixel always maps to one square pixel on the final display. No configuration. No presets. No choices. You call <code>gosprite64.FillRect(0, 0, 39, 39, gosprite64.Red)</code> and you get a square on screen. Always.</p>
+<h3 id="why-288x216-specifically"><a class="header" href="#why-288x216-specifically">Why 288x216 specifically?</a></h3>
+<p>The internal framebuffer is 320x240 pixels. That is a hardware-friendly size for the N64. But we do not expose the full 320x240 to game code. Instead, we carve out a centered region:</p>
+<ul>
+<li>320 - 2 x 16 = 288 pixels wide</li>
+<li>240 - 2 x 12 = 216 pixels tall</li>
+</ul>
+<p>That leaves a 16-pixel border on each side horizontally and a 12-pixel border top and bottom. The remaining canvas has an aspect ratio of:</p>
+<pre><code class="language-text">288 / 216 = 4 / 3
+</code></pre>
+<p>That matches the display aspect ratio exactly. Since the framebuffer is presented at the correct physical size for a 4:3 display, and the canvas aspect ratio matches 4:3, each logical pixel in the 288x216 canvas is square.</p>
+<p>Here is how the canvas sits inside the framebuffer:</p>
+<p><img src="images/canvas-layout.png" alt="The 288x216 logical canvas centered inside the 320x240 framebuffer"></p>
+<p>The surrounding 16px/12px borders are the framebuffer gutters. <code>ClearScreen</code> fills the entire 320x240 framebuffer, so the gutters take on the clear color. But game drawing APIs are clipped to the inner 288x216 canvas and cannot address the gutters directly.</p>
+<h3 id="less-is-more"><a class="header" href="#less-is-more">Less is more</a></h3>
+<p>This is an opinionated library. GoSprite64 is built for people who are learning N64 homebrew development, not for people who already have years of experience with the hardware.</p>
+<p>You get one resolution. That is it. There is no <code>Config</code> struct, no <code>VideoPreset</code> enum, no <code>LowRes</code> versus <code>HighRes</code> mode selector. You call <code>gosprite64.Run(&amp;Game{})</code> and the library sets up the display for you.</p>
+<p>Fewer options means less confusion. A newcomer does not need to understand pixel aspect ratios, video interface registers, or interlacing modes to draw a game. They need to know that X goes from 0 to 287, Y goes from 0 to 215, and a square is a square.</p>
+<p>If you are already a pro at N64 development and you want raw framebuffer access with multiple video modes, full RDP control, and manual scaling - use <a href="https://github.com/DragonMinded/libdragon">libdragon</a> in C. It gives you full power and full responsibility. GoSprite64 trades that flexibility for simplicity on purpose.</p>
+<p>Here is what the calibration example looks like in the ares emulator:</p>
+<p><img src="images/fixed-resolution-calibration.png" alt="Calibration scene showing the fixed 288x216 logical canvas in ares"></p>
+<p>The white border marks the 288x216 canvas. The corner markers sit at the four logical corners. The center box is a perfect square. The diagonal lines form a symmetric X. If any of those look distorted, something is wrong with the presentation scaling.</p>
+<h2 id="how-it-works-under-the-hood"><a class="header" href="#how-it-works-under-the-hood">How it works under the hood</a></h2>
+<p>Let’s trace a single drawing call through the entire rendering pipeline, step by step.</p>
+<p><img src="images/rendering-pipeline.png" alt="The six-step rendering pipeline from game code to display"></p>
+<h3 id="step-1-logical-space-288x216"><a class="header" href="#step-1-logical-space-288x216">Step 1: Logical space (288x216)</a></h3>
+<p>Your game code calls:</p>
+<pre><code class="language-go">gosprite64.FillRect(10, 10, 50, 50, gosprite64.Red)
+</code></pre>
+<p>These are <strong>logical coordinates</strong>. The game only thinks in terms of the 288x216 canvas. It does not know or care about the framebuffer, the video interface, or the display standard. X=10, Y=10, width=40, height=40. That is a square.</p>
+<h3 id="step-2-clipping"><a class="header" href="#step-2-clipping">Step 2: Clipping</a></h3>
+<p>The <code>rendergeom</code> package checks whether the rectangle fits inside the logical bounds <code>[0..287, 0..215]</code>. If any part of the rectangle falls outside those bounds, it is clipped to the edge. If the entire rectangle is outside, it is silently dropped and nothing is drawn.</p>
+<p>In our case, <code>(10,10)-(50,50)</code> is well within bounds, so it passes through unchanged.</p>
+<h3 id="step-3-mapping"><a class="header" href="#step-3-mapping">Step 3: Mapping</a></h3>
+<p>The clipped rectangle is offset by the canvas <strong>origin</strong> to place it inside the 320x240 framebuffer. The origin is <code>(16, 12)</code> - the top-left corner of the logical canvas in framebuffer space.</p>
+<pre><code class="language-text">Logical:      (10, 10) - (50, 50)
+                  + (16, 12)          &lt;- add origin
+Framebuffer:  (26, 22) - (66, 62)
+</code></pre>
+<p>The logical 40x40 square is now a 40x40 region inside the framebuffer, shifted 16 pixels right and 12 pixels down.</p>
+<h3 id="step-4-framebuffer-320x240"><a class="header" href="#step-4-framebuffer-320x240">Step 4: Framebuffer (320x240)</a></h3>
+<p>The N64’s Reality Display Processor (RDP) draws the filled rectangle at framebuffer coordinates <code>(26,22)-(66,62)</code>. At this point it is just colored pixels sitting in a 320x240 memory buffer. Nothing has been sent to the display yet.</p>
+<h3 id="step-5-presentation-scaling"><a class="header" href="#step-5-presentation-scaling">Step 5: Presentation scaling</a></h3>
+<p>This is where the square-pixel guarantee is enforced.</p>
+<p>When the library initializes the display, it calls <code>video.SetScale()</code> with a calibrated rectangle. This rectangle tells the N64 Video Interface exactly how to map the 320x240 framebuffer onto the analog output signal.</p>
+<p>The rectangle is different for NTSC and PAL:</p>
+<ul>
+<li><strong>NTSC:</strong> The 320x240 framebuffer is scaled to fit the visible area of an NTSC signal, centered within the standard 640x480 output window.</li>
+<li><strong>PAL:</strong> The 320x240 framebuffer is scaled to fit the visible area of a PAL signal, centered within the standard 640x576 output window.</li>
+</ul>
+<p>In both cases, the scaling is chosen so that the 288x216 logical canvas - which has a 4:3 aspect ratio - lands on a 4:3 region of the physical display. Since the canvas ratio matches the display ratio, each logical pixel ends up square.</p>
+<p>The library detects the video standard at startup and picks the right scaling rectangle automatically. Game code never sees this. It just draws in logical coordinates and the pixels come out square.</p>
+<h3 id="step-6-on-screen"><a class="header" href="#step-6-on-screen">Step 6: On screen</a></h3>
+<p>The CRT television or emulator receives the analog signal and paints the image. Because the scaling rectangle was calibrated to make PAR=1.0 for the canvas region, the 40x40 rectangle from step 1 actually looks like a 40x40 square on screen.</p>
+<p>That is the whole pipeline. Six steps, fully automatic, and the game developer only ever touches step 1.</p>
+<h2 id="verify-it-yourself"><a class="header" href="#verify-it-yourself">Verify it yourself</a></h2>
+<p>The repository includes a calibration example at <code>examples/calibration</code> that makes the fixed-resolution presentation easy to verify visually.</p>
+<p>Build and run it:</p>
+<pre><code class="language-bash">./build_examples.sh
+</code></pre>
+<p>Then open <code>examples/calibration/game.z64</code> in an emulator like <a href="https://ares-emu.net/">ares</a>. You should see:</p>
+<ul>
+<li>A white border outlining the full 288x216 canvas</li>
+<li>Corner markers (red, orange, green, blue) at the four logical corners</li>
+<li>The text <code>288x216</code> centered at the top</li>
+<li>Labels <code>TL</code>, <code>TR</code>, <code>BL</code>, <code>BR</code> near each corner</li>
+<li>A pink square in the center with diagonal lines forming a symmetric X</li>
+<li>A small yellow dot at the exact center of the canvas</li>
+</ul>
+<p>If the center box looks like a rectangle instead of a square, or if the diagonal lines look asymmetric, the presentation scaling is off. On a correctly configured emulator or real hardware with the right video standard, everything should look clean and symmetric.</p>
+<p>Try it yourself. That is the best way to trust the math.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="colors"><a class="header" href="#colors">Colors</a></h1>
+<p>The built-in color palette and how to define custom colors for drawing operations.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="drawing-primitives"><a class="header" href="#drawing-primitives">Drawing Primitives</a></h1>
+<p>How to draw rectangles, lines, and pixels using FillRect, DrawRect, DrawLine, and PutPixel.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="sprites"><a class="header" href="#sprites">Sprites</a></h1>
+<p>This chapter covers how to load sprite sheets, draw individual sprites with transforms, animate them, and render them in world space alongside a tile scene.</p>
+<h2 id="preparing-a-sprite-sheet-png"><a class="header" href="#preparing-a-sprite-sheet-png">Preparing a sprite sheet PNG</a></h2>
+<p>A sprite sheet is a single PNG image that contains all frames of a character or object arranged in a grid. Each cell in the grid is one frame. The same <code>mk2dsheet</code> tool used for tile sheets handles sprite sheets - you just specify different frame dimensions.</p>
+<p>For example, a character sprite sheet with 16x16 pixel frames:</p>
+<pre><code>+----+----+----+----+
+| 0  | 1  | 2  | 3  |   row 0
++----+----+----+----+
+| 4  | 5  | 6  | 7  |   row 1
++----+----+----+----+
+</code></pre>
+<p>Requirements:</p>
+<ul>
+<li>PNG format</li>
+<li>Image width must be evenly divisible by the frame width</li>
+<li>Image height must be evenly divisible by the frame height</li>
+<li>Pixels are stored as NRGBA internally</li>
+</ul>
+<h2 id="compiling-the-sprite-sheet"><a class="header" href="#compiling-the-sprite-sheet">Compiling the sprite sheet</a></h2>
+<p>Use <code>mk2dsheet</code> with the frame dimensions matching your sprite size:</p>
+<pre><code class="language-bash">go run github.com/drpaneas/gosprite64/cmd/mk2dsheet \
+  -in assets-src/character.png \
+  -out assets/character.sheet \
+  -tile-width 16 -tile-height 16
+</code></pre>
+<p>This produces a <code>.sheet</code> binary that the runtime can load. For a <code>go:generate</code> line:</p>
+<pre><code class="language-go">//go:generate sh -c "mkdir -p assets &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dsheet -in assets-src/character.png -out assets/character.sheet -tile-width 16 -tile-height 16"
+</code></pre>
+<h2 id="loading-a-sprite-sheet"><a class="header" href="#loading-a-sprite-sheet">Loading a sprite sheet</a></h2>
+<pre><code class="language-go">charSheet, err := gosprite64.LoadSpriteSheet("assets/character.sheet")
+if err != nil {
+    panic(err)
+}
+</code></pre>
+<p><code>LoadSpriteSheet</code> reads the compiled <code>.sheet</code> binary and returns a <code>*SpriteSheet</code>. The sheet exposes metadata accessors:</p>
+<pre><code class="language-go">charSheet.FrameCount()  // total number of frames in the sheet
+charSheet.FrameWidth()  // width of one frame in pixels (e.g. 16)
+charSheet.FrameHeight() // height of one frame in pixels (e.g. 16)
+</code></pre>
+<h2 id="drawing-sprites"><a class="header" href="#drawing-sprites">Drawing sprites</a></h2>
+<h3 id="simple-drawing"><a class="header" href="#simple-drawing">Simple drawing</a></h3>
+<p><code>DrawSprite</code> renders a single frame at screen-space coordinates with no transforms:</p>
+<pre><code class="language-go">gosprite64.DrawSprite(charSheet, frameIndex, x, y)
+</code></pre>
+<p>The <code>frame</code> argument is a zero-based index into the sheet. Out-of-range frames are silently ignored.</p>
+<h3 id="drawing-with-options"><a class="header" href="#drawing-with-options">Drawing with options</a></h3>
+<p><code>DrawSpriteWithOptions</code> accepts a <code>DrawSpriteOptions</code> struct for transforms:</p>
+<pre><code class="language-go">gosprite64.DrawSpriteWithOptions(charSheet, frame, x, y, gosprite64.DrawSpriteOptions{
+    FlipH: true,
+    Blend: gosprite64.BlendAlpha,
+    Alpha: 0.7,
+})
+</code></pre>
+<p>When all options are at their defaults, this falls through to the fast <code>DrawSprite</code> path automatically.</p>
+<h2 id="drawspriteoptions-reference"><a class="header" href="#drawspriteoptions-reference">DrawSpriteOptions reference</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>Type</th><th>Zero value means</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>FlipH</code></td><td><code>bool</code></td><td>no flip</td><td>Mirror the frame horizontally</td></tr>
+<tr><td><code>FlipV</code></td><td><code>bool</code></td><td>no flip</td><td>Mirror the frame vertically</td></tr>
+<tr><td><code>ScaleX</code></td><td><code>float32</code></td><td>1.0</td><td>Horizontal scale factor. Negative values are not supported</td></tr>
+<tr><td><code>ScaleY</code></td><td><code>float32</code></td><td>1.0</td><td>Vertical scale factor. Negative values are not supported</td></tr>
+<tr><td><code>Rotation</code></td><td><code>float32</code></td><td>no rotation</td><td>Rotation angle in radians</td></tr>
+<tr><td><code>OriginX</code></td><td><code>float32</code></td><td>0</td><td>X component of the transform pivot in frame-local coordinates</td></tr>
+<tr><td><code>OriginY</code></td><td><code>float32</code></td><td>0</td><td>Y component of the transform pivot in frame-local coordinates</td></tr>
+<tr><td><code>Blend</code></td><td><code>BlendMode</code></td><td><code>BlendNone</code></td><td>Blending mode (see below)</td></tr>
+<tr><td><code>Alpha</code></td><td><code>float32</code></td><td>1.0</td><td>Global alpha multiplier. Only meaningful with <code>BlendAlpha</code></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="blend-modes"><a class="header" href="#blend-modes">Blend modes</a></h3>
+<p>Three blend modes are available, ordered from fastest to most expensive:</p>
+<ul>
+<li>
+<p><strong><code>BlendNone</code></strong> - No blending. Every source pixel overwrites the destination. This is the fastest mode, roughly 4x faster than alpha blending.</p>
+</li>
+<li>
+<p><strong><code>BlendMasked</code></strong> - Binary cutout. Fully transparent pixels (alpha = 0) are skipped, all other pixels are drawn at full opacity. Useful for character sprites over backgrounds.</p>
+</li>
+<li>
+<p><strong><code>BlendAlpha</code></strong> - Full per-pixel alpha blending with an additional global <code>Alpha</code> multiplier. The most expensive mode, but required for transparency effects like shadows, ghosts, or fade-outs.</p>
+</li>
+</ul>
+<h3 id="scale-and-rotation"><a class="header" href="#scale-and-rotation">Scale and rotation</a></h3>
+<p>When <code>ScaleX</code> or <code>ScaleY</code> is 0, it is treated as 1.0. This lets you use the zero-value <code>DrawSpriteOptions{}</code> without accidentally scaling to zero.</p>
+<p><code>OriginX</code> and <code>OriginY</code> define the pivot point for rotation in frame-local pixel coordinates. For example, to rotate a 16x16 sprite around its center, set <code>OriginX: 8, OriginY: 8</code>.</p>
+<h2 id="animation"><a class="header" href="#animation">Animation</a></h2>
+<p>GoSprite64 provides a tick-based <code>AnimationPlayer</code> that drives frame selection from animation clips.</p>
+<h3 id="setting-up-clips"><a class="header" href="#setting-up-clips">Setting up clips</a></h3>
+<p>Animation clips are defined in JSON and compiled with <code>mk2danim</code> (see the tile2d chapter). Each clip has a name, an FPS rate, and a list of frame indices:</p>
+<pre><code class="language-json">{
+  "clips": [
+    {"name": "idle", "fps": 12, "frames": [0, 1, 2, 3]},
+    {"name": "walk", "fps": 8,  "frames": [4, 5, 6, 7]}
+  ]
+}
+</code></pre>
+<p>At runtime, retrieve clips from a loaded animation set:</p>
+<pre><code class="language-go">animSet, err := bundle.LoadAnimation("anims")
+if err != nil {
+    panic(err)
+}
+
+idleClip, ok := animSet.Clip("idle")
+if !ok {
+    panic("idle clip not found")
+}
+</code></pre>
+<h3 id="using-animationplayer"><a class="header" href="#using-animationplayer">Using AnimationPlayer</a></h3>
+<pre><code class="language-go">player := gosprite64.NewAnimationPlayer()
+player.SetLoop(true)
+player.Play(idleClip)
+</code></pre>
+<p>Each frame of your game loop, advance the player by one tick:</p>
+<pre><code class="language-go">func (g *Game) Update() {
+    g.player.Advance(1)
+}
+</code></pre>
+<p>Then use <code>Frame()</code> to get the current sprite sheet frame index:</p>
+<pre><code class="language-go">func (g *Game) Draw() {
+    frame := g.player.Frame()
+    gosprite64.DrawSprite(g.charSS, frame, x, y)
+}
+</code></pre>
+<h3 id="the-tick-model"><a class="header" href="#the-tick-model">The tick model</a></h3>
+<p>The player runs at a base rate of 60 ticks per second (matching the N64’s 60Hz refresh). <code>Advance(1)</code> means “one tick has passed.” The clip’s FPS is interpreted against this 60-tick base:</p>
+<ul>
+<li>A clip at 60 FPS advances one animation frame per tick</li>
+<li>A clip at 12 FPS advances one animation frame every 5 ticks</li>
+<li>A clip at 30 FPS advances one animation frame every 2 ticks</li>
+</ul>
+<h3 id="switching-clips"><a class="header" href="#switching-clips">Switching clips</a></h3>
+<p>Call <code>Play</code> with a different clip to switch animations. The player resets to frame 0:</p>
+<pre><code class="language-go">if moving {
+    if currentClip != "walk" {
+        player.Play(walkClip)
+        currentClip = "walk"
+    }
+} else {
+    if currentClip != "idle" {
+        player.Play(idleClip)
+        currentClip = "idle"
+    }
+}
+</code></pre>
+<p>Guard clip switches with a state check to avoid resetting the animation every frame.</p>
+<h3 id="frame-returns-0-when-stopped"><a class="header" href="#frame-returns-0-when-stopped">Frame() returns 0 when stopped</a></h3>
+<p><code>Frame()</code> returns 0 when the player is not playing (stopped or no clip loaded). If frame 0 in your sheet is a valid sprite, this can cause unwanted drawing. Gate your draw calls on <code>Playing()</code>:</p>
+<pre><code class="language-go">if g.player.Playing() {
+    frame := g.player.Frame()
+    gosprite64.DrawSprite(g.charSS, frame, x, y)
+}
+</code></pre>
+<h3 id="other-controls"><a class="header" href="#other-controls">Other controls</a></h3>
+<pre><code class="language-go">player.Pause()          // freeze at current frame
+player.Resume()         // continue from paused frame
+player.Stop()           // stop and reset to frame 0
+player.Restart()        // restart the current clip from the beginning
+player.Playing()        // true if currently advancing
+player.Done()           // true if stopped (finished or never started)
+</code></pre>
+<h2 id="world-space-drawing"><a class="header" href="#world-space-drawing">World-space drawing</a></h2>
+<p>When drawing sprites alongside a tile scene that uses a camera, use the world-space variants to automatically offset by the camera position:</p>
+<pre><code class="language-go">gosprite64.DrawWorldSprite(charSheet, frame, worldX, worldY, camera)
+
+gosprite64.DrawWorldSpriteWithOptions(charSheet, frame, worldX, worldY, camera, gosprite64.DrawSpriteOptions{
+    FlipH: true,
+})
+</code></pre>
+<p>These subtract <code>camera.X</code> and <code>camera.Y</code> from the world coordinates before drawing. If the camera is nil, they fall through to the screen-space versions.</p>
+<p>A common pattern is drawing a character sprite over the tile scene with a shadow underneath:</p>
+<pre><code class="language-go">// Draw shadow first (stretched, semi-transparent)
+gosprite64.DrawWorldSpriteWithOptions(charSheet, frame, playerX, playerY+12, camera, gosprite64.DrawSpriteOptions{
+    ScaleX: 1.5,
+    ScaleY: 0.3,
+    Blend:  gosprite64.BlendAlpha,
+    Alpha:  0.3,
+})
+
+// Draw character on top
+gosprite64.DrawWorldSpriteWithOptions(charSheet, frame, playerX, playerY, camera, gosprite64.DrawSpriteOptions{
+    FlipH: facingLeft,
+})
+</code></pre>
+<h2 id="performance-notes"><a class="header" href="#performance-notes">Performance notes</a></h2>
+<ul>
+<li><code>BlendNone</code> is roughly 4x faster than <code>BlendAlpha</code>. Use it for opaque sprites that fully cover their footprint.</li>
+<li><code>BlendMasked</code> is between the two - it skips transparent pixels but avoids the per-pixel alpha math.</li>
+<li>Rotation adds per-pixel coordinate transforms. Prefer axis-aligned sprites when performance is tight.</li>
+<li>Overlapping blended sprites compound cost: each overlapping pixel runs the blend math again. Minimize large transparent overlaps in hot scenes.</li>
+<li>The <code>DrawSpriteWithOptions</code> fast path kicks in when all options are at defaults, falling through to the plain <code>DrawSprite</code> code.</li>
+</ul>
+<h2 id="reference-example"><a class="header" href="#reference-example">Reference example</a></h2>
+<p>See <code>examples/sprite_demo</code> for a complete working example that demonstrates:</p>
+<ul>
+<li>Compiling a 16x16 character sprite sheet alongside an 8x8 tile sheet</li>
+<li>Loading both the tile scene and a standalone sprite sheet</li>
+<li>Animation clips (idle and walk) driven by <code>AnimationPlayer</code></li>
+<li>World-space rendering with camera tracking</li>
+<li>Shadow effect using scaled, alpha-blended sprites</li>
+<li>HUD overlay drawing in screen space</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="sprite-sheets"><a class="header" href="#sprite-sheets">Sprite Sheets</a></h1>
+<p>How to prepare, compile, and load sprite sheet PNGs for use with the drawing and animation APIs.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="animation-player"><a class="header" href="#animation-player">Animation Player</a></h1>
+<p>Drive sprite animations with the tick-based AnimationPlayer and JSON animation clips.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="custom-fonts"><a class="header" href="#custom-fonts">Custom Fonts</a></h1>
+<p>Load and render text with custom bitmap fonts beyond the built-in 8x8 font.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="text-alignment"><a class="header" href="#text-alignment">Text Alignment</a></h1>
+<p>Control text positioning with left, center, and right alignment options.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="parallax-scrolling"><a class="header" href="#parallax-scrolling">Parallax Scrolling</a></h1>
+<p>Create depth with multi-layer backgrounds that scroll at different speeds.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="screen-transitions"><a class="header" href="#screen-transitions">Screen Transitions</a></h1>
+<p>Fade, wipe, and dissolve effects for smooth transitions between game states.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="draw-regions-split-screen"><a class="header" href="#draw-regions-split-screen">Draw Regions (Split-Screen)</a></h1>
+<p>Draw regions let you restrict all drawing to a sub-rectangle of the screen. This is how you implement split-screen multiplayer - each player gets their own viewport where coordinates start at (0, 0).</p>
+<h2 id="basic-usage"><a class="header" href="#basic-usage">Basic usage</a></h2>
+<pre><code class="language-go">// Draw player 1's view in the left half
+gosprite64.SetDrawRegion(0, 0, 144, 216)
+drawGameForPlayer(0)
+gosprite64.ResetDrawRegion()
+
+// Draw player 2's view in the right half
+gosprite64.SetDrawRegion(144, 0, 144, 216)
+drawGameForPlayer(1)
+gosprite64.ResetDrawRegion()
+</code></pre>
+<p>Inside <code>SetDrawRegion</code>, all coordinates are local to the region. Drawing at (0, 0) puts pixels at the region’s top-left corner, not the screen’s.</p>
+<p>On N64 hardware, <code>SetDrawRegion</code> also sets the RDP scissor rectangle, so any drawing that falls outside the region is clipped at the hardware level.</p>
+<h2 id="two-player-layout"><a class="header" href="#two-player-layout">Two-player layout</a></h2>
+<p>The 288x216 canvas divides naturally for split-screen:</p>
+<pre><code>2-player side-by-side:  SetDrawRegion(0, 0, 144, 216)  // left
+                        SetDrawRegion(144, 0, 144, 216) // right
+
+2-player top-bottom:    SetDrawRegion(0, 0, 288, 108)   // top
+                        SetDrawRegion(0, 108, 288, 108) // bottom
+
+4-player quadrants:     SetDrawRegion(0, 0, 144, 108)     // top-left
+                        SetDrawRegion(144, 0, 144, 108)   // top-right
+                        SetDrawRegion(0, 108, 144, 108)   // bottom-left
+                        SetDrawRegion(144, 108, 144, 108) // bottom-right
+</code></pre>
+<h2 id="drawing-a-divider"><a class="header" href="#drawing-a-divider">Drawing a divider</a></h2>
+<p>Draw region doesn’t prevent drawing outside it after <code>ResetDrawRegion</code>. Draw divider lines after resetting:</p>
+<pre><code class="language-go">gosprite64.SetDrawRegion(0, 0, 144, 216)
+drawPlayer1()
+gosprite64.ResetDrawRegion()
+
+gosprite64.SetDrawRegion(144, 0, 144, 216)
+drawPlayer2()
+gosprite64.ResetDrawRegion()
+
+// Divider line in full-screen space
+gosprite64.DrawLine(144, 0, 144, 216, gosprite64.White)
+</code></pre>
+<h2 id="nesting"><a class="header" href="#nesting">Nesting</a></h2>
+<p>Calls can be nested. Each <code>SetDrawRegion</code> pushes onto a stack, and <code>ResetDrawRegion</code> pops back to the previous region:</p>
+<pre><code class="language-go">gosprite64.SetDrawRegion(0, 0, 144, 216)    // player 1 half
+gosprite64.SetDrawRegion(10, 10, 124, 90)   // HUD sub-area within player 1
+drawHUD()
+gosprite64.ResetDrawRegion()                 // back to player 1 full half
+drawGameplay()
+gosprite64.ResetDrawRegion()                 // back to full screen
+</code></pre>
+<h2 id="drawregion-type"><a class="header" href="#drawregion-type">DrawRegion type</a></h2>
+<p>You can also work with <code>DrawRegion</code> values directly for coordinate math:</p>
+<pre><code class="language-go">region := gosprite64.DrawRegion{X: 50, Y: 30, W: 100, H: 80}
+
+// Convert local coords to screen coords
+screenX, screenY := region.Offset(10, 20)  // (60, 50)
+
+// Check if a local point is within the region
+region.ContainsPoint(10, 20)  // true
+region.ContainsPoint(200, 0)  // false
+
+// Clip and offset a rectangle
+x1, y1, x2, y2, ok := region.Clip(0, 0, 150, 150)
+// ok=true, coords clamped to region bounds
+
+// Check if region is active (non-zero size)
+region.Active()  // true
+gosprite64.DrawRegion{}.Active()  // false
+</code></pre>
+<h2 id="dr-mario-example"><a class="header" href="#dr-mario-example">Dr. Mario example</a></h2>
+<p>Dr. Mario 64 shows 2-4 game boards. With draw regions, each board draws at local coordinates:</p>
+<pre><code class="language-go">func drawBoard(playerIndex int, board *GameBoard) {
+    // Each board is 64x136 pixels (8 cols x 17 rows of 8x8 cells)
+    boardW := 8 * 8
+    boardH := 17 * 8
+
+    // Position boards across the screen
+    positions := []struct{ x, y int }{
+        {20, 20}, {152, 20},           // 2 players
+    }
+
+    pos := positions[playerIndex]
+    gosprite64.SetDrawRegion(pos.x, pos.y, boardW, boardH)
+
+    // All drawing is now local to the board
+    for row := 0; row &lt; 17; row++ {
+        for col := 0; col &lt; 8; col++ {
+            cell := board.Get(col, row)
+            if cell != Empty {
+                drawCell(col*8, row*8, cell)
+            }
+        }
+    }
+
+    gosprite64.ResetDrawRegion()
+}
+</code></pre>
+<h2 id="complete-example"><a class="header" href="#complete-example">Complete example</a></h2>
+<p>See <code>examples/splitscreen_demo</code> for a working 1P/2P split-screen game using draw regions, timers, and menus together.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="d-pad-and-buttons"><a class="header" href="#d-pad-and-buttons">D-Pad and Buttons</a></h1>
+<p>Read digital button presses with IsButtonDown, IsButtonJustPressed, and IsButtonJustReleased.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="analog-stick"><a class="header" href="#analog-stick">Analog Stick</a></h1>
+<p>Read the N64 analog stick for smooth directional movement and aiming.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="multi-controller-support"><a class="header" href="#multi-controller-support">Multi-Controller Support</a></h1>
+<p>Read input from up to four controllers for multiplayer games.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="rumble"><a class="header" href="#rumble">Rumble</a></h1>
+<p>Trigger controller vibration for haptic feedback using the Rumble Pak.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="input-recording-and-replay"><a class="header" href="#input-recording-and-replay">Input Recording and Replay</a></h1>
+<p>The replay system records controller input frame-by-frame and plays it back later. Use it for attract-mode demos (the game plays itself on the title screen), debugging (reproduce a bug by replaying the exact inputs), or competitive replay viewing.</p>
+<h2 id="how-it-works"><a class="header" href="#how-it-works">How it works</a></h2>
+<ol>
+<li>An <code>InputRecorder</code> captures a <code>FrameInput</code> (buttons + stick) for each player every frame.</li>
+<li>When you’re done, <code>Finish</code> returns a <code>ReplayData</code> containing the complete recording.</li>
+<li>An <code>InputPlayer</code> feeds those frames back one at a time.</li>
+</ol>
+<p>The recording is deterministic: the same sequence of <code>FrameInput</code> values always produces the same replay. If your game logic is also deterministic (same inputs = same outcome), the replay will reproduce the gameplay exactly.</p>
+<h2 id="recording"><a class="header" href="#recording">Recording</a></h2>
+<p>Create a recorder with the number of players, then call <code>CaptureFrame</code> once per player per frame:</p>
+<pre><code class="language-go">recorder := gosprite64.NewInputRecorder(1)  // 1 player
+
+// In your Update():
+func (g *Game) Update() {
+    var buttons gosprite64.ButtonMask
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadUp) {
+        buttons |= gosprite64.ButtonDPadUp
+    }
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadDown) {
+        buttons |= gosprite64.ButtonDPadDown
+    }
+    // ... other buttons
+
+    recorder.CaptureFrame(0, gosprite64.FrameInput{
+        Buttons: buttons,
+        StickX:  stickX,
+        StickY:  stickY,
+    })
+}
+</code></pre>
+<h2 id="finishing-a-recording"><a class="header" href="#finishing-a-recording">Finishing a recording</a></h2>
+<p>Call <code>Finish</code> to get the replay data:</p>
+<pre><code class="language-go">replay := recorder.Finish()
+// replay.FrameCount - total frames recorded
+// replay.PlayerCount - number of players
+</code></pre>
+<h2 id="playback"><a class="header" href="#playback">Playback</a></h2>
+<p>Create an <code>InputPlayer</code> from the replay data and read frames one at a time:</p>
+<pre><code class="language-go">player := gosprite64.NewInputPlayer(replay)
+
+// In your Update():
+input, ok := player.NextFrame(0)  // player 0
+if !ok {
+    // all frames consumed
+    return
+}
+
+// Use input.Buttons, input.StickX, input.StickY
+// to drive game logic instead of reading the controller
+if input.Buttons&amp;gosprite64.ButtonDPadUp != 0 {
+    moveUp()
+}
+</code></pre>
+<h2 id="checking-completion"><a class="header" href="#checking-completion">Checking completion</a></h2>
+<p><code>Done</code> returns true when all players have consumed all their frames:</p>
+<pre><code class="language-go">if player.Done() {
+    // replay finished
+}
+</code></pre>
+<h2 id="looping-playback"><a class="header" href="#looping-playback">Looping playback</a></h2>
+<p>Call <code>Reset</code> to restart from the beginning. This is how you make an attract-mode demo that loops:</p>
+<pre><code class="language-go">if player.Done() {
+    player.Reset()
+    // also reset your game state to the starting position
+}
+</code></pre>
+<h2 id="multiplayer-recording"><a class="header" href="#multiplayer-recording">Multiplayer recording</a></h2>
+<p>Pass the number of players to <code>NewInputRecorder</code> and capture frames for each port:</p>
+<pre><code class="language-go">recorder := gosprite64.NewInputRecorder(2)
+
+// Each frame, capture both players:
+recorder.CaptureFrame(0, gosprite64.FrameInput{Buttons: p1Buttons, StickX: p1X, StickY: p1Y})
+recorder.CaptureFrame(1, gosprite64.FrameInput{Buttons: p2Buttons, StickX: p2X, StickY: p2Y})
+</code></pre>
+<p>During playback, read each player’s input separately:</p>
+<pre><code class="language-go">p1Input, _ := player.NextFrame(0)
+p2Input, _ := player.NextFrame(1)
+</code></pre>
+<h2 id="frameinput-fields"><a class="header" href="#frameinput-fields">FrameInput fields</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Buttons</code></td><td><code>ButtonMask</code></td><td>Bitmask of pressed buttons (same type as <code>ButtonA</code>, <code>ButtonDPadUp</code>, etc.)</td></tr>
+<tr><td><code>StickX</code></td><td><code>int8</code></td><td>Analog stick horizontal: -128 (full left) to 127 (full right)</td></tr>
+<tr><td><code>StickY</code></td><td><code>int8</code></td><td>Analog stick vertical: -128 (full down) to 127 (full up)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="typical-attract-mode-pattern"><a class="header" href="#typical-attract-mode-pattern">Typical attract-mode pattern</a></h2>
+<pre><code class="language-go">type TitleState struct {
+    sm       *gosprite64.StateMachine
+    player   *gosprite64.InputPlayer
+    ghostX   float32
+    ghostY   float32
+    demoData *gosprite64.ReplayData
+}
+
+func (s *TitleState) Enter() {
+    // Pre-recorded demo data (could be loaded from cartridge FS)
+    s.player = gosprite64.NewInputPlayer(s.demoData)
+    s.ghostX = 144
+    s.ghostY = 108
+}
+
+func (s *TitleState) Update() {
+    // Play the demo in the background
+    input, ok := s.player.NextFrame(0)
+    if !ok {
+        s.player.Reset()
+        s.ghostX = 144
+        s.ghostY = 108
+        return
+    }
+    s.ghostX += float32(input.StickX) * 2
+    s.ghostY += float32(input.StickY) * 2
+
+    // Player presses Start to actually begin
+    if gosprite64.IsButtonJustPressed(gosprite64.ButtonStart) {
+        s.sm.Switch(&amp;GameplayState{sm: s.sm})
+    }
+}
+
+func (s *TitleState) Draw() {
+    gosprite64.ClearScreen()
+    // Draw the demo ghost
+    gosprite64.FillRect(int(s.ghostX)-4, int(s.ghostY)-4, int(s.ghostX)+4, int(s.ghostY)+4, gosprite64.DarkGray)
+    // Draw title text on top
+    gosprite64.DrawText("MY GAME", 112, 40, gosprite64.White)
+    gosprite64.DrawText("PRESS START", 100, 160, gosprite64.Yellow)
+}
+</code></pre>
+<h2 id="complete-example-1"><a class="header" href="#complete-example-1">Complete example</a></h2>
+<p>See <code>examples/replay_demo</code> for a working demo that lets you record input and then watch it play back as a ghost trail. Build it with:</p>
+<pre><code class="language-bash">GOENV=n64.env go1.24.5-embedded build -o replay_demo.elf ./examples/replay_demo
+n64go rom replay_demo.elf
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="using-audio-in-gosprite64"><a class="header" href="#using-audio-in-gosprite64">Using Audio in GoSprite64</a></h1>
+<p>This chapter covers how to add audio to your game and how the audio system works behind the scenes.</p>
+<h2 id="part-1-adding-audio-to-your-game"><a class="header" href="#part-1-adding-audio-to-your-game">Part 1: Adding audio to your game</a></h2>
+<h3 id="quick-start"><a class="header" href="#quick-start">Quick start</a></h3>
+<p>GoSprite64 uses a build-time pipeline. You provide <code>.wav</code> files, the <code>audiogen</code> tool compresses them into a compact format, and the engine plays them at runtime. You never deal with codecs, sample rates, or streaming in your gameplay code.</p>
+<p>Three steps:</p>
+<ol>
+<li>Put your <code>.wav</code> files in the right directories.</li>
+<li>Run <code>go generate</code>.</li>
+<li>Call <code>gosprite64.PlaySoundEffect</code> or <code>gosprite64.PlayMusic</code> from your game.</li>
+</ol>
+<h3 id="project-layout"><a class="header" href="#project-layout">Project layout</a></h3>
+<p>Organize audio files under <code>assets/audio/</code> with separate subdirectories for sound effects and music:</p>
+<pre><code class="language-text">mygame/
+  main.go
+  audio_embed.go        (generated)
+  assets/
+    audio/
+      sfx/
+        jump.wav
+        coin.wav
+        hit.wav
+      music/
+        overworld.wav
+        boss.wav
+  sfx/
+    ids.go              (generated)
+  music/
+    ids.go              (generated)
+  build/
+    audio_v1.bin         (generated)
+    audio_v1_aux.bin     (generated)
+    audio_report.json    (generated)
+  n64.env
+</code></pre>
+<p>The <code>.wav</code> files are your source assets. Everything in <code>build/</code>, <code>sfx/</code>, <code>music/</code>, and <code>audio_embed.go</code> is generated and should not be edited by hand.</p>
+<h3 id="setting-up-audiogen"><a class="header" href="#setting-up-audiogen">Setting up audiogen</a></h3>
+<p>Add a <code>go:generate</code> line to your <code>main.go</code>:</p>
+<pre><code class="language-go">//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir .
+</code></pre>
+<p>Then run:</p>
+<pre><code class="language-bash">go generate ./...
+</code></pre>
+<p>This will:</p>
+<ul>
+<li>scan <code>assets/audio/sfx/</code> and <code>assets/audio/music/</code> for <code>.wav</code> files</li>
+<li>convert each WAV to mono, resample to the target rate, and compress with VADPCM</li>
+<li>generate typed ID constants in <code>sfx/ids.go</code> and <code>music/ids.go</code></li>
+<li>generate <code>audio_embed.go</code> which registers all assets with the engine at startup</li>
+<li>write a size and performance report to <code>build/audio_report.json</code></li>
+</ul>
+<h3 id="wav-file-requirements"><a class="header" href="#wav-file-requirements">WAV file requirements</a></h3>
+<p><code>audiogen</code> accepts:</p>
+<ul>
+<li>PCM WAV files</li>
+<li>16-bit samples</li>
+<li>mono or stereo input (stereo is downmixed to mono automatically)</li>
+<li>any sample rate (resampled automatically to the target rate)</li>
+</ul>
+<p>If the file is not PCM 16-bit, <code>audiogen</code> rejects it with a clear error message.</p>
+<h3 id="playing-sound-effects"><a class="header" href="#playing-sound-effects">Playing sound effects</a></h3>
+<p>Import the generated <code>sfx</code> package and call <code>gosprite64.PlaySoundEffect</code>:</p>
+<pre><code class="language-go">import "github.com/drpaneas/gosprite64/examples/pong/sfx"
+
+func (g *Game) Update() {
+    if playerScored {
+        gosprite64.PlaySoundEffect(sfx.ScorePlayer)
+    }
+    if ballHitWall {
+        gosprite64.PlaySoundEffect(sfx.Wall)
+    }
+}
+</code></pre>
+<p><code>gosprite64.PlaySoundEffect</code> returns <code>true</code> if the sound was accepted, <code>false</code> if it was dropped (engine not ready or command ring full). Sound effects are one-shot and can overlap. The same effect can play up to 4 times simultaneously. If you trigger a 5th instance, the oldest one is evicted.</p>
+<h3 id="playing-background-music"><a class="header" href="#playing-background-music">Playing background music</a></h3>
+<p>Import the generated <code>music</code> package and call <code>gosprite64.PlayMusic</code>:</p>
+<pre><code class="language-go">import "github.com/drpaneas/gosprite64/examples/mygame/music"
+
+func (g *Game) Init() {
+    gosprite64.PlayMusic(music.Overworld)
+}
+</code></pre>
+<p>Music always loops. If a different track is already playing, it stops and the new one starts. Calling <code>gosprite64.PlayMusic</code> with the same track that is already playing does nothing.</p>
+<p>To stop music:</p>
+<pre><code class="language-go">gosprite64.StopMusic()
+</code></pre>
+<h3 id="volume-control"><a class="header" href="#volume-control">Volume control</a></h3>
+<pre><code class="language-go">gosprite64.SetSoundEffectVolume(0.5)  // SFX at half volume
+gosprite64.SetMusicVolume(0.8)        // music at 80%
+</code></pre>
+<p>Volume is a <code>float32</code> from 0.0 (silent) to 1.0 (full). Values outside that range are clamped. Music and SFX volumes are independent.</p>
+<h3 id="complete-example-pong"><a class="header" href="#complete-example-pong">Complete example: Pong</a></h3>
+<p>Here is how the Pong example uses audio:</p>
+<pre><code class="language-go">//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir .
+
+package main
+
+import (
+    "github.com/drpaneas/gosprite64"
+    "github.com/drpaneas/gosprite64/examples/pong/sfx"
+)
+
+func (g *Game) Init() {
+    switch g.Scored {
+    case "Player":
+        gosprite64.PlaySoundEffect(sfx.ScorePlayer)
+    case "Computer":
+        gosprite64.PlaySoundEffect(sfx.ScoreComputer)
+    default:
+        gosprite64.PlaySoundEffect(sfx.Start)
+    }
+}
+
+func (g *Game) Update() {
+    if collide(g.ball, g.computer) {
+        gosprite64.PlaySoundEffect(sfx.PaddleComputer)
+    }
+    if collide(g.ball, g.player) {
+        gosprite64.PlaySoundEffect(sfx.PaddlePlayer)
+    }
+    if g.ball.y &lt;= courtTop || g.ball.y &gt;= courtBottom {
+        gosprite64.PlaySoundEffect(sfx.Wall)
+    }
+}
+</code></pre>
+<p>The generated <code>sfx/ids.go</code> provides typed constants like <code>sfx.PaddleComputer</code>, <code>sfx.Wall</code>, etc. No strings, no maps, no runtime lookups.</p>
+<h3 id="build-budget-flags"><a class="header" href="#build-budget-flags">Build budget flags</a></h3>
+<p><code>audiogen</code> enforces size budgets by default. If your audio exceeds the limits, the build fails with a clear message. You can override the defaults:</p>
+<pre><code class="language-go">//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir . -rom-budget=1048576 -sfx-resident-budget=65536
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Flag</th><th>Default</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>-rom-budget</code></td><td>524,288 bytes (512 KB)</td><td>Maximum total size for all audio data in ROM</td></tr>
+<tr><td><code>-sfx-resident-budget</code></td><td>32,768 bytes (32 KB)</td><td>Maximum compressed SFX data resident in memory</td></tr>
+</tbody>
+</table>
+</div>
+<p>The budget report at <code>build/audio_report.json</code> shows exactly where your audio bytes are going.</p>
+<h2 id="part-2-how-it-works-behind-the-scenes"><a class="header" href="#part-2-how-it-works-behind-the-scenes">Part 2: How it works behind the scenes</a></h2>
+<h3 id="the-pipeline-at-a-glance"><a class="header" href="#the-pipeline-at-a-glance">The pipeline at a glance</a></h3>
+<pre><code class="language-text">                   BUILD TIME                          RUNTIME
+  .wav files --&gt; audiogen --&gt; VADPCM compressed --&gt; embedded in ROM
+                                                        |
+                                                   pure Go mixer
+                                                        |
+                                                   48 kHz stereo
+                                                        |
+                                                    N64 DAC out
+</code></pre>
+<p>At build time, <code>audiogen</code> converts WAV files into 4-bit VADPCM compressed mono audio. At runtime, a pure Go software mixer decodes, resamples, mixes, and writes stereo output to the N64 DAC at 48 kHz.</p>
+<h3 id="vadpcm-compression"><a class="header" href="#vadpcm-compression">VADPCM compression</a></h3>
+<p>GoSprite64 uses 4-bit VADPCM (Vector Adaptive Differential Pulse Code Modulation), the same compression family used by Nintendo for N64 audio. Each 9-byte compressed block decodes to 16 mono samples.</p>
+<p>The codec achieves roughly 3.5:1 compression on the raw PCM data. Combined with mono downmix (2x) and lower sample rates (up to 3x), the total size reduction compared to the old 48 kHz stereo raw format is typically around 20x.</p>
+<p>For the Pong example with 6 sound effects:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th></th><th>Old system</th><th>New system</th></tr>
+</thead>
+<tbody>
+<tr><td>Format</td><td>48 kHz stereo raw PCM</td><td>16 kHz mono VADPCM</td></tr>
+<tr><td>Total audio ROM</td><td>662,896 bytes</td><td>31,863 bytes</td></tr>
+<tr><td>Reduction</td><td>-</td><td>20.8x smaller (95.2%)</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="sample-rates"><a class="header" href="#sample-rates">Sample rates</a></h3>
+<p>Assets are resampled at build time. Gameplay code never sees sample rates.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Asset class</th><th>Native rate</th><th>Rationale</th></tr>
+</thead>
+<tbody>
+<tr><td>SFX</td><td>16,000 Hz</td><td>Short effects do not need high fidelity. 16 kHz is clean 3x resampling to 48 kHz.</td></tr>
+<tr><td>Music</td><td>22,050 Hz</td><td>Longer tracks benefit from slightly higher quality.</td></tr>
+<tr><td>DAC output</td><td>48,000 Hz</td><td>Hardware output rate, unchanged from previous versions.</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="voice-model"><a class="header" href="#voice-model">Voice model</a></h3>
+<p>The engine pre-allocates a fixed set of voices at startup:</p>
+<ul>
+<li><strong>1 music voice</strong> - reserved, never stolen by sound effects</li>
+<li><strong>8 SFX voices</strong> - shared pool with priority-based stealing</li>
+</ul>
+<p>When all 8 SFX voices are busy and a new effect is triggered, the oldest playing SFX is evicted. Music is never a victim.</p>
+<p>The same SFX can overlap up to 4 times. If a 5th instance is triggered, the oldest instance of that specific effect is evicted first.</p>
+<h3 id="memory-usage"><a class="header" href="#memory-usage">Memory usage</a></h3>
+<p>The engine uses a fixed memory budget that does not grow after initialization:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Component</th><th>Size</th></tr>
+</thead>
+<tbody>
+<tr><td>Voice states</td><td>144 bytes</td></tr>
+<tr><td>Source decode buffers</td><td>288 bytes</td></tr>
+<tr><td>Source structs</td><td>2,304 bytes</td></tr>
+<tr><td>Mixer accumulator</td><td>2,048 bytes</td></tr>
+<tr><td>Output buffer</td><td>2,048 bytes</td></tr>
+<tr><td>Command ring</td><td>96 bytes</td></tr>
+<tr><td><strong>Fixed runtime total</strong></td><td><strong>6,928 bytes</strong></td></tr>
+</tbody>
+</table>
+</div>
+<p>SFX data stays resident in compressed form. For the Pong example, that is 31 KB of compressed audio in ROM versus 663 KB of raw PCM that the old system loaded into RDRAM.</p>
+<h3 id="zero-allocations-after-init"><a class="header" href="#zero-allocations-after-init">Zero allocations after init</a></h3>
+<p>Every hot-path operation runs with zero heap allocations:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Operation</th><th>Time (Apple M2 Pro)</th><th>Allocations</th></tr>
+</thead>
+<tbody>
+<tr><td>Decode one VADPCM block (16 samples)</td><td>135 ns</td><td>0</td></tr>
+<tr><td>Mix 9 voices, 512 output frames</td><td>9.0 us</td><td>0</td></tr>
+<tr><td>Fill 256 decoded samples from source</td><td>2.4 us</td><td>0</td></tr>
+<tr><td>Command ring push + pop</td><td>15 ns</td><td>0</td></tr>
+</tbody>
+</table>
+</div>
+<p>The old system allocated memory on the first play of every SFX (about 114 KB per 50 KB asset for the read + cache copy).</p>
+<h3 id="concurrency"><a class="header" href="#concurrency">Concurrency</a></h3>
+<p>Gameplay code and the audio feeder run in separate goroutines. They communicate through a lock-free single-producer single-consumer command ring. Gameplay calls like <code>gosprite64.PlaySoundEffect</code> push a small command struct into the ring. The feeder drains all pending commands at the top of each fill cycle before touching any voice state. No mutexes are used in the audio hot path.</p>
+<h3 id="the-feeder-loop"><a class="header" href="#the-feeder-loop">The feeder loop</a></h3>
+<p>A background goroutine runs continuously:</p>
+<ol>
+<li>Drain all pending commands from the ring (play, stop, volume changes).</li>
+<li>For each active voice, decode enough VADPCM blocks to fill the source buffer.</li>
+<li>The mixer resamples each voice from its native rate to 48 kHz using linear interpolation, applies bus gain, and mixes into a stereo output buffer.</li>
+<li>Write the output buffer to the N64 DAC. The hardware write blocks until the DAC is ready for more data, which naturally paces the loop at the output sample rate.</li>
+</ol>
+<h3 id="anti-click-ramp"><a class="header" href="#anti-click-ramp">Anti-click ramp</a></h3>
+<p>When music is stopped via <code>gosprite64.StopMusic()</code>, the engine applies a short linear ramp to zero over 1-2 ms (about 22-44 samples) before releasing the voice. This prevents the audible click that would otherwise occur from abruptly zeroing a playing waveform.</p>
+<h3 id="loop-handling"><a class="header" href="#loop-handling">Loop handling</a></h3>
+<p>Music assets always loop. Loop boundaries are enforced at build time by <code>audiogen</code>:</p>
+<ul>
+<li>Only forward loops are supported</li>
+<li>Loop start and length must be aligned to 16 decoded samples (one VADPCM block)</li>
+<li>The decoder state at the loop start is captured and saved during encoding</li>
+<li>At runtime, when the source reaches the loop end, it restores the saved decoder state and jumps to the loop start</li>
+</ul>
+<p>This avoids any “decode from the beginning” logic or runtime loop repair.</p>
+<h3 id="build-time-budget-report"><a class="header" href="#build-time-budget-report">Build-time budget report</a></h3>
+<p>Every <code>audiogen</code> run produces <code>build/audio_report.json</code> with metrics including:</p>
+<ul>
+<li>Total ROM bytes used by audio</li>
+<li>SFX resident vs music streamed breakdown</li>
+<li>Estimated streaming bandwidth for active music (about 12.4 KB/sec at 22,050 Hz VADPCM)</li>
+<li>Estimated decode CPU cost per 10 ms of audio</li>
+<li>Fixed runtime RAM breakdown by component</li>
+</ul>
+<p>If any hard budget limit is exceeded, <code>audiogen</code> exits with a non-zero status so CI catches the problem.</p>
+<h3 id="troubleshooting-1"><a class="header" href="#troubleshooting-1">Troubleshooting</a></h3>
+<p>If audio does not work, check these first:</p>
+<ul>
+<li><code>audio_embed.go</code> exists and was generated from your current assets</li>
+<li>your <code>.wav</code> files are in <code>assets/audio/sfx/</code> or <code>assets/audio/music/</code></li>
+<li>your <code>.wav</code> files are 16-bit PCM (not 24-bit, not float, not compressed)</li>
+<li>the <code>build/</code> directory contains <code>audio_v1.bin</code> and <code>audio_v1_aux.bin</code></li>
+<li>your build uses the current <code>n64.env</code> with <code>n64go toolexec</code></li>
+<li>check <code>build/audio_report.json</code> for budget violations</li>
+</ul>
+<p>If you hear distortion or clicking, verify that <code>go generate</code> ran successfully after your last asset change.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="sequence-player"><a class="header" href="#sequence-player">Sequence Player</a></h1>
+<p>Play MIDI-style sequenced music using the N64’s audio hardware.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="instrument-banks"><a class="header" href="#instrument-banks">Instrument Banks</a></h1>
+<p>Define and load custom instrument samples for the sequence player.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="using-the-tile2d-scene-pipeline"><a class="header" href="#using-the-tile2d-scene-pipeline">Using the Tile2D Scene Pipeline</a></h1>
+<p>This chapter covers how to author tile assets, package them into a bundle, and render a tile scene at runtime.</p>
+<h2 id="quick-start-1"><a class="header" href="#quick-start-1">Quick start</a></h2>
+<p>GoSprite64 uses a build-time pipeline for tile scenes. You provide source assets (PNG tilesheets, JSON map descriptions, JSON animation clips), the <code>mk2d*</code> tools compile them into compact binary formats, and the runtime loads and draws them. You do not deal with binary layouts or renderer details in your gameplay code.</p>
+<p>Four steps:</p>
+<ol>
+<li>Put your source assets in the right directories.</li>
+<li>Run <code>go generate</code>.</li>
+<li>Call <code>gosprite64.OpenBundle</code> and <code>gosprite64.LoadScene</code> from your game.</li>
+<li>Call <code>scene.Draw(camera)</code> every frame.</li>
+</ol>
+<h2 id="source-assets"><a class="header" href="#source-assets">Source assets</a></h2>
+<p>Organize source assets under <code>assets-src/</code> in your game directory:</p>
+<ul>
+<li><code>assets-src/tiles.png</code> - PNG tilesheet atlas (must be divisible by tile size)</li>
+<li><code>assets-src/level.json</code> - JSON map description</li>
+<li><code>assets-src/idle.json</code> - JSON animation clip description (optional)</li>
+</ul>
+<h3 id="png-tilesheet-requirements"><a class="header" href="#png-tilesheet-requirements">PNG tilesheet requirements</a></h3>
+<p>The <code>mk2dsheet</code> tool accepts:</p>
+<ul>
+<li>PNG images</li>
+<li>Dimensions must be evenly divisible by the tile size (default 8x8)</li>
+<li>Pixels are stored as NRGBA internally</li>
+</ul>
+<h3 id="json-map-format"><a class="header" href="#json-map-format">JSON map format</a></h3>
+<p>The <code>mk2dmap</code> tool accepts JSON with this shape:</p>
+<pre><code class="language-json">{
+  "width": 32,
+  "height": 18,
+  "layer_count": 2,
+  "cell_bits": 16,
+  "chunk_width": 8,
+  "chunk_height": 8,
+  "layers": [
+    {"sheet_id": 1, "cells": [1, 2, 3]},
+    {"sheet_id": 2, "cells": [0, 0, 1]}
+  ]
+}
+</code></pre>
+<h3 id="json-animation-format"><a class="header" href="#json-animation-format">JSON animation format</a></h3>
+<p>The <code>mk2danim</code> tool accepts JSON with this shape:</p>
+<pre><code class="language-json">{
+  "clips": [
+    {"name": "idle", "fps": 12, "frames": [0, 1, 2, 3]}
+  ]
+}
+</code></pre>
+<h2 id="setting-up-go-generate"><a class="header" href="#setting-up-go-generate">Setting up go generate</a></h2>
+<p>Add a <code>go:generate</code> line to your <code>main.go</code>:</p>
+<pre><code class="language-go">//go:generate sh -c "mkdir -p assets &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dsheet -in assets-src/tiles.png -out assets/tiles.sheet -tile-width 8 -tile-height 8 &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dmap -in assets-src/level.json -out assets/level.map &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dbundle -sheet assets/tiles.sheet -map assets/level.map -out assets/level.bundle"
+</code></pre>
+<p>Then run:</p>
+<pre><code class="language-bash">go generate ./...
+</code></pre>
+<p>This will:</p>
+<ul>
+<li>compile the PNG into a <code>.sheet</code> binary</li>
+<li>compile the JSON map into a <code>.map</code> binary</li>
+<li>package everything into a <code>.bundle</code> manifest</li>
+</ul>
+<h2 id="embedding-assets-for-the-n64"><a class="header" href="#embedding-assets-for-the-n64">Embedding assets for the N64</a></h2>
+<p>The N64 loads assets from cartridge storage using an embedded filesystem. Create <code>assets_embed.go</code> in your game directory:</p>
+<pre><code class="language-go">package main
+
+import (
+    "embed"
+
+    "github.com/clktmr/n64/drivers/cartfs"
+    "github.com/drpaneas/gosprite64"
+)
+
+//go:embed assets/*
+var embeddedAssets embed.FS
+
+var assetFS = cartfs.Embed(embeddedAssets)
+
+func init() {
+    gosprite64.RegisterAssetFS(assetFS)
+}
+</code></pre>
+<p>This makes the generated <code>.sheet</code>, <code>.map</code>, and <code>.bundle</code> files available to <code>OpenBundle</code> at runtime. Without this file, <code>OpenBundle</code> cannot find the assets on the N64.</p>
+<h2 id="runtime-usage"><a class="header" href="#runtime-usage">Runtime usage</a></h2>
+<pre><code class="language-go">func (g *Game) Init() {
+    bundle, err := gosprite64.OpenBundle("assets/level.bundle")
+    if err != nil {
+        panic(err)
+    }
+
+    scene, err := gosprite64.LoadScene(bundle)
+    if err != nil {
+        panic(err)
+    }
+
+    g.scene = scene
+    g.camera = &amp;gosprite64.Camera{Width: 288, Height: 216}
+}
+
+func (g *Game) Draw() {
+    gosprite64.ClearScreen()
+    g.scene.Draw(g.camera)
+}
+</code></pre>
+<p><code>OpenBundle</code> reads the bundle manifest and makes individual assets loadable by path. <code>LoadScene</code> loads all referenced assets (sheets, map, animations) and assembles them into a runtime-ready scene. <code>scene.Draw(camera)</code> renders the visible portion of the scene into the currently active frame.</p>
+<p>The caller still owns the outer frame lifecycle. <code>scene.Draw</code> draws into the active render pass but does not acquire or present the framebuffer.</p>
+<h2 id="phase-1-constraints"><a class="header" href="#phase-1-constraints">Phase-1 constraints</a></h2>
+<p>This first version supports:</p>
+<ul>
+<li>Fixed-grid tiles only (equal-sized tiles sliced from the atlas)</li>
+<li>No arbitrary atlas rectangles</li>
+<li>No mipmaps</li>
+<li>No per-tile transform metadata</li>
+</ul>
+<h2 id="inspecting-loaded-assets"><a class="header" href="#inspecting-loaded-assets">Inspecting loaded assets</a></h2>
+<pre><code class="language-go">m := scene.Map()
+fmt.Printf("map: %dx%d tiles, %d layers\n", m.Width(), m.Height(), m.LayerCount())
+
+stats := scene.Stats()
+fmt.Printf("visible: %d, uploads: %d\n", stats.VisibleTiles, stats.UploadCount)
+</code></pre>
+<h2 id="reference-examples"><a class="header" href="#reference-examples">Reference examples</a></h2>
+<p>See <code>examples/simplegame</code> for a minimal working example that follows this tutorial step by step: source PNG + JSON assets, <code>go generate</code> pipeline, bundle loading, camera scrolling with D-pad input, and runtime stats overlay.</p>
+<p>For a more advanced example with multiple layers, overlay sheets, and tile animations, see <code>examples/tilemap</code>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="tile-sheets-and-maps"><a class="header" href="#tile-sheets-and-maps">Tile Sheets and Maps</a></h1>
+<p>How tile sheets and map JSON files are structured, compiled, and loaded at runtime.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="bundles-and-loading"><a class="header" href="#bundles-and-loading">Bundles and Loading</a></h1>
+<p>How bundles package tile sheets, maps, and animations together for efficient loading.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="camera-and-scrolling"><a class="header" href="#camera-and-scrolling">Camera and Scrolling</a></h1>
+<p>Control the camera viewport to scroll through tile worlds larger than the screen.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="game-state-machine"><a class="header" href="#game-state-machine">Game State Machine</a></h1>
+<p>Most games have multiple screens: a title screen, gameplay, pause menu, game over. The <code>StateMachine</code> manages transitions between them so you don’t have to write a giant switch statement in your <code>Update</code> and <code>Draw</code> methods.</p>
+<h2 id="gamestate-interface"><a class="header" href="#gamestate-interface">GameState interface</a></h2>
+<p>Each screen implements <code>GameState</code>:</p>
+<pre><code class="language-go">type GameState interface {
+    Enter()   // called when this state becomes active
+    Update()  // called every frame while active
+    Draw()    // called every frame while active
+    Exit()    // called when this state is removed or replaced
+}
+</code></pre>
+<p><code>Enter</code> and <code>Exit</code> are your setup and teardown hooks. Load resources in <code>Enter</code>, release them in <code>Exit</code>. The state machine guarantees that <code>Enter</code> is called before any <code>Update</code>/<code>Draw</code>, and <code>Exit</code> is called before another state takes over.</p>
+<h2 id="creating-a-statemachine"><a class="header" href="#creating-a-statemachine">Creating a StateMachine</a></h2>
+<p>Create the machine with an initial state, then call <code>Init</code> to trigger the first <code>Enter</code>:</p>
+<pre><code class="language-go">type Game struct {
+    sm *gosprite64.StateMachine
+}
+
+func (g *Game) Init() {
+    title := &amp;TitleState{sm: g.sm}
+    g.sm = gosprite64.NewStateMachine(title)
+    title.sm = g.sm
+    g.sm.Init()
+}
+
+func (g *Game) Update() { g.sm.Update() }
+func (g *Game) Draw()   { g.sm.Draw() }
+</code></pre>
+<p>The <code>StateMachine</code> delegates <code>Update</code> and <code>Draw</code> to whichever state is on top of the stack.</p>
+<h2 id="switching-screens"><a class="header" href="#switching-screens">Switching screens</a></h2>
+<p><code>Switch</code> replaces the current state. It calls <code>Exit</code> on the old state and <code>Enter</code> on the new one:</p>
+<pre><code class="language-go">// In your title screen:
+func (s *TitleState) Update() {
+    if gosprite64.IsButtonJustPressed(gosprite64.ButtonA) {
+        s.sm.Switch(&amp;GameplayState{sm: s.sm})
+    }
+}
+</code></pre>
+<p>The lifecycle is: old.Exit() -&gt; new.Enter() -&gt; new.Update() on the next frame.</p>
+<h2 id="overlays-with-push-and-pop"><a class="header" href="#overlays-with-push-and-pop">Overlays with Push and Pop</a></h2>
+<p><code>Push</code> adds a state on top without removing the one below. This is how you implement pause menus, dialog boxes, or inventory screens that overlay gameplay:</p>
+<pre><code class="language-go">// In gameplay, pressing Start opens the pause menu:
+func (s *GameplayState) Update() {
+    if gosprite64.IsButtonJustPressed(gosprite64.ButtonStart) {
+        s.sm.Push(&amp;PauseState{sm: s.sm})
+        return
+    }
+    // normal gameplay logic...
+}
+</code></pre>
+<p>The pause state draws on top. When the player unpauses, <code>Pop</code> removes it and returns to gameplay:</p>
+<pre><code class="language-go">func (s *PauseState) Update() {
+    if gosprite64.IsButtonJustPressed(gosprite64.ButtonStart) {
+        s.sm.Pop()
+    }
+}
+</code></pre>
+<p><code>Pop</code> calls <code>Exit</code> on the removed state. The state below resumes receiving <code>Update</code> and <code>Draw</code> calls. If only one state remains, <code>Pop</code> is a no-op - the game always has at least one active state.</p>
+<h2 id="drawing-overlays"><a class="header" href="#drawing-overlays">Drawing overlays</a></h2>
+<p>When a state is pushed, only the top state receives <code>Update</code> and <code>Draw</code>. If you want the underlying state to remain visible (e.g. gameplay behind a semi-transparent pause menu), the overlay state should draw the background explicitly or you can draw all states in the stack manually.</p>
+<p>A common pattern for pause overlays is to draw a semi-transparent box over whatever was previously rendered:</p>
+<pre><code class="language-go">func (s *PauseState) Draw() {
+    // The previous frame's gameplay is still in the framebuffer.
+    // Draw a darkened overlay and menu text on top.
+    gosprite64.FillRect(60, 80, 228, 136, gosprite64.DarkPurple)
+    gosprite64.DrawRect(60, 80, 228, 136, gosprite64.White)
+    gosprite64.DrawText("PAUSED", 120, 96, gosprite64.White)
+    gosprite64.DrawText("PRESS START TO RESUME", 72, 116, gosprite64.LightGray)
+}
+</code></pre>
+<h2 id="inspecting-the-stack"><a class="header" href="#inspecting-the-stack">Inspecting the stack</a></h2>
+<p><code>Current</code> returns the active (top) state. <code>Depth</code> returns how many states are on the stack:</p>
+<pre><code class="language-go">sm.Current()  // the active GameState
+sm.Depth()    // 1 = just gameplay, 2 = gameplay + pause, etc.
+</code></pre>
+<h2 id="nil-safety"><a class="header" href="#nil-safety">Nil safety</a></h2>
+<p>Passing <code>nil</code> to <code>Switch</code> or <code>Push</code> is a no-op. This prevents crashes from conditional state transitions:</p>
+<pre><code class="language-go">var nextState gosprite64.GameState
+if condition {
+    nextState = &amp;SomeState{}
+}
+sm.Switch(nextState)  // safe even if nextState is nil
+</code></pre>
+<h2 id="typical-game-structure"><a class="header" href="#typical-game-structure">Typical game structure</a></h2>
+<p>A game with title, gameplay, pause, and game over uses four state types:</p>
+<pre><code class="language-go">type TitleState struct {
+    sm *gosprite64.StateMachine
+}
+
+type GameplayState struct {
+    sm      *gosprite64.StateMachine
+    playerX float32
+    score   int
+}
+
+type PauseState struct {
+    sm *gosprite64.StateMachine
+}
+
+type GameOverState struct {
+    sm         *gosprite64.StateMachine
+    finalScore int
+}
+</code></pre>
+<p>The flow:</p>
+<ol>
+<li>Title – (A pressed) –&gt; Switch to Gameplay</li>
+<li>Gameplay – (Start pressed) –&gt; Push Pause</li>
+<li>Pause – (Start pressed) –&gt; Pop (back to Gameplay)</li>
+<li>Gameplay – (player dies) –&gt; Switch to GameOver</li>
+<li>GameOver – (A pressed) –&gt; Switch to Title</li>
+</ol>
+<p>Each state has its own <code>Enter</code>, <code>Update</code>, <code>Draw</code>, <code>Exit</code>. No state knows about the internals of other states. The <code>StateMachine</code> handles the transitions.</p>
+<h2 id="complete-example-2"><a class="header" href="#complete-example-2">Complete example</a></h2>
+<p>See <code>examples/state_demo</code> for a working demo with all four states. Build it with:</p>
+<pre><code class="language-bash">GOENV=n64.env go1.24.5-embedded build -o state_demo.elf ./examples/state_demo
+n64go rom state_demo.elf
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="timers"><a class="header" href="#timers">Timers</a></h1>
+<p>Games are full of “wait N frames, then do something” patterns: countdown before a round starts, cooldown between attacks, flashing a hit sprite for 10 frames, blinking a cursor every half second. The <code>Timer</code> and <code>RepeatingTimer</code> types handle these without manual frame counters.</p>
+<h2 id="timer"><a class="header" href="#timer">Timer</a></h2>
+<p>A <code>Timer</code> counts a fixed number of frames, then stops.</p>
+<pre><code class="language-go">// Wait 60 frames (1 second at 60 FPS) before dropping the next pill
+dropDelay := gosprite64.NewTimer(60)
+
+// In Update():
+if dropDelay.Tick() {
+    // This runs on exactly the frame the timer finishes
+    dropPill()
+    dropDelay.Reset()  // start the next delay
+}
+</code></pre>
+<h3 id="checking-state"><a class="header" href="#checking-state">Checking state</a></h3>
+<pre><code class="language-go">timer.Done()       // true after all frames elapsed
+timer.Elapsed()    // frames so far
+timer.Remaining()  // frames left
+timer.Duration()   // total frame count
+timer.Progress()   // 0.0 to 1.0 ratio
+</code></pre>
+<h3 id="progress-for-animation"><a class="header" href="#progress-for-animation">Progress for animation</a></h3>
+<p><code>Progress</code> returns a 0..1 value that pairs naturally with easing functions:</p>
+<pre><code class="language-go">// Fade out over 30 frames
+fadeTimer := gosprite64.NewTimer(30)
+
+// In Update():
+fadeTimer.Tick()
+
+// In Draw():
+alpha := 1.0 - fadeTimer.Progress()
+// or with easing:
+alpha := 1.0 - math2d.EaseOutQuad(fadeTimer.Progress())
+</code></pre>
+<h3 id="reset"><a class="header" href="#reset">Reset</a></h3>
+<p><code>Reset</code> restarts with the same duration. <code>ResetWith</code> changes the duration:</p>
+<pre><code class="language-go">timer.Reset()          // restart same countdown
+timer.ResetWith(120)   // restart with 2 seconds
+</code></pre>
+<h3 id="zero-and-negative-durations"><a class="header" href="#zero-and-negative-durations">Zero and negative durations</a></h3>
+<p>A zero-duration timer is immediately <code>Done</code>. Negative durations are clamped to 0:</p>
+<pre><code class="language-go">gosprite64.NewTimer(0).Done()   // true
+gosprite64.NewTimer(-5).Done()  // true (clamped to 0)
+</code></pre>
+<h2 id="repeatingtimer"><a class="header" href="#repeatingtimer">RepeatingTimer</a></h2>
+<p>A <code>RepeatingTimer</code> fires at a fixed interval and counts how many times it has triggered.</p>
+<pre><code class="language-go">// Blink cursor every 30 frames (twice per second)
+blink := gosprite64.NewRepeatingTimer(30)
+
+// In Update():
+blink.Tick()
+
+// In Draw():
+if blink.Count()%2 == 0 {
+    drawCursor()
+}
+</code></pre>
+<h3 id="spawn-waves"><a class="header" href="#spawn-waves">Spawn waves</a></h3>
+<pre><code class="language-go">// Spawn an enemy every 90 frames
+spawner := gosprite64.NewRepeatingTimer(90)
+
+// In Update():
+if spawner.Tick() {
+    spawnEnemy()
+}
+</code></pre>
+<h3 id="count-and-reset"><a class="header" href="#count-and-reset">Count and Reset</a></h3>
+<pre><code class="language-go">spawner.Count()  // how many times it has triggered
+spawner.Reset()  // clear count and elapsed
+</code></pre>
+<h2 id="typical-patterns"><a class="header" href="#typical-patterns">Typical patterns</a></h2>
+<h3 id="countdown-before-round-start"><a class="header" href="#countdown-before-round-start">Countdown before round start</a></h3>
+<pre><code class="language-go">type PlayState struct {
+    countdown *gosprite64.Timer
+    started   bool
+}
+
+func (s *PlayState) Enter() {
+    s.countdown = gosprite64.NewTimer(180) // 3 seconds
+}
+
+func (s *PlayState) Update() {
+    if !s.countdown.Done() {
+        s.countdown.Tick()
+        return  // skip gameplay logic during countdown
+    }
+    s.started = true
+    // normal gameplay...
+}
+
+func (s *PlayState) Draw() {
+    if !s.countdown.Done() {
+        remaining := 3 - s.countdown.Elapsed()/60
+        gosprite64.DrawText(fmt.Sprintf("%d", remaining), 140, 100, gosprite64.Yellow)
+    }
+}
+</code></pre>
+<h3 id="flash-on-hit"><a class="header" href="#flash-on-hit">Flash on hit</a></h3>
+<pre><code class="language-go">hitFlash := gosprite64.NewTimer(10)
+
+// When hit:
+hitFlash.Reset()
+
+// In Draw():
+if !hitFlash.Done() {
+    hitFlash.Tick()
+    if hitFlash.Elapsed()%2 == 0 {
+        drawPlayer()  // skip every other frame for flash effect
+    }
+} else {
+    drawPlayer()
+}
+</code></pre>
+<h2 id="complete-example-3"><a class="header" href="#complete-example-3">Complete example</a></h2>
+<p>See <code>examples/splitscreen_demo</code> for timers used alongside draw regions and menus. Build with:</p>
+<pre><code class="language-bash">GOENV=n64.env go1.24.5-embedded build -o splitscreen.elf ./examples/splitscreen_demo
+n64go rom splitscreen.elf
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="menus"><a class="header" href="#menus">Menus</a></h1>
+<p>The <code>Menu</code> type handles the boilerplate of D-pad-navigated option lists: cursor tracking, wrapping, disabled items, and confirmation callbacks. Use it inside any <code>GameState</code> for title screens, option screens, pause menus, and game-over screens.</p>
+<h2 id="quick-start-2"><a class="header" href="#quick-start-2">Quick start</a></h2>
+<pre><code class="language-go">type TitleState struct {
+    sm   *gosprite64.StateMachine
+    menu *gosprite64.Menu
+}
+
+func (s *TitleState) Enter() {
+    s.menu = gosprite64.NewMenu([]gosprite64.MenuItem{
+        {Label: "Start Game", OnConfirm: func() {
+            s.sm.Switch(&amp;GameplayState{sm: s.sm})
+        }},
+        {Label: "Options", OnConfirm: func() {
+            s.sm.Push(&amp;OptionsState{sm: s.sm})
+        }},
+        {Label: "Quit", Disabled: true},
+    })
+    s.menu.X = 100
+    s.menu.Y = 100
+    s.menu.Wrap = true
+}
+
+func (s *TitleState) Update() {
+    s.menu.HandleInput()
+}
+
+func (s *TitleState) Draw() {
+    gosprite64.ClearScreen()
+    gosprite64.DrawText("MY GAME", 112, 40, gosprite64.White)
+    s.menu.Draw()
+}
+</code></pre>
+<p><code>HandleInput</code> reads D-pad Up/Down for navigation and A for confirmation. <code>Draw</code> renders the menu with a cursor indicator. That’s the entire integration.</p>
+<h2 id="menuitem"><a class="header" href="#menuitem">MenuItem</a></h2>
+<p>Each item has a label, an optional callback, and a disabled flag:</p>
+<pre><code class="language-go">type MenuItem struct {
+    Label     string      // displayed text
+    Disabled  bool        // grayed out, skipped by cursor, can't confirm
+    OnConfirm func()      // called when A is pressed on this item
+}
+</code></pre>
+<p><code>OnConfirm</code> can do anything: switch states, change settings, start gameplay. If <code>OnConfirm</code> is nil or the item is disabled, pressing A does nothing.</p>
+<h2 id="navigation"><a class="header" href="#navigation">Navigation</a></h2>
+<p>The cursor moves with D-pad Up and Down. Disabled items are automatically skipped:</p>
+<pre><code class="language-go">menu := gosprite64.NewMenu([]gosprite64.MenuItem{
+    {Label: "Play"},
+    {Label: "Locked", Disabled: true},
+    {Label: "Settings"},
+})
+// Pressing Down from "Play" skips "Locked" and lands on "Settings"
+</code></pre>
+<p>If all items are disabled, the cursor stays where it is.</p>
+<h3 id="wrapping"><a class="header" href="#wrapping">Wrapping</a></h3>
+<p>By default, the cursor stops at the first and last item. Set <code>Wrap = true</code> to wrap around:</p>
+<pre><code class="language-go">menu.Wrap = true
+// Pressing Down on the last item goes to the first
+// Pressing Up on the first item goes to the last
+</code></pre>
+<h2 id="manual-control"><a class="header" href="#manual-control">Manual control</a></h2>
+<p>If <code>HandleInput</code> doesn’t fit your needs (e.g. you want analog stick support or different buttons), use the navigation methods directly:</p>
+<pre><code class="language-go">func (s *MyState) Update() {
+    if gosprite64.IsButtonJustPressed(gosprite64.ButtonDPadDown) {
+        s.menu.MoveDown()
+    }
+    if gosprite64.IsButtonJustPressed(gosprite64.ButtonDPadUp) {
+        s.menu.MoveUp()
+    }
+    if gosprite64.IsButtonJustPressed(gosprite64.ButtonStart) {
+        s.menu.Confirm()
+    }
+}
+</code></pre>
+<p>Other useful methods:</p>
+<pre><code class="language-go">menu.Cursor()       // current index (0-based)
+menu.SetCursor(2)   // jump to index (clamped to valid range)
+menu.Selected()     // get the highlighted MenuItem
+menu.Count()        // number of items
+</code></pre>
+<h2 id="customizing-appearance"><a class="header" href="#customizing-appearance">Customizing appearance</a></h2>
+<p>The built-in <code>Draw</code> uses the 8x8 <code>DrawText</code> font. Customize position, spacing, colors, and cursor character:</p>
+<pre><code class="language-go">menu.X = 80           // left edge
+menu.Y = 60           // top edge
+menu.LineHeight = 14   // pixels between items (default 12)
+menu.Color = gosprite64.Yellow          // text color
+menu.CursorChar = "-&gt; "                // cursor prefix (default "&gt; ")
+</code></pre>
+<p>Disabled items are drawn in <code>DarkGray</code> regardless of <code>Color</code>.</p>
+<h3 id="custom-rendering"><a class="header" href="#custom-rendering">Custom rendering</a></h3>
+<p>For full control (custom fonts, icons, backgrounds), skip <code>Draw</code> and render manually using <code>Cursor()</code>:</p>
+<pre><code class="language-go">func (s *MyState) Draw() {
+    for i, item := range items {
+        y := 60 + i*16
+        if i == s.menu.Cursor() {
+            gosprite64.FillRect(78, y-2, 220, y+10, gosprite64.DarkBlue)
+        }
+        c := gosprite64.White
+        if item.Disabled {
+            c = gosprite64.DarkGray
+        }
+        myFont.DrawTextEx(item.Label, 84, y, gosprite64.AlignLeft)
+    }
+}
+</code></pre>
+<h2 id="multiple-menus"><a class="header" href="#multiple-menus">Multiple menus</a></h2>
+<p>A state can have multiple menus. Track which is active:</p>
+<pre><code class="language-go">type OptionsState struct {
+    difficultyMenu *gosprite64.Menu
+    speedMenu      *gosprite64.Menu
+    activeMenu     int  // 0 = difficulty, 1 = speed
+}
+
+func (s *OptionsState) Update() {
+    switch s.activeMenu {
+    case 0:
+        s.difficultyMenu.HandleInput()
+    case 1:
+        s.speedMenu.HandleInput()
+    }
+    if gosprite64.IsButtonJustPressed(gosprite64.ButtonR) {
+        s.activeMenu = (s.activeMenu + 1) % 2
+    }
+}
+</code></pre>
+<h2 id="complete-example-4"><a class="header" href="#complete-example-4">Complete example</a></h2>
+<p>See <code>examples/splitscreen_demo</code> which uses <code>Menu</code> for the title and result screens, combined with <code>Timer</code> for countdowns and <code>SetDrawRegion</code> for split-screen viewports.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="save-data"><a class="header" href="#save-data">Save Data</a></h1>
+<p>Persist game progress using EEPROM, SRAM, or FlashRAM cartridge storage.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="vectors"><a class="header" href="#vectors">Vectors</a></h1>
+<p>The <code>math2d</code> package provides 2D vectors for game math. Import it with:</p>
+<pre><code class="language-go">import "github.com/drpaneas/gosprite64/math2d"
+</code></pre>
+<h2 id="vec2"><a class="header" href="#vec2">Vec2</a></h2>
+<p><code>Vec2</code> is a 2D vector with <code>float32</code> components. It is a value type - all methods return a new Vec2 and never mutate the receiver.</p>
+<pre><code class="language-go">pos := math2d.Vec2{X: 100, Y: 50}
+vel := math2d.Vec2{X: 2, Y: -1}
+
+pos = pos.Add(vel)          // {102, 49}
+pos = pos.Sub(vel)          // {100, 50}
+doubled := vel.Scale(2)     // {4, -2}
+flipped := vel.Negate()     // {-2, 1}
+</code></pre>
+<h3 id="length-and-distance"><a class="header" href="#length-and-distance">Length and distance</a></h3>
+<pre><code class="language-go">v := math2d.Vec2{X: 3, Y: 4}
+v.Length()      // 5.0
+v.LengthSq()   // 25.0 (no sqrt - faster for comparisons)
+
+a := math2d.Vec2{X: 0, Y: 0}
+b := math2d.Vec2{X: 3, Y: 4}
+a.Distance(b)    // 5.0
+a.DistanceSq(b)  // 25.0
+</code></pre>
+<p>Use <code>LengthSq</code> and <code>DistanceSq</code> when you only need to compare distances. They skip the square root, which matters on N64 hardware.</p>
+<h3 id="normalize"><a class="header" href="#normalize">Normalize</a></h3>
+<p>Returns a unit-length vector pointing in the same direction. Returns <code>{0, 0}</code> for zero or near-zero vectors (length squared &lt; 1e-12).</p>
+<pre><code class="language-go">dir := math2d.Vec2{X: 3, Y: 4}.Normalize()  // {0.6, 0.8}
+zero := math2d.Vec2{}.Normalize()             // {0, 0}
+</code></pre>
+<h3 id="dot-product"><a class="header" href="#dot-product">Dot product</a></h3>
+<pre><code class="language-go">right := math2d.Vec2{X: 1, Y: 0}
+up    := math2d.Vec2{X: 0, Y: 1}
+right.Dot(up)     // 0.0 (perpendicular)
+right.Dot(right)  // 1.0 (parallel)
+</code></pre>
+<h3 id="interpolation"><a class="header" href="#interpolation">Interpolation</a></h3>
+<p><code>Lerp</code> linearly interpolates between two vectors. The <code>t</code> parameter is unclamped, so values outside 0..1 extrapolate beyond the endpoints. Use <code>math2d.Clamp</code> on <code>t</code> if you need clamped behavior.</p>
+<pre><code class="language-go">a := math2d.Vec2{X: 0, Y: 0}
+b := math2d.Vec2{X: 100, Y: 200}
+
+a.Lerp(b, 0.5)   // {50, 100}
+a.Lerp(b, 0.0)   // {0, 0}
+a.Lerp(b, 1.0)   // {100, 200}
+a.Lerp(b, 1.5)   // {150, 300} - extrapolation
+</code></pre>
+<h3 id="rotation-and-angle"><a class="header" href="#rotation-and-angle">Rotation and angle</a></h3>
+<p><code>Rotate</code> rotates a vector by the given angle in radians (counterclockwise). <code>Angle</code> returns the angle of a vector in radians.</p>
+<pre><code class="language-go">right := math2d.Vec2{X: 1, Y: 0}
+up := right.Rotate(math.Pi / 2)  // {0, 1}
+
+up.Angle()    // ~1.5708 (pi/2)
+right.Angle() // 0.0
+</code></pre>
+<h3 id="min-max-abs"><a class="header" href="#min-max-abs">Min, Max, Abs</a></h3>
+<p>Per-component operations useful for bounding calculations:</p>
+<pre><code class="language-go">a := math2d.Vec2{X: 1, Y: 5}
+b := math2d.Vec2{X: 3, Y: 2}
+
+a.Min(b)  // {1, 2}
+a.Max(b)  // {3, 5}
+
+math2d.Vec2{X: -3, Y: -4}.Abs()  // {3, 4}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="rectangles"><a class="header" href="#rectangles">Rectangles</a></h1>
+<p>The <code>math2d</code> package provides axis-aligned rectangles for 2D game math. Import it with:</p>
+<pre><code class="language-go">import "github.com/drpaneas/gosprite64/math2d"
+</code></pre>
+<h2 id="rect"><a class="header" href="#rect">Rect</a></h2>
+<p><code>Rect</code> is an axis-aligned rectangle defined by its top-left corner and dimensions. It uses half-open boundary semantics: a point at <code>(X+W, Y+H)</code> is outside the rectangle. This matches how pixels and tiles work - a 10-pixel-wide rect at X=0 occupies pixels 0 through 9.</p>
+<pre><code class="language-go">court := math2d.Rect{X: 10, Y: 10, W: 268, H: 196}
+
+court.Right()   // 278.0 (X + W)
+court.Bottom()  // 206.0 (Y + H)
+court.Center()  // Vec2{144, 108}
+</code></pre>
+<h3 id="creating-from-center"><a class="header" href="#creating-from-center">Creating from center</a></h3>
+<pre><code class="language-go">r := math2d.RectFromCenter(math2d.Vec2{X: 144, Y: 108}, 20, 20)
+// Rect{X: 134, Y: 98, W: 20, H: 20}
+</code></pre>
+<h3 id="point-containment"><a class="header" href="#point-containment">Point containment</a></h3>
+<pre><code class="language-go">court := math2d.Rect{X: 0, Y: 0, W: 288, H: 216}
+court.ContainsPoint(math2d.Vec2{X: 100, Y: 100})  // true
+court.ContainsPoint(math2d.Vec2{X: 288, Y: 216})  // false (half-open)
+court.ContainsPoint(math2d.Vec2{X: -1, Y: 0})     // false
+</code></pre>
+<h3 id="overlap-and-collision"><a class="header" href="#overlap-and-collision">Overlap and collision</a></h3>
+<pre><code class="language-go">player := math2d.Rect{X: 50, Y: 50, W: 16, H: 16}
+enemy  := math2d.Rect{X: 60, Y: 55, W: 16, H: 16}
+
+player.Overlaps(enemy)  // true
+
+inter, ok := player.Intersection(enemy)
+// ok = true, inter = Rect{X: 60, Y: 55, W: 6, H: 11}
+</code></pre>
+<p>Zero-size or negative-size rects never overlap, never contain points, and never contain other rects.</p>
+<h3 id="rect-containment"><a class="header" href="#rect-containment">Rect containment</a></h3>
+<pre><code class="language-go">screen := math2d.Rect{X: 0, Y: 0, W: 288, H: 216}
+button := math2d.Rect{X: 100, Y: 80, W: 40, H: 20}
+screen.ContainsRect(button)  // true
+button.ContainsRect(screen)  // false
+</code></pre>
+<h3 id="expand-and-shrink"><a class="header" href="#expand-and-shrink">Expand and shrink</a></h3>
+<p><code>Expand</code> grows (or shrinks with a negative amount) a rect on all sides:</p>
+<pre><code class="language-go">r := math2d.Rect{X: 10, Y: 10, W: 20, H: 20}
+r.Expand(5)   // {5, 5, 30, 30}
+r.Expand(-2)  // {12, 12, 16, 16}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="collision-detection"><a class="header" href="#collision-detection">Collision Detection</a></h1>
+<p>The <code>math2d</code> package provides AABB collision detection and resolution for 2D games. Import it with:</p>
+<pre><code class="language-go">import "github.com/drpaneas/gosprite64/math2d"
+</code></pre>
+<p>Covers <code>math2d.AABBOverlap</code>, <code>AABBPenetration</code>, <code>AABBResolve</code>, <code>AABBSweep</code>, <code>Collider</code>, and <code>Layer</code>.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="easing-functions"><a class="header" href="#easing-functions">Easing Functions</a></h1>
+<p>The <code>math2d</code> package provides easing and interpolation functions. Import it with:</p>
+<pre><code class="language-go">import "github.com/drpaneas/gosprite64/math2d"
+</code></pre>
+<h2 id="easing-and-interpolation"><a class="header" href="#easing-and-interpolation">Easing and interpolation</a></h2>
+<h3 id="lerp"><a class="header" href="#lerp">Lerp</a></h3>
+<p>Linearly interpolate between two scalar values. Unclamped - values of <code>t</code> outside 0..1 extrapolate.</p>
+<pre><code class="language-go">math2d.Lerp(0, 100, 0.5)   // 50
+math2d.Lerp(0, 100, 0.0)   // 0
+math2d.Lerp(0, 100, 1.0)   // 100
+math2d.Lerp(0, 100, 1.5)   // 150 (extrapolation)
+</code></pre>
+<h3 id="invlerp"><a class="header" href="#invlerp">InvLerp</a></h3>
+<p>The inverse of Lerp - given a value, find where it falls in a range as a 0..1 ratio:</p>
+<pre><code class="language-go">math2d.InvLerp(0, 100, 50)   // 0.5
+math2d.InvLerp(0, 100, 0)    // 0.0
+math2d.InvLerp(0, 100, 100)  // 1.0
+</code></pre>
+<h3 id="remap"><a class="header" href="#remap">Remap</a></h3>
+<p>Map a value from one range to another. This is <code>InvLerp</code> followed by <code>Lerp</code>:</p>
+<pre><code class="language-go">// Map health (0..100) to a bar width (0..64 pixels)
+barWidth := math2d.Remap(health, 0, 100, 0, 64)
+</code></pre>
+<h3 id="clamp"><a class="header" href="#clamp">Clamp</a></h3>
+<p>Restrict a value to a range:</p>
+<pre><code class="language-go">math2d.Clamp(150, 0, 100)  // 100
+math2d.Clamp(-5, 0, 100)   // 0
+math2d.Clamp(50, 0, 100)   // 50
+</code></pre>
+<h3 id="movetoward"><a class="header" href="#movetoward">MoveToward</a></h3>
+<p>Move a value toward a target by at most a fixed step. Useful for smooth following that arrives at the target in finite time (unlike lerp which asymptotically approaches).</p>
+<pre><code class="language-go">// In Update(), smoothly move camera X toward player
+cam.X = math2d.MoveToward(cam.X, playerX, 3)
+</code></pre>
+<p>If <code>maxDelta</code> is zero or negative, the value does not change. The function never overshoots the target.</p>
+<h3 id="easing-curves"><a class="header" href="#easing-curves">Easing curves</a></h3>
+<p>Easing functions take a <code>t</code> in 0..1 and return a shaped 0..1 value. Combine them with <code>Lerp</code> to animate anything:</p>
+<pre><code class="language-go">t := float32(frame) / float32(totalFrames)  // 0..1 over time
+
+// Ease in (slow start, fast end)
+x := math2d.Lerp(startX, endX, math2d.EaseInQuad(t))
+
+// Ease out (fast start, slow end)
+x := math2d.Lerp(startX, endX, math2d.EaseOutQuad(t))
+
+// Ease in-out (slow start, fast middle, slow end)
+x := math2d.Lerp(startX, endX, math2d.EaseInOutQuad(t))
+</code></pre>
+<p>Available curves:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Function</th><th>Shape</th><th>Use for</th></tr>
+</thead>
+<tbody>
+<tr><td><code>EaseInQuad</code></td><td>Accelerate</td><td>Objects starting from rest</td></tr>
+<tr><td><code>EaseOutQuad</code></td><td>Decelerate</td><td>Objects coming to a stop</td></tr>
+<tr><td><code>EaseInOutQuad</code></td><td>Accelerate then decelerate</td><td>Smooth menu transitions</td></tr>
+<tr><td><code>EaseInCubic</code></td><td>Stronger accelerate</td><td>More dramatic start</td></tr>
+<tr><td><code>EaseOutCubic</code></td><td>Stronger decelerate</td><td>Snappy UI animations</td></tr>
+<tr><td><code>EaseInOutCubic</code></td><td>Stronger both</td><td>Emphasis on endpoints</td></tr>
+<tr><td><code>SmoothStep</code></td><td>Hermite S-curve</td><td>Thresholds, fog edges</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="smoothstep"><a class="header" href="#smoothstep">SmoothStep</a></h3>
+<p><code>SmoothStep</code> clamps the input to a range and applies Hermite interpolation. Useful for smooth thresholds:</p>
+<pre><code class="language-go">// Fade alpha from 0 to 1 as distance goes from 50 to 100
+alpha := math2d.SmoothStep(50, 100, distance)
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="grid-utilities"><a class="header" href="#grid-utilities">Grid Utilities</a></h1>
+<p>The <code>math2d</code> package provides generic grid data structures for spatial operations. Import it with:</p>
+<pre><code class="language-go">import "github.com/drpaneas/gosprite64/math2d"
+</code></pre>
+<p>Covers <code>math2d.Grid[T]</code>, <code>Run</code>, <code>GridCell</code>, <code>ScanRow</code>, and <code>ScanCol</code>.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="random-numbers"><a class="header" href="#random-numbers">Random Numbers</a></h1>
+<p>The <code>math2d</code> package provides a deterministic random number generator. Import it with:</p>
+<pre><code class="language-go">import "github.com/drpaneas/gosprite64/math2d"
+</code></pre>
+<h2 id="rand"><a class="header" href="#rand">Rand</a></h2>
+<p><code>Rand</code> is a seedable pseudo-random number generator using the xoshiro128** algorithm. It is deterministic: the same seed always produces the same sequence. This is important for gameplay that needs to be reproducible - replays, netplay, or consistent procedural generation.</p>
+<p>Unlike Go’s <code>math/rand</code>, each <code>Rand</code> instance has its own state. There is no global generator to worry about.</p>
+<pre><code class="language-go">rng := math2d.NewRand(42)  // seed with 42
+</code></pre>
+<h3 id="integers"><a class="header" href="#integers">Integers</a></h3>
+<pre><code class="language-go">rng.Uint32()       // raw 32-bit value
+rng.Intn(6)        // [0, 6) - like a die roll 0..5
+rng.RangeInt(1, 7) // [1, 7) - die roll 1..6
+</code></pre>
+<h3 id="floats"><a class="header" href="#floats">Floats</a></h3>
+<pre><code class="language-go">rng.Float32()                  // [0.0, 1.0)
+rng.RangeFloat32(0.5, 2.0)    // [0.5, 2.0)
+</code></pre>
+<h3 id="bool"><a class="header" href="#bool">Bool</a></h3>
+<pre><code class="language-go">if rng.Bool() {
+    // roughly 50/50
+}
+</code></pre>
+<h3 id="re-seeding"><a class="header" href="#re-seeding">Re-seeding</a></h3>
+<p>Call <code>Seed</code> to reset the generator to a known state:</p>
+<pre><code class="language-go">rng := math2d.NewRand(42)
+first := rng.Uint32()
+
+rng.Seed(42)
+second := rng.Uint32()
+// first == second
+</code></pre>
+<h3 id="typical-game-usage"><a class="header" href="#typical-game-usage">Typical game usage</a></h3>
+<pre><code class="language-go">func (g *Game) Init() {
+    g.rng = math2d.NewRand(12345)
+
+    // Spawn enemies at random positions
+    for i := 0; i &lt; 10; i++ {
+        x := g.rng.RangeFloat32(20, 268)
+        y := g.rng.RangeFloat32(20, 196)
+        spawnEnemy(x, y)
+    }
+
+    // Pick a random color
+    colors := []color.Color{gosprite64.Red, gosprite64.Blue, gosprite64.Green}
+    c := colors[g.rng.Intn(len(colors))]
+}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="3d-math"><a class="header" href="#3d-math">3D Math</a></h1>
+<p>Vectors, matrices, and transforms for 3D rendering on the N64.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="scene-graph"><a class="header" href="#scene-graph">Scene Graph</a></h1>
+<p>Organize 3D objects in a hierarchical tree for transform inheritance and rendering.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="display-lists"><a class="header" href="#display-lists">Display Lists</a></h1>
+<p>Build and submit RDP display lists for efficient batched rendering.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="triangle-rendering"><a class="header" href="#triangle-rendering">Triangle Rendering</a></h1>
+<p>Draw textured and shaded triangles using the N64’s Reality Display Processor.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="dma-transfers"><a class="header" href="#dma-transfers">DMA Transfers</a></h1>
+<p>Move data between RDRAM and cartridge ROM using the N64’s DMA engine.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="rsp-task-queue"><a class="header" href="#rsp-task-queue">RSP Task Queue</a></h1>
+<p>Submit microcode tasks to the Reality Signal Processor for parallel computation.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="n64-os-primitives"><a class="header" href="#n64-os-primitives">N64 OS Primitives</a></h1>
+<p>Low-level threading, message queues, and interrupt handling on the N64.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="memory-pools"><a class="header" href="#memory-pools">Memory Pools</a></h1>
+<p>Pre-allocate and reuse memory blocks to avoid runtime allocation on the N64.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="api-quick-reference"><a class="header" href="#api-quick-reference">API Quick Reference</a></h1>
+<p>A compact listing of every public function, type, and constant in the GoSprite64 API.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="performance-notes-1"><a class="header" href="#performance-notes-1">Performance Notes</a></h1>
+<p>Tips for keeping your game running at 60 FPS on real N64 hardware.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="troubleshooting-2"><a class="header" href="#troubleshooting-2">Troubleshooting</a></h1>
+<p>Common build errors, runtime issues, and emulator quirks with solutions.</p>
+<blockquote>
+<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+</blockquote>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+
+    </div>
+    </body>
+</html>

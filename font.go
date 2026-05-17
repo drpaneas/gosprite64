@@ -133,6 +133,9 @@ func (f *Font) DrawTextEx(text string, x, y int, align TextAlign) {
 // FormatScore formats an integer score with leading zeros to the given width.
 // If the number has more digits than width, the full number is returned.
 func FormatScore(score int, width int) string {
+	if score < 0 {
+		score = 0
+	}
 	s := fmt.Sprintf("%d", score)
 	if len(s) >= width {
 		return s

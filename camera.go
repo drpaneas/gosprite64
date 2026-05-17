@@ -17,8 +17,9 @@ type Camera struct {
 
 	Bounds *math2d.Rect
 
-	trauma  float32
-	shakeRng *math2d.Rand
+	trauma    float32
+	shakeRng  *math2d.Rand
+	shakeTick uint64
 }
 
 func newDefaultCamera() *Camera {
@@ -67,6 +68,22 @@ func (c *Camera) UpdateFollow() {
 
 	newX := math2d.Lerp(float32(c.X), targetX, speed)
 	newY := math2d.Lerp(float32(c.Y), targetY, speed)
+
+	dx := targetX - newX
+	if dx < 0 {
+		dx = -dx
+	}
+	dy := targetY - newY
+	if dy < 0 {
+		dy = -dy
+	}
+	if dx < 1 {
+		newX = targetX
+	}
+	if dy < 1 {
+		newY = targetY
+	}
+
 	c.X = int(newX)
 	c.Y = int(newY)
 }
@@ -113,9 +130,8 @@ func (c *Camera) AddTrauma(amount float32) {
 	if c.trauma > 1.0 {
 		c.trauma = 1.0
 	}
-	if c.shakeRng == nil {
-		c.shakeRng = math2d.NewRand(12345)
-	}
+	c.shakeTick++
+	c.shakeRng = math2d.NewRand(c.shakeTick * 7919)
 }
 
 // UpdateShake decays trauma each frame. Call once per Update().

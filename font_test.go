@@ -127,3 +127,30 @@ func TestFormatScoreZero(t *testing.T) {
 		t.Fatalf("expected '0000', got '%s'", s)
 	}
 }
+
+func TestFormatScoreNegative(t *testing.T) {
+	s := FormatScore(-5, 4)
+	if s != "0000" {
+		t.Fatalf("negative score should clamp to 0, expected '0000', got '%s'", s)
+	}
+}
+
+func TestDrawTextExNilSheet(t *testing.T) {
+	glyphs := map[rune]Glyph{
+		'A': {Frame: 0, Width: 8, Advance: 9},
+	}
+	f := NewFont(nil, glyphs, 10)
+	f.DrawTextEx("A", 0, 0, AlignLeft)
+}
+
+func TestWrapTextWithNewlines(t *testing.T) {
+	glyphs := map[rune]Glyph{}
+	for _, r := range "abcdefghijklmnopqrstuvwxyz " {
+		glyphs[r] = Glyph{Frame: 0, Width: 8, Advance: 8}
+	}
+	f := NewFont(nil, glyphs, 10)
+	wrapped := f.WrapText("hello\nworld", 200)
+	if wrapped != "hello world" {
+		t.Logf("WrapText collapses existing newlines via Fields: got %q", wrapped)
+	}
+}

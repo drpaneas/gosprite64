@@ -52,10 +52,15 @@ func (r *InputRecorder) Finish() *ReplayData {
 	if r == nil {
 		return &ReplayData{}
 	}
+	copied := make([][]FrameInput, r.playerCount)
+	for i, pf := range r.frames {
+		copied[i] = make([]FrameInput, len(pf))
+		copy(copied[i], pf)
+	}
 	return &ReplayData{
 		PlayerCount: r.playerCount,
 		FrameCount:  r.frameCount,
-		frames:      r.frames,
+		frames:      copied,
 	}
 }
 

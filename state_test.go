@@ -206,3 +206,32 @@ func TestStateMachineCurrent(t *testing.T) {
 		t.Fatal("Current() should return a after pop")
 	}
 }
+
+func TestStateMachineNilInitialThenSwitch(t *testing.T) {
+	sm := NewStateMachine(nil)
+	if sm.Depth() != 0 {
+		t.Fatalf("nil initial should give depth 0, got %d", sm.Depth())
+	}
+	sm.Init()
+
+	log := make([]string, 0)
+	a := &testState{name: "a", log: &log}
+	sm.Switch(a)
+	if sm.Current() != a {
+		t.Fatal("switch on empty stack should add the state")
+	}
+	if log[0] != "a:enter" {
+		t.Fatalf("expected a:enter, got %v", log)
+	}
+}
+
+func TestStateMachineDoubleInit(t *testing.T) {
+	log := make([]string, 0)
+	a := &testState{name: "a", log: &log}
+	sm := NewStateMachine(a)
+	sm.Init()
+	sm.Init()
+	if len(log) != 2 || log[0] != "a:enter" || log[1] != "a:enter" {
+		t.Fatalf("double Init calls Enter twice: %v", log)
+	}
+}

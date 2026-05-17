@@ -179,3 +179,57 @@ func TestReplayDataDeterministic(t *testing.T) {
 		}
 	}
 }
+
+func TestInputRecorderCaptureAfterFinish(t *testing.T) {
+	rec := NewInputRecorder(1)
+	rec.CaptureFrame(0, FrameInput{Buttons: ButtonA, StickX: 1})
+	replay := rec.Finish()
+
+	rec.CaptureFrame(0, FrameInput{Buttons: ButtonB, StickX: 2})
+
+	player := NewInputPlayer(replay)
+	input, ok := player.NextFrame(0)
+	if !ok {
+		t.Fatal("should have frame 0")
+	}
+	if input.Buttons != ButtonA || input.StickX != 1 {
+		t.Fatal("replay data should not be modified by post-Finish captures")
+	}
+	if replay.FrameCount != 1 {
+		t.Fatalf("replay frame count should be 1, got %d", replay.FrameCount)
+	}
+}
+
+func TestInputRecorderMultiPlayerUnevenFrames(t *testing.T) {
+	rec := NewInputRecorder(2)
+	rec.CaptureFrame(0, FrameInput{Buttons: ButtonA})
+	rec.CaptureFrame(0, FrameInput{Buttons: ButtonB})
+	rec.CaptureFrame(1, FrameInput{Buttons: ButtonZ})
+	replay := rec.Finish()
+
+	if replay.FrameCount != 2 {
+		t.Fatalf("expected frame count 2 (max of both players), got %d", replay.FrameCount)
+	}
+
+	player := NewInputPlayer(replay)
+	_, ok := player.NextFrame(0)
+	if !ok {
+		t.Fatal("p0 should have frame 0")
+	}
+	_, ok = player.NextFrame(0)
+	if !ok {
+		t.Fatal("p0 should have frame 1")
+	}
+	_, ok = player.NextFrame(1)
+	if !ok {
+		t.Fatal("p1 should have frame 0")
+	}
+	_, ok = player.NextFrame(1)
+	if ok {
+		t.Fatal("p1 should have no more frames")
+	}
+
+	if player.Done() {
+		t.Fatal("should not be done - p0 is exhausted but was checked after p1")
+	}
+}

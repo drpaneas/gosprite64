@@ -258,6 +258,12 @@ gosprite64.DrawWorldSpriteWithOptions(charSheet, frame, playerX, playerY, camera
 - Overlapping blended sprites compound cost: each overlapping pixel runs the blend math again. Minimize large transparent overlaps in hot scenes.
 - The `DrawSpriteWithOptions` fast path kicks in when all options are at defaults, falling through to the plain `DrawSprite` code.
 
+## Try It
+
+<iframe src="../emulator/play.html?rom=sprite_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+
+> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+
 ## Reference example
 
 See `examples/sprite_demo` for a complete working example that demonstrates:

@@ -161,6 +161,12 @@ func (s *TitleState) Draw() {
 }
 ```
 
+## Try It
+
+<iframe src="../emulator/play.html?rom=replay_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+
+> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+
 ## Complete example
 
 See `examples/replay_demo` for a working demo that lets you record input and then watch it play back as a ghost trail. Build it with:

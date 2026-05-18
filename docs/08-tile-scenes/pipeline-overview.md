@@ -153,6 +153,12 @@ stats := scene.Stats()
 fmt.Printf("visible: %d, uploads: %d\n", stats.VisibleTiles, stats.UploadCount)
 ```
 
+## Try It
+
+<iframe src="../emulator/play.html?rom=simplegame.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+
+> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+
 ## Reference examples
 
 See `examples/simplegame` for a minimal working example that follows this tutorial step by step: source PNG + JSON assets, `go generate` pipeline, bundle loading, camera scrolling with D-pad input, and runtime stats overlay.

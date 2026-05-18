@@ -239,6 +239,12 @@ func (g *Game) Draw() {
 }
 ```
 
+## Try It
+
+<iframe src="../emulator/play.html?rom=font_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+
+> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+
 ## Reference Example
 
 See `examples/font_demo` in the GoSprite64 repository for a minimal working example of custom font rendering.

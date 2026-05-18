@@ -36,3 +36,4 @@ go.work.sum
 *.n64
 .worktrees/
 docs/superpowers/
+docs/emulator/roms/

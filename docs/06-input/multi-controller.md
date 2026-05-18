@@ -139,6 +139,12 @@ The single-player functions are thin wrappers around the per-port API:
 | `IsButtonJustPressed(btn)` | `PlayerButtonJustPressed(0, btn)` |
 | `StickPosition(dz)` | `PlayerStickPosition(0, dz)` |
 
+## Try It
+
+<iframe src="../emulator/play.html?rom=multi_input_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+
+> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+
 ## Reference Example
 
 See `examples/multi_input_demo` in the GoSprite64 repository for a 4-player controller demonstration with per-port colored squares.

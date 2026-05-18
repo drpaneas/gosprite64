@@ -122,6 +122,12 @@ func drawBoard(playerIndex int, board *GameBoard) {
 }
 ```
 
+## Try It
+
+<iframe src="../emulator/play.html?rom=splitscreen_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+
+> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+
 ## Complete example
 
 See `examples/splitscreen_demo` for a working 1P/2P split-screen game using draw regions, timers, and menus together.

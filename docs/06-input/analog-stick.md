@@ -86,6 +86,12 @@ func (g *Game) Update() {
 
 `StickPosition` reads from controller port 0. For multiplayer input, use `PlayerStickPosition(port, deadzone)` - see [Multi-Controller Support](multi-controller.md).
 
+## Try It
+
+<iframe src="../emulator/play.html?rom=analog_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+
+> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+
 ## Reference Example
 
 See `examples/analog_demo` in the GoSprite64 repository for a visual demonstration of analog stick input with a crosshair following the stick position.

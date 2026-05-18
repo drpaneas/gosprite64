@@ -166,6 +166,12 @@ SRAM is battery-backed static RAM accessed via PI DMA at address `0x08000000`. I
 
 FlashRAM uses a command-based protocol via the PI interface. Write operations require erasing 16 KB sectors before writing new data. The `FlashRAM` type handles the erase-before-write protocol internally. FlashRAM does not require a battery - data persists without power.
 
+## Try It
+
+<iframe src="../emulator/play.html?rom=save_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+
+> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+
 ## Reference Example
 
 See `examples/save_demo` in the GoSprite64 repository for a minimal working save/load example using SRAM.

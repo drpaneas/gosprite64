@@ -174,6 +174,12 @@ Over 11 steps you built a complete N64 game from scratch:
 - **Add camera shake** - call `camera.AddTrauma(0.5)` on hit, `camera.UpdateShake()` each frame, apply `camera.ShakeOffset()` to draws
 - **Try the other examples** - pong with audio, multi-layer tilemap, 3D triangle renderer, and more in `examples/`
 
+## Try It
+
+<iframe src="../emulator/play.html?rom=platformer.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+
+> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+
 ## Build and run
 
 ```bash

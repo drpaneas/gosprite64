@@ -162,6 +162,12 @@ func (s *OptionsState) Update() {
 }
 ```
 
+## Try It
+
+<iframe src="../emulator/play.html?rom=menu_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+
+> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+
 ## Complete example
 
 See `examples/menu_demo` for a focused menu demonstration, or `examples/splitscreen_demo` for menus used alongside other systems.

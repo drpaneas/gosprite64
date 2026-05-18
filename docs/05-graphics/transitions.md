@@ -176,6 +176,12 @@ func (g *Game) Draw() {
 - All methods are nil-safe. Calling `Advance`, `Draw`, `Done`, `Active`, or
   `Stop` on a `nil` `Transition` is a no-op (or returns a safe default).
 
+## Try It
+
+<iframe src="../emulator/play.html?rom=fade_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+
+> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+
 ## Reference Example
 
 See `examples/fade_demo` in the GoSprite64 repository for a working fade transition example.

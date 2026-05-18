@@ -174,6 +174,12 @@ func (g *Game) Draw() {
 - You can change layer speeds at runtime by modifying the `Layers` slice
   directly, for example to speed up scrolling during a boost effect.
 
+## Try It
+
+<iframe src="../emulator/play.html?rom=parallax_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+
+> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+
 ## Reference Example
 
 See `examples/parallax_demo` in the GoSprite64 repository for a working multi-layer parallax scrolling example.

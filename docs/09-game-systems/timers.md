@@ -149,6 +149,12 @@ if !hitFlash.Done() {
 }
 ```
 
+## Try It
+
+<iframe src="../emulator/play.html?rom=timer_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+
+> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+
 ## Complete example
 
 See `examples/timer_demo` for a focused timer demonstration, or `examples/splitscreen_demo` for timers used alongside other systems. Build with:

@@ -153,6 +153,12 @@ The flow:
 
 Each state has its own `Enter`, `Update`, `Draw`, `Exit`. No state knows about the internals of other states. The `StateMachine` handles the transitions.
 
+## Try It
+
+<iframe src="../emulator/play.html?rom=state_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+
+> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+
 ## Complete example
 
 See `examples/state_demo` for a working demo with all four states. Build it with:

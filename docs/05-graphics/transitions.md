@@ -120,7 +120,7 @@ func (g *Game) Update() {
     switch g.state {
     case StatePlaying:
         // Normal gameplay...
-        if gosprite64.IsButtonPressed(gosprite64.ButtonA) {
+        if gosprite64.IsButtonJustPressed(gosprite64.ButtonA) {
             g.fadeOut = gosprite64.StartTransition(gosprite64.FadeToBlack, 30)
             g.state = StateFadingOut
         }

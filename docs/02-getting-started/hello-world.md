@@ -109,4 +109,4 @@ mygame/
 
 ## Next steps
 
-Now that your toolchain works, try changing `gosprite64.ClearScreenWith(gosprite64.Blue)` to another color like `gosprite64.Red`, `gosprite64.Green`, or `gosprite64.DarkPurple` and rebuild. Then explore the [examples](https://github.com/drpaneas/gosprite64/tree/main/examples) in the GoSprite64 repository to learn about input handling, drawing shapes, text rendering, and audio.
+Now that your toolchain works, try changing `gosprite64.ClearScreenWith(gosprite64.Blue)` to another color like `gosprite64.Red`, `gosprite64.Green`, or `gosprite64.DarkPurple` and rebuild. See `examples/clearscreen` in the repository for this exact pattern. Then explore the [examples](https://github.com/drpaneas/gosprite64/tree/main/examples) in the GoSprite64 repository to learn about input handling, drawing shapes, text rendering, and audio.

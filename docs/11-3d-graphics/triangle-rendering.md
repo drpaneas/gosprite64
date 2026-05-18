@@ -143,3 +143,5 @@ The RSP pipeline is faster for batched geometry because it handles vertex transf
 | `0x0E` | Shaded + textured | Edge + shade + texture (20 words) |
 
 The `triangle3d` example in the repository demonstrates CPU-side triangle rendering with perspective projection. See `examples/triangle3d/` for a working implementation.
+
+For a simpler 2D rotating triangle using software rasterization with `FillRect` scanlines, see `examples/triangle/`.

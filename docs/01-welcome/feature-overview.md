@@ -293,3 +293,14 @@ A complete reference of every feature GoSprite64 provides, organized by section.
 | `n64os.NewScheduler(events, fn)` | Task scheduler for graphics and audio | [N64 OS Primitives](../12-low-level/n64-os-primitives.md) |
 | `n64os.NewEventRouter()` | Routes hardware events to message queues | [N64 OS Primitives](../12-low-level/n64-os-primitives.md) |
 | `n64os.NewTimer(queue, msg, interval)` | OS-level timer with message delivery | [N64 OS Primitives](../12-low-level/n64-os-primitives.md) |
+
+
+## Complete Game Examples
+
+These examples in the repository demonstrate full games built with GoSprite64:
+
+| Example | Description |
+|---------|-------------|
+| `examples/pong` | Classic Pong with AI, scoring, collision, and audio |
+| `examples/space_invaders` | Space Invaders with enemies, bullets, waves, and game-over state |
+| `examples/platformer` | Side-scrolling platformer from the tutorial (tiles, sprites, animation, state machine, transitions) |

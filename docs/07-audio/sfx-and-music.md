@@ -101,7 +101,7 @@ func (g *Game) Update() {
 Import the generated `music` package and call `gosprite64.PlayMusic`:
 
 ```go
-import "github.com/drpaneas/gosprite64/examples/mygame/music"
+import "github.com/yourname/mygame/music"
 
 func (g *Game) Init() {
     gosprite64.PlayMusic(music.Overworld)

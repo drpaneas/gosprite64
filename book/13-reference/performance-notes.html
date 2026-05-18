@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -176,9 +176,70 @@
                     <main>
                         <h1 id="performance-notes"><a class="header" href="#performance-notes">Performance Notes</a></h1>
 <p>Tips for keeping your game running at 60 FPS on real N64 hardware.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<h2 id="the-288x216-canvas"><a class="header" href="#the-288x216-canvas">The 288x216 Canvas</a></h2>
+<p>GoSprite64 renders to a fixed <strong>288x216 logical canvas</strong> with 16-pixel gutters on each side. This canvas is scaled up to the full TV resolution (640x480 NTSC or 640x576 PAL) by the Video Interface. All your drawing coordinates use this logical space.</p>
+<p>The 16-pixel gutters exist because CRT televisions overscan the edges of the picture. The visible safe area is the inner 256x184 region, but you can draw into the full 288x216 if you want edge-to-edge coverage on modern displays.</p>
+<h2 id="fixed-step-timing"><a class="header" href="#fixed-step-timing">Fixed-Step Timing</a></h2>
+<p>The game loop runs at a fixed <strong>60 FPS</strong> with a fixed-step accumulator. Each <code>Update()</code> call represents exactly one 1/60th-second tick. If the hardware falls behind, <code>Update()</code> runs multiple times to catch up before <code>Draw()</code> is called. This means your physics and input logic always see consistent time steps regardless of rendering performance.</p>
+<h2 id="blend-modes-and-fill-rate"><a class="header" href="#blend-modes-and-fill-rate">Blend Modes and Fill Rate</a></h2>
+<p>The blend mode you choose on sprites has a major impact on rendering cost:</p>
+<ul>
+<li><strong><code>BlendNone</code></strong> is the fastest path. It performs a simple opaque blit with no per-pixel blending. Use this for backgrounds, tiles, and any sprites without transparency.</li>
+<li><strong><code>BlendMasked</code></strong> treats each pixel as either fully opaque or fully transparent based on the alpha channel. It is roughly <strong>4x slower</strong> than <code>BlendNone</code> because the RDP must test each pixel individually.</li>
+<li><strong><code>BlendAlpha</code></strong> performs full per-pixel alpha blending. It has similar cost to <code>BlendMasked</code> for a single sprite, but <strong>overlapping blended sprites</strong> multiply the cost because each overlapping pixel must be blended again.</li>
+</ul>
+<p>Practical advice:</p>
+<ul>
+<li>Default to <code>BlendNone</code> for tiles and backgrounds.</li>
+<li>Use <code>BlendMasked</code> for characters and objects with hard-edged transparency.</li>
+<li>Reserve <code>BlendAlpha</code> for effects that genuinely need smooth transparency (particles, shadows, UI overlays).</li>
+<li>Avoid stacking many alpha-blended sprites in the same screen region.</li>
+</ul>
+<h2 id="rotation-and-scaling"><a class="header" href="#rotation-and-scaling">Rotation and Scaling</a></h2>
+<p>When you set <code>Rotation</code> to a non-zero value in <code>DrawSpriteOptions</code>, the sprite is drawn through the <strong>transformed-quad path</strong> instead of the fast axis-aligned blit. This path computes per-pixel source coordinates through an affine transform, which costs more per pixel than a straight copy.</p>
+<p>Scaling alone (without rotation) is cheaper than rotation but still more expensive than an unscaled blit. If a sprite’s <code>ScaleX</code>, <code>ScaleY</code>, and <code>Rotation</code> are all at their defaults, GoSprite64 automatically falls back to the fast <code>DrawSprite</code> path.</p>
+<p>Tips:</p>
+<ul>
+<li>Pre-render rotated frames in your sprite sheet if you only need a few fixed angles (e.g., 4 or 8 directions).</li>
+<li>Keep the number of simultaneously rotating sprites small, especially at larger sizes.</li>
+</ul>
+<h2 id="scene-rendering"><a class="header" href="#scene-rendering">Scene Rendering</a></h2>
+<p>Tile scenes are optimized for the N64’s constrained memory and fill rate:</p>
+<ul>
+<li><strong>Only visible cells are rendered.</strong> The renderer uses the camera viewport to determine which tiles fall within the screen bounds and skips everything outside. Scrolling a large map costs the same as rendering a small map, as long as the visible tile count stays similar.</li>
+<li><strong><code>LayerInfo()</code> is O(1).</strong> Layer metadata (sheet ID, non-zero tile count) is cached at load time, so querying layer properties in your update loop is free.</li>
+<li><strong><code>Stats()</code> is allocation-free.</strong> The <code>RuntimeStats</code> struct is returned by value from pre-computed fields, so you can call it every frame without triggering garbage collection.</li>
+</ul>
+<h2 id="audio-performance"><a class="header" href="#audio-performance">Audio Performance</a></h2>
+<p>The audio engine is designed for zero allocations after initialization:</p>
+<ul>
+<li>All buffers (output, per-voice source, byte conversion) are pre-allocated once during <code>initAudio</code>.</li>
+<li>The mixing loop reuses fixed-size arrays and never calls <code>make</code> or <code>append</code>.</li>
+<li>Command dispatch uses a lock-free ring buffer, so <code>PlaySoundEffect</code> and <code>PlayMusic</code> never block the game loop.</li>
+</ul>
+<p>This means audio has no GC pressure during gameplay. You can play and stop sounds freely without worrying about frame hitches.</p>
+<h2 id="math-avoid-sqrt-on-n64"><a class="header" href="#math-avoid-sqrt-on-n64">Math: Avoid sqrt on N64</a></h2>
+<p>The N64’s MIPS R4300i CPU does not have a hardware square root instruction. Computing <code>sqrt</code> requires a software approximation that takes many more cycles than basic arithmetic.</p>
+<p>The <code>math2d</code> package provides squared-distance methods on <code>Vec2</code> specifically for this:</p>
+<ul>
+<li><strong><code>v.LengthSq() float32</code></strong> returns <code>x*x + y*y</code> without the square root.</li>
+<li><strong><code>v.DistanceSq(other Vec2) float32</code></strong> returns the squared distance between two points.</li>
+</ul>
+<p>Use these for distance comparisons. Instead of:</p>
+<pre><code class="language-go">if a.Distance(b) &lt; 32 {
+</code></pre>
+<p>Write:</p>
+<pre><code class="language-go">if a.DistanceSq(b) &lt; 32*32 {
+</code></pre>
+<p>The result is mathematically equivalent for comparisons and avoids the expensive sqrt entirely. Only call <code>Distance()</code> or <code>Length()</code> when you actually need the scalar distance value (e.g., for normalization).</p>
+<h2 id="general-tips"><a class="header" href="#general-tips">General Tips</a></h2>
+<ul>
+<li><strong>Minimize draw calls for overlapping transparent sprites.</strong> Each overlapping blended pixel is processed again. Group opaque background layers together and draw them with <code>BlendNone</code>.</li>
+<li><strong>Use smaller sprite sizes when possible.</strong> A 16x16 sprite fills 4x fewer pixels than a 32x32 sprite. The N64’s fill rate is the most common bottleneck.</li>
+<li><strong>Profile with <code>Stats()</code>.</strong> Check <code>VisibleTiles</code> and <code>UploadCount</code> each frame to understand where rendering time is going. A spike in <code>UploadCount</code> means the renderer is loading new tile data into TMEM more often than expected.</li>
+<li><strong>Keep your map layers shallow.</strong> Each additional layer multiplies the number of tiles the renderer must process for every visible cell. Two or three layers is typical; five or more may stress the fill rate.</li>
+<li><strong>Pre-compute what you can.</strong> <code>LayerInfo</code> and <code>SheetInfo</code> are cached, so prefer them over re-scanning tile data manually.</li>
+</ul>
 
                     </main>
 

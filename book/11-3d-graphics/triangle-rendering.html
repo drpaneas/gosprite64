@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,124 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="triangle-rendering"><a class="header" href="#triangle-rendering">Triangle Rendering</a></h1>
-<p>Draw textured and shaded triangles using the N64’s Reality Display Processor.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>The <code>internal/rdpcpu</code> package provides CPU-side triangle rasterization for the N64’s RDP. Instead of using the RSP’s vertex pipeline (via <code>SPVertex</code> + <code>SP1Triangle</code>), these functions compute edge coefficients on the CPU and emit raw RDP triangle commands directly. This is useful for software rendering paths, debug visualization, and cases where the RSP vertex buffer is a bottleneck.</p>
+<h2 id="how-rdp-triangles-work"><a class="header" href="#how-rdp-triangles-work">How RDP triangles work</a></h2>
+<p>The N64’s RDP rasterizes triangles using <strong>edge coefficients</strong>. For each triangle, the RDP needs:</p>
+<ol>
+<li><strong>Edge coefficients</strong> - slopes and starting positions for the three edges, sorted by Y coordinate</li>
+<li><strong>Shade coefficients</strong> (optional) - per-pixel color interpolation (Gouraud shading)</li>
+<li><strong>Texture coefficients</strong> (optional) - per-pixel texture coordinate interpolation</li>
+</ol>
+<p>The <code>rdpcpu</code> functions compute all of this on the CPU and pack the result into raw 64-bit RDP command words. These words can be appended to a display list with <code>DPRaw</code>.</p>
+<h2 id="edge-coefficient-computation"><a class="header" href="#edge-coefficient-computation">Edge coefficient computation</a></h2>
+<p>All triangle functions share the same edge setup:</p>
+<ol>
+<li>Vertices are sorted by Y coordinate (top to bottom)</li>
+<li>The “major” edge spans from v1 (top) to v3 (bottom)</li>
+<li>The “middle” vertex v2 splits the triangle into upper and lower halves</li>
+<li>Inverse slopes are computed for all three edges</li>
+<li>X positions are quantized to sub-pixel precision (1/4 pixel)</li>
+<li>Y coordinates are clamped to the RDP’s valid range</li>
+</ol>
+<p>The <code>attrFactor</code> is the inverse of the cross product (nz = hx<em>my - hy</em>mx), used to interpolate attributes (shade, texture) across the triangle face.</p>
+<h2 id="filltriangle"><a class="header" href="#filltriangle">FillTriangle</a></h2>
+<p>Computes edge coefficients for a flat-colored triangle. Uses RDP opcode <code>0x08</code>.</p>
+<pre><code class="language-go">func FillTriangle(v1, v2, v3 [2]float32) []uint64
+</code></pre>
+<p>Vertices are in screen space: <code>[0]</code> is X, <code>[1]</code> is Y.</p>
+<p>Returns 4 uint64 command words (edge coefficients only, no shade/texture).</p>
+<pre><code class="language-go">words := rdpcpu.FillTriangle(
+    [2]float32{100, 50},   // v1 (screen X, Y)
+    [2]float32{200, 150},  // v2
+    [2]float32{50, 200},   // v3
+)
+
+dl := gfx.NewDisplayList(16)
+dl.DPPipeSync()
+// Set fill color/combine mode first...
+dl.DPRaw(words...)
+</code></pre>
+<h2 id="shadetriangle"><a class="header" href="#shadetriangle">ShadeTriangle</a></h2>
+<p>Computes edge + shade coefficients for a Gouraud-shaded triangle. Uses RDP opcode <code>0x0C</code>.</p>
+<pre><code class="language-go">func ShadeTriangle(v1, v2, v3 [2]float32, c1, c2, c3 [4]float32) []uint64
+</code></pre>
+<p>Vertices are screen-space positions. Colors are RGBA as floats in the range 0.0-1.0.</p>
+<p>Returns 12 uint64 command words (4 edge + 8 shade coefficients).</p>
+<pre><code class="language-go">words := rdpcpu.ShadeTriangle(
+    [2]float32{100, 50},   // position v1
+    [2]float32{200, 150},  // position v2
+    [2]float32{50, 200},   // position v3
+    [4]float32{1, 0, 0, 1}, // color v1 (red)
+    [4]float32{0, 1, 0, 1}, // color v2 (green)
+    [4]float32{0, 0, 1, 1}, // color v3 (blue)
+)
+
+dl.DPRaw(words...)
+</code></pre>
+<p>The shade coefficients interpolate RGBA linearly across the triangle face using the gradients DsDx, DsDy, and DsDe (along-edge derivative).</p>
+<h2 id="texvertex"><a class="header" href="#texvertex">TexVertex</a></h2>
+<p>A vertex type for textured triangles that includes position, texture coordinates, and perspective correction:</p>
+<pre><code class="language-go">type TexVertex struct {
+    X, Y float32   // screen-space position
+    S, T float32   // texture coordinates
+    InvW float32   // inverse W for perspective correction
+}
+</code></pre>
+<h2 id="buildtexturedtriangle"><a class="header" href="#buildtexturedtriangle">BuildTexturedTriangle</a></h2>
+<p>Computes edge + texture coefficients for a perspective-correct textured triangle. Uses RDP opcode <code>0x0A</code>.</p>
+<pre><code class="language-go">func BuildTexturedTriangle(tileIdx, mipmaps uint8, v1, v2, v3 TexVertex) []uint64
+</code></pre>
+<p>Parameters:</p>
+<ul>
+<li><code>tileIdx</code> - RDP tile descriptor index (0-7)</li>
+<li><code>mipmaps</code> - number of mipmap levels (0 for no mipmaps)</li>
+<li><code>v1, v2, v3</code> - textured vertices with screen position, UV coords, and InvW</li>
+</ul>
+<p>Returns 12 uint64 command words (4 edge + 8 texture coefficients).</p>
+<pre><code class="language-go">words := rdpcpu.BuildTexturedTriangle(
+    0, 0, // tile 0, no mipmaps
+    rdpcpu.TexVertex{X: 100, Y: 50,  S: 0,  T: 0,  InvW: 1},
+    rdpcpu.TexVertex{X: 200, Y: 150, S: 32, T: 0,  InvW: 1},
+    rdpcpu.TexVertex{X: 50,  Y: 200, S: 0,  T: 32, InvW: 1},
+)
+
+dl.DPRaw(words...)
+</code></pre>
+<p>The texture coefficients handle perspective correction by scaling S, T, and W by the minimum W value across all three vertices, then computing per-pixel gradients. The RDP uses these gradients to interpolate texture coordinates with perspective divide.</p>
+<h2 id="coordinate-systems"><a class="header" href="#coordinate-systems">Coordinate systems</a></h2>
+<p>All positions are in <strong>screen space</strong> (pixel coordinates after projection). If you are working with 3D world coordinates, you must project them through the model-view-projection matrix and viewport transform before passing them to these functions.</p>
+<h2 id="when-to-use-cpu-side-triangles"><a class="header" href="#when-to-use-cpu-side-triangles">When to use CPU-side triangles</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Use case</th><th>Approach</th></tr>
+</thead>
+<tbody>
+<tr><td>Standard 3D meshes</td><td>Use <code>SPVertex</code> + <code>SP1Triangle</code> (RSP pipeline)</td></tr>
+<tr><td>Debug wireframes</td><td>Use <code>FillTriangle</code></td></tr>
+<tr><td>2D effects, UI elements</td><td>Use <code>FillTriangle</code> or <code>ShadeTriangle</code></td></tr>
+<tr><td>Procedural geometry</td><td>Use <code>BuildTexturedTriangle</code></td></tr>
+<tr><td>Software rasterization</td><td>Use all three functions</td></tr>
+</tbody>
+</table>
+</div>
+<p>The RSP pipeline is faster for batched geometry because it handles vertex transformation in parallel. CPU-side triangles are better when you need fine control over individual triangles or when vertices are already in screen space.</p>
+<h2 id="rdp-triangle-opcodes"><a class="header" href="#rdp-triangle-opcodes">RDP triangle opcodes</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Opcode</th><th>Function</th><th>Coefficients</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0x08</code></td><td>Fill triangle</td><td>Edge only (4 words)</td></tr>
+<tr><td><code>0x0A</code></td><td>Textured triangle</td><td>Edge + texture (12 words)</td></tr>
+<tr><td><code>0x0C</code></td><td>Shaded triangle</td><td>Edge + shade (12 words)</td></tr>
+<tr><td><code>0x0E</code></td><td>Shaded + textured</td><td>Edge + shade + texture (20 words)</td></tr>
+</tbody>
+</table>
+</div>
+<p>The <code>triangle3d</code> example in the repository demonstrates CPU-side triangle rendering with perspective projection. See <code>examples/triangle3d/</code> for a working implementation.</p>
+<p>For a simpler 2D rotating triangle using software rasterization with <code>FillRect</code> scanlines, see <code>examples/triangle/</code>.</p>
 
                     </main>
 

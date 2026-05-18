@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,13 +175,192 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="collision-detection"><a class="header" href="#collision-detection">Collision Detection</a></h1>
-<p>The <code>math2d</code> package provides AABB collision detection and resolution for 2D games. Import it with:</p>
+<p>The <code>math2d</code> package provides AABB collision detection and resolution for 2D games.</p>
 <pre><code class="language-go">import "github.com/drpaneas/gosprite64/math2d"
 </code></pre>
-<p>Covers <code>math2d.AABBOverlap</code>, <code>AABBPenetration</code>, <code>AABBResolve</code>, <code>AABBSweep</code>, <code>Collider</code>, and <code>Layer</code>.</p>
+<h2 id="aabb-collision-functions"><a class="header" href="#aabb-collision-functions">AABB collision functions</a></h2>
+<p>All functions operate on <code>math2d.Rect</code> values - axis-aligned bounding boxes defined by position and size. See <a href="rectangles.html">Rectangles</a> for the full <code>Rect</code> API.</p>
+<h3 id="aabboverlap"><a class="header" href="#aabboverlap">AABBOverlap</a></h3>
+<p>Returns <code>true</code> if two rectangles overlap:</p>
+<pre><code class="language-go">player := math2d.Rect{X: 50, Y: 50, W: 16, H: 24}
+coin   := math2d.Rect{X: 55, Y: 48, W: 8, H: 8}
+
+if math2d.AABBOverlap(player, coin) {
+    collectCoin()
+}
+</code></pre>
+<h3 id="aabbpenetration"><a class="header" href="#aabbpenetration">AABBPenetration</a></h3>
+<p>Returns the minimum translation vector (MTV) needed to push rect <code>a</code> out of rect <code>b</code>. The MTV points along the axis of least overlap. Returns <code>false</code> if there is no overlap.</p>
+<pre><code class="language-go">pen, ok := math2d.AABBPenetration(player, wall)
+if ok {
+    // pen is a Vec2 that moves 'player' out of 'wall'
+    player.X += pen.X
+    player.Y += pen.Y
+}
+</code></pre>
+<p>The MTV always pushes along a single axis (the shorter overlap), so either <code>pen.X</code> or <code>pen.Y</code> will be zero.</p>
+<h3 id="aabbresolve"><a class="header" href="#aabbresolve">AABBResolve</a></h3>
+<p>A convenience function that returns a copy of rect <code>a</code> moved so it no longer overlaps <code>b</code>:</p>
+<pre><code class="language-go">playerRect = math2d.AABBResolve(playerRect, wallRect)
+</code></pre>
+<p>This is equivalent to computing the penetration vector and adding it to <code>a</code>’s position.</p>
+<h3 id="aabbsweep"><a class="header" href="#aabbsweep">AABBSweep</a></h3>
+<p>Performs a swept (continuous) collision test. Moves rect <code>a</code> by a velocity vector and checks for collision with static rect <code>b</code>. Returns three values:</p>
+<ul>
+<li><code>hit</code> - whether a collision occurred during the sweep</li>
+<li><code>t</code> - the fraction of velocity at first contact (0.0 to 1.0)</li>
+<li><code>normal</code> - the surface normal at the collision point</li>
+</ul>
+<pre><code class="language-go">func AABBSweep(a Rect, vel Vec2, b Rect) (hit bool, t float32, normal Vec2)
+</code></pre>
+<pre><code class="language-go">vel := math2d.Vec2{X: 5, Y: 0}
+hit, t, normal := math2d.AABBSweep(player, vel, wall)
+if hit {
+    // Move only up to the contact point
+    player.X += vel.X * t
+    player.Y += vel.Y * t
+
+    // Slide along the wall using the normal
+    if normal.X != 0 {
+        vel.X = 0  // hit a vertical wall, stop horizontal movement
+    }
+    if normal.Y != 0 {
+        vel.Y = 0  // hit a horizontal wall, stop vertical movement
+    }
+}
+</code></pre>
+<p>If the two rects already overlap before the sweep, it returns <code>(true, 0, {0,0})</code>.</p>
+<h2 id="layers-and-colliders"><a class="header" href="#layers-and-colliders">Layers and colliders</a></h2>
+<p>For games with many object types (player, enemies, projectiles, pickups), use layers to control which objects can collide with each other.</p>
+<h3 id="layer"><a class="header" href="#layer">Layer</a></h3>
+<p><code>Layer</code> is a <code>uint32</code> bitmask. Define your game’s layers as powers of two:</p>
+<pre><code class="language-go">const (
+    LayerPlayer     math2d.Layer = 1 &lt;&lt; 0  // 0x01
+    LayerEnemy      math2d.Layer = 1 &lt;&lt; 1  // 0x02
+    LayerProjectile math2d.Layer = 1 &lt;&lt; 2  // 0x04
+    LayerPickup     math2d.Layer = 1 &lt;&lt; 3  // 0x08
+)
+</code></pre>
+<p>Two built-in constants:</p>
+<ul>
+<li><code>math2d.LayerNone</code> (0x00000000) - matches nothing</li>
+<li><code>math2d.LayerAll</code> (0xFFFFFFFF) - matches everything</li>
+</ul>
+<p>Use <code>Matches</code> to test whether two layers share any bits:</p>
+<pre><code class="language-go">a := LayerPlayer | LayerEnemy
+b := LayerEnemy
+a.Matches(b) // true - both include LayerEnemy
+</code></pre>
+<h3 id="collider"><a class="header" href="#collider">Collider</a></h3>
+<p>A <code>Collider</code> combines a bounding box with layer membership:</p>
+<pre><code class="language-go">type Collider struct {
+    Bounds Rect    // the AABB
+    Layer  Layer   // what this object IS
+    Mask   Layer   // what this object COLLIDES WITH
+}
+</code></pre>
+<ul>
+<li><code>Layer</code> identifies the object’s type.</li>
+<li><code>Mask</code> defines which layers this object reacts to.</li>
+</ul>
+<pre><code class="language-go">playerCol := math2d.Collider{
+    Bounds: math2d.Rect{X: 50, Y: 50, W: 16, H: 24},
+    Layer:  LayerPlayer,
+    Mask:   LayerEnemy | LayerPickup, // collide with enemies and pickups
+}
+
+enemyCol := math2d.Collider{
+    Bounds: math2d.Rect{X: 80, Y: 50, W: 16, H: 16},
+    Layer:  LayerEnemy,
+    Mask:   LayerPlayer | LayerProjectile, // collide with player and bullets
+}
+</code></pre>
+<h3 id="collideroverlap"><a class="header" href="#collideroverlap">ColliderOverlap</a></h3>
+<p>Tests both spatial overlap and layer compatibility. The check is bidirectional - either collider’s mask matching the other’s layer is sufficient:</p>
+<pre><code class="language-go">if math2d.ColliderOverlap(playerCol, enemyCol) {
+    player.TakeDamage()
+}
+</code></pre>
+<p>Two objects only collide if their bounding boxes overlap AND at least one of them has a mask that includes the other’s layer.</p>
+<h2 id="platformer-collision-example"><a class="header" href="#platformer-collision-example">Platformer collision example</a></h2>
+<pre><code class="language-go">const (
+    LayerPlayer math2d.Layer = 1 &lt;&lt; 0
+    LayerSolid  math2d.Layer = 1 &lt;&lt; 1
+    LayerCoin   math2d.Layer = 1 &lt;&lt; 2
+)
+
+type Entity struct {
+    Pos      math2d.Vec2
+    Size     math2d.Vec2
+    Vel      math2d.Vec2
+    Collider math2d.Collider
+}
+
+func (e *Entity) Bounds() math2d.Rect {
+    return math2d.Rect{X: e.Pos.X, Y: e.Pos.Y, W: e.Size.X, H: e.Size.Y}
+}
+
+func (g *Game) Update() {
+    p := &amp;g.player
+
+    // Apply gravity
+    p.Vel.Y += 0.5
+
+    // Sweep against all solid tiles
+    bounds := p.Bounds()
+    for _, wall := range g.walls {
+        hit, t, normal := math2d.AABBSweep(bounds, p.Vel, wall)
+        if hit {
+            // Move up to contact
+            p.Vel = math2d.Vec2{
+                X: p.Vel.X * t,
+                Y: p.Vel.Y * t,
+            }
+            // Cancel velocity into the wall
+            if normal.Y &lt; 0 {
+                p.Vel.Y = 0
+                p.OnGround = true
+            }
+            if normal.Y &gt; 0 {
+                p.Vel.Y = 0 // hit ceiling
+            }
+            if normal.X != 0 {
+                p.Vel.X = 0 // hit side wall
+            }
+        }
+    }
+
+    // Apply velocity
+    p.Pos.X += p.Vel.X
+    p.Pos.Y += p.Vel.Y
+
+    // Check coin pickups (simple overlap, no physics)
+    playerCol := math2d.Collider{
+        Bounds: p.Bounds(),
+        Layer:  LayerPlayer,
+        Mask:   LayerCoin,
+    }
+    for i, coin := range g.coins {
+        coinCol := math2d.Collider{
+            Bounds: coin,
+            Layer:  LayerCoin,
+            Mask:   LayerPlayer,
+        }
+        if math2d.ColliderOverlap(playerCol, coinCol) {
+            g.score++
+            g.coins = append(g.coins[:i], g.coins[i+1:]...)
+            break
+        }
+    }
+}
+</code></pre>
+<h2 id="try-it"><a class="header" href="#try-it">Try It</a></h2>
+<iframe src="../emulator/play.html?rom=math2d_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
 <blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+<p><strong>Controls:</strong> Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger</p>
 </blockquote>
+<h2 id="reference-example"><a class="header" href="#reference-example">Reference Example</a></h2>
+<p>See <code>examples/math2d_demo</code> in the GoSprite64 repository for a visual demonstration of 2D math including collision detection. The example shows bouncing objects with overlap detection using <code>Rect.Overlaps</code>.</p>
 
                     </main>
 

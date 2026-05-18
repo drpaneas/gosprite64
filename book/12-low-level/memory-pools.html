@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,109 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="memory-pools"><a class="header" href="#memory-pools">Memory Pools</a></h1>
-<p>Pre-allocate and reuse memory blocks to avoid runtime allocation on the N64.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>The <code>dma.Pool</code> is a linear memory allocator for RDRAM, modeled after the allocation pattern used in Super Mario 64 (<code>main_pool_alloc</code> / <code>alloc_display_list</code>). It allocates from both ends of a contiguous memory region: the “head” grows upward for permanent allocations, and the “tail” grows downward for temporary per-frame allocations that are reset each frame.</p>
+<h2 id="why-a-pool-allocator"><a class="header" href="#why-a-pool-allocator">Why a pool allocator?</a></h2>
+<p>The N64 has 4MB (or 8MB with the Expansion Pak) of RDRAM and no virtual memory. Go’s garbage collector is not available on bare-metal N64 builds. A pool allocator gives you:</p>
+<ul>
+<li><strong>Deterministic allocation</strong> with no fragmentation (within the linear model)</li>
+<li><strong>Fast per-frame reset</strong> for temporary data like display lists and vertex buffers</li>
+<li><strong>Simple lifetime management</strong>: permanent data at the head, temporary data at the tail</li>
+</ul>
+<h2 id="pool"><a class="header" href="#pool">Pool</a></h2>
+<pre><code class="language-go">type Pool struct {
+    base     uint32
+    size     uint32
+    headUsed uint32
+    tailUsed uint32
+}
+</code></pre>
+<p>The pool manages a single contiguous RDRAM region from <code>base</code> to <code>base + size</code>.</p>
+<pre><code> ┌──────────────────────────────────────────────┐
+ │  HEAD (permanent) ──&gt;          &lt;── TAIL (temp)│
+ │  [used]           [available]        [used]   │
+ └──────────────────────────────────────────────┘
+ base                                    base+size
+</code></pre>
+<h2 id="newpool"><a class="header" href="#newpool">NewPool</a></h2>
+<p>Creates a memory pool at the given RDRAM address with the given size:</p>
+<pre><code class="language-go">pool := dma.NewPool(0x80200000, 512*1024) // 512KB pool at 0x80200000
+</code></pre>
+<p>The pool starts empty with zero bytes used on both ends.</p>
+<h2 id="allochead"><a class="header" href="#allochead">AllocHead</a></h2>
+<p>Allocates bytes from the head (permanent, grows up). Returns the RDRAM address of the allocation:</p>
+<pre><code class="language-go">addr, err := pool.AllocHead(1024)
+if err != nil {
+    // pool exhausted
+}
+</code></pre>
+<p>All allocations are aligned to 16 bytes. If the requested size plus existing usage exceeds the pool, <code>ErrPoolExhausted</code> is returned.</p>
+<p>Head allocations are permanent for the lifetime of the pool. Use these for data that persists across frames: level geometry, textures, loaded assets.</p>
+<h2 id="alloctail"><a class="header" href="#alloctail">AllocTail</a></h2>
+<p>Allocates bytes from the tail (temporary, grows down). Returns the RDRAM address of the allocation:</p>
+<pre><code class="language-go">addr, err := pool.AllocTail(2048)
+if err != nil {
+    // pool exhausted
+}
+</code></pre>
+<p>Tail allocations grow downward from <code>base + size</code>. Like head allocations, they are 16-byte aligned.</p>
+<p>Use tail allocations for per-frame data: display lists, transformed vertex buffers, scratch matrices.</p>
+<h2 id="resettail"><a class="header" href="#resettail">ResetTail</a></h2>
+<p>Frees all tail allocations at once. Call this at the start of each frame:</p>
+<pre><code class="language-go">pool.ResetTail()
+</code></pre>
+<p>After reset, all tail memory is available again. Head allocations are unaffected.</p>
+<h2 id="querying-pool-state"><a class="header" href="#querying-pool-state">Querying pool state</a></h2>
+<pre><code class="language-go">pool.Available()  // remaining bytes between head and tail
+pool.HeadUsed()   // bytes allocated from the head
+pool.TailUsed()   // bytes allocated from the tail
+pool.Base()       // pool's base RDRAM address
+</code></pre>
+<h2 id="error-handling"><a class="header" href="#error-handling">Error handling</a></h2>
+<pre><code class="language-go">var (
+    ErrPoolExhausted = errors.New("dma: memory pool exhausted")
+    ErrInvalidFree   = errors.New("dma: invalid free address")
+)
+</code></pre>
+<p>Both <code>AllocHead</code> and <code>AllocTail</code> return <code>ErrPoolExhausted</code> when the remaining space between head and tail cannot satisfy the request.</p>
+<h2 id="alignment"><a class="header" href="#alignment">Alignment</a></h2>
+<p>All allocations are rounded up to the nearest 16-byte boundary. This ensures proper alignment for DMA transfers and RSP data structures, which require 8-byte or 16-byte alignment on the N64.</p>
+<p>For example, <code>AllocHead(100)</code> actually consumes 112 bytes (next multiple of 16).</p>
+<h2 id="usage-patterns"><a class="header" href="#usage-patterns">Usage patterns</a></h2>
+<h3 id="level-lifecycle"><a class="header" href="#level-lifecycle">Level lifecycle</a></h3>
+<pre><code class="language-go">// At level load
+pool := dma.NewPool(poolBase, poolSize)
+
+// Permanent allocations (persist for entire level)
+geoAddr, _ := pool.AllocHead(geoSize)   // level geometry
+texAddr, _ := pool.AllocHead(texSize)   // textures
+
+// Per-frame loop
+for {
+    pool.ResetTail()
+
+    // Temporary allocations (freed every frame)
+    dlAddr, _ := pool.AllocTail(dlSize)     // display list
+    vtxAddr, _ := pool.AllocTail(vtxSize)   // transformed vertices
+    mtxAddr, _ := pool.AllocTail(mtxSize)   // matrix stack
+
+    // Build and submit frame...
+}
+</code></pre>
+<h3 id="monitoring-usage"><a class="header" href="#monitoring-usage">Monitoring usage</a></h3>
+<pre><code class="language-go">fmt.Printf("Pool: %d/%d bytes used (head=%d, tail=%d, free=%d)\n",
+    pool.HeadUsed()+pool.TailUsed(),
+    pool.HeadUsed()+pool.TailUsed()+pool.Available(),
+    pool.HeadUsed(),
+    pool.TailUsed(),
+    pool.Available(),
+)
+</code></pre>
+<h3 id="multiple-pools"><a class="header" href="#multiple-pools">Multiple pools</a></h3>
+<p>You can create separate pools for different purposes:</p>
+<pre><code class="language-go">mainPool := dma.NewPool(0x80200000, 384*1024)  // general purpose
+audioPool := dma.NewPool(0x80260000, 64*1024)  // audio buffers
+</code></pre>
+<p>This prevents audio allocations from competing with graphics allocations.</p>
 
                     </main>
 

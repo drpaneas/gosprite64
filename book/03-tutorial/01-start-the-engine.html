@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,82 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="step-1-start-the-engine"><a class="header" href="#step-1-start-the-engine">Step 1: Start the Engine</a></h1>
-<p>Set up a minimal GoSprite64 project that compiles and runs as an N64 ROM.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>Set up a minimal GoSprite64 project that compiles, runs, and draws a solid blue screen.</p>
+<h2 id="what-you-will-learn"><a class="header" href="#what-you-will-learn">What you will learn</a></h2>
+<ul>
+<li>The Game interface (Init, Update, Draw)</li>
+<li>How <code>gosprite64.Run</code> starts the engine</li>
+<li>How to clear the screen with a color</li>
+<li>How to build and run an N64 ROM</li>
+</ul>
+<h2 id="the-code"><a class="header" href="#the-code">The code</a></h2>
+<p>Create <code>examples/platformer/main.go</code>:</p>
+<pre><code class="language-go">package main
+
+import (
+	"github.com/drpaneas/gosprite64"
+)
+
+type Game struct{}
+
+func (g *Game) Init()   {}
+func (g *Game) Update() {}
+
+func (g *Game) Draw() {
+	gosprite64.ClearScreenWith(gosprite64.Blue)
+}
+
+func main() {
+	gosprite64.Run(&amp;Game{})
+}
+</code></pre>
+<h2 id="how-it-works"><a class="header" href="#how-it-works">How it works</a></h2>
+<p>Every GoSprite64 game is a struct that implements three methods:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Method</th><th>Called</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Init()</code></td><td>Once at startup</td><td>Load assets, set initial state</td></tr>
+<tr><td><code>Update()</code></td><td>60 times per second</td><td>Game logic, input handling</td></tr>
+<tr><td><code>Draw()</code></td><td>Every frame after Update</td><td>Render everything to the screen</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>gosprite64.Run(&amp;Game{})</code> boots the N64 hardware, initializes the display, calls your <code>Init()</code> once, then enters an infinite loop calling <code>Update()</code> and <code>Draw()</code> at 60 FPS.</p>
+<p><code>ClearScreenWith(color)</code> fills the entire 288x216 pixel framebuffer with a solid color. The engine provides 16 built-in colors (Black, DarkBlue, Blue, Green, Red, White, Yellow, etc.). Here we use <code>Blue</code> to get a sky-colored background.</p>
+<h2 id="build-and-run"><a class="header" href="#build-and-run">Build and run</a></h2>
+<p>You also need an asset embed file. Create <code>examples/platformer/assets_embed.go</code>:</p>
+<pre><code class="language-go">package main
+
+import (
+	"embed"
+
+	"github.com/clktmr/n64/drivers/cartfs"
+	"github.com/drpaneas/gosprite64"
+)
+
+//go:embed assets/*
+var embeddedAssets embed.FS
+
+var assetFS = cartfs.Embed(embeddedAssets)
+
+func init() {
+	gosprite64.RegisterAssetFS(assetFS)
+}
+</code></pre>
+<p>For now, create a placeholder assets directory so the embed does not fail:</p>
+<pre><code class="language-bash">mkdir -p examples/platformer/assets
+touch examples/platformer/assets/.gitkeep
+</code></pre>
+<p>Build and run:</p>
+<pre><code class="language-bash">GOENV=n64.env go1.24.5-embedded build -o examples/platformer/game.elf ./examples/platformer
+n64go rom examples/platformer/game.elf
+</code></pre>
+<p>Open <code>game.z64</code> in the ares emulator. You should see a solid blue screen filling the display. That is your game running on N64 hardware - the simplest possible starting point.</p>
+<h2 id="what-comes-next"><a class="header" href="#what-comes-next">What comes next</a></h2>
+<p>In the next steps we will add a tile world, a player character, animation, and controls. But the structure will always be the same: load things in Init, update state in Update, draw everything in Draw.</p>
 
                     </main>
 

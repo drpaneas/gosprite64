@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,93 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="colors"><a class="header" href="#colors">Colors</a></h1>
-<p>The built-in color palette and how to define custom colors for drawing operations.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>GoSprite64 includes a built-in 16-color palette inspired by classic fantasy consoles. You can use these named constants directly or create custom colors with Go’s standard <code>image/color</code> package.</p>
+<h2 id="the-built-in-palette"><a class="header" href="#the-built-in-palette">The Built-in Palette</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Constant</th><th>R</th><th>G</th><th>B</th><th>Preview</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Black</code></td><td>0</td><td>0</td><td>0</td><td><img src="https://via.placeholder.com/16/000000/000000" alt="#000000"></td></tr>
+<tr><td><code>DarkBlue</code></td><td>29</td><td>43</td><td>83</td><td><img src="https://via.placeholder.com/16/1D2B53/1D2B53" alt="#1D2B53"></td></tr>
+<tr><td><code>DarkPurple</code></td><td>126</td><td>37</td><td>83</td><td><img src="https://via.placeholder.com/16/7E2553/7E2553" alt="#7E2553"></td></tr>
+<tr><td><code>DarkGreen</code></td><td>0</td><td>135</td><td>81</td><td><img src="https://via.placeholder.com/16/008751/008751" alt="#008751"></td></tr>
+<tr><td><code>Brown</code></td><td>171</td><td>82</td><td>54</td><td><img src="https://via.placeholder.com/16/AB5236/AB5236" alt="#AB5236"></td></tr>
+<tr><td><code>DarkGray</code></td><td>95</td><td>87</td><td>79</td><td><img src="https://via.placeholder.com/16/5F574F/5F574F" alt="#5F574F"></td></tr>
+<tr><td><code>LightGray</code></td><td>194</td><td>195</td><td>199</td><td><img src="https://via.placeholder.com/16/C2C3C7/C2C3C7" alt="#C2C3C7"></td></tr>
+<tr><td><code>White</code></td><td>255</td><td>241</td><td>232</td><td><img src="https://via.placeholder.com/16/FFF1E8/FFF1E8" alt="#FFF1E8"></td></tr>
+<tr><td><code>Red</code></td><td>255</td><td>0</td><td>77</td><td><img src="https://via.placeholder.com/16/FF004D/FF004D" alt="#FF004D"></td></tr>
+<tr><td><code>Orange</code></td><td>255</td><td>163</td><td>0</td><td><img src="https://via.placeholder.com/16/FFA300/FFA300" alt="#FFA300"></td></tr>
+<tr><td><code>Yellow</code></td><td>255</td><td>236</td><td>39</td><td><img src="https://via.placeholder.com/16/FFEC27/FFEC27" alt="#FFEC27"></td></tr>
+<tr><td><code>Green</code></td><td>0</td><td>228</td><td>54</td><td><img src="https://via.placeholder.com/16/00E436/00E436" alt="#00E436"></td></tr>
+<tr><td><code>Blue</code></td><td>41</td><td>173</td><td>255</td><td><img src="https://via.placeholder.com/16/29ADFF/29ADFF" alt="#29ADFF"></td></tr>
+<tr><td><code>Indigo</code></td><td>131</td><td>118</td><td>156</td><td><img src="https://via.placeholder.com/16/83769C/83769C" alt="#83769C"></td></tr>
+<tr><td><code>Pink</code></td><td>255</td><td>119</td><td>168</td><td><img src="https://via.placeholder.com/16/FF77A8/FF77A8" alt="#FF77A8"></td></tr>
+<tr><td><code>Peach</code></td><td>255</td><td>204</td><td>170</td><td><img src="https://via.placeholder.com/16/FFCCAA/FFCCAA" alt="#FFCCAA"></td></tr>
+</tbody>
+</table>
+</div>
+<p>All 16 colors are declared as <code>color.Color</code> variables in the <code>gosprite64</code> package:</p>
+<pre><code class="language-go">var (
+    Black      color.Color = color.RGBA{R: 0, G: 0, B: 0, A: 255}
+    DarkBlue   color.Color = color.RGBA{R: 29, G: 43, B: 83, A: 255}
+    DarkPurple color.Color = color.RGBA{R: 126, G: 37, B: 83, A: 255}
+    DarkGreen  color.Color = color.RGBA{R: 0, G: 135, B: 81, A: 255}
+    Brown      color.Color = color.RGBA{R: 171, G: 82, B: 54, A: 255}
+    DarkGray   color.Color = color.RGBA{R: 95, G: 87, B: 79, A: 255}
+    LightGray  color.Color = color.RGBA{R: 194, G: 195, B: 199, A: 255}
+    White      color.Color = color.RGBA{R: 255, G: 241, B: 232, A: 255}
+    Red        color.Color = color.RGBA{R: 255, G: 0, B: 77, A: 255}
+    Orange     color.Color = color.RGBA{R: 255, G: 163, B: 0, A: 255}
+    Yellow     color.Color = color.RGBA{R: 255, G: 236, B: 39, A: 255}
+    Green      color.Color = color.RGBA{R: 0, G: 228, B: 54, A: 255}
+    Blue       color.Color = color.RGBA{R: 41, G: 173, B: 255, A: 255}
+    Indigo     color.Color = color.RGBA{R: 131, G: 118, B: 156, A: 255}
+    Pink       color.Color = color.RGBA{R: 255, G: 119, B: 168, A: 255}
+    Peach      color.Color = color.RGBA{R: 255, G: 204, B: 170, A: 255}
+)
+</code></pre>
+<h2 id="using-named-colors"><a class="header" href="#using-named-colors">Using Named Colors</a></h2>
+<p>Pass any named color directly to drawing functions:</p>
+<pre><code class="language-go">func (g *Game) Draw() {
+    gosprite64.ClearScreen()                                         // fills with Black
+    gosprite64.FillRect(10, 10, 100, 50, gosprite64.DarkBlue)       // filled rectangle
+    gosprite64.DrawRect(10, 10, 100, 50, gosprite64.Yellow)         // outline
+    gosprite64.DrawLine(0, 108, 287, 108, gosprite64.Red)           // horizontal line
+    gosprite64.DrawText("HELLO N64", 100, 80, gosprite64.White)     // text
+}
+</code></pre>
+<p>You can also clear the screen to any color:</p>
+<pre><code class="language-go">gosprite64.ClearScreenWith(gosprite64.DarkPurple)
+</code></pre>
+<h2 id="using-custom-colors"><a class="header" href="#using-custom-colors">Using Custom Colors</a></h2>
+<p>Any value that satisfies Go’s <code>color.Color</code> interface works with GoSprite64’s drawing functions. The most common way to create a custom color is with <code>color.RGBA</code>:</p>
+<pre><code class="language-go">import "image/color"
+
+// Fully opaque custom color
+skyBlue := color.RGBA{R: 135, G: 206, B: 235, A: 255}
+gosprite64.ClearScreenWith(skyBlue)
+
+// Semi-transparent (for transitions or overlays)
+shadow := color.RGBA{R: 0, G: 0, B: 0, A: 128}
+gosprite64.FillRect(20, 20, 260, 196, shadow)
+</code></pre>
+<p>The <code>A</code> (alpha) field controls opacity: 255 is fully opaque, 0 is fully transparent.</p>
+<h2 id="performance-note"><a class="header" href="#performance-note">Performance Note</a></h2>
+<p>The 16 built-in colors are pre-cached internally as <code>image.Uniform</code> values, so using them is slightly faster than creating new <code>color.RGBA</code> values each frame. For custom colors that you use every frame, consider storing them in a variable rather than creating them inline.</p>
+<pre><code class="language-go">type Game struct {
+    bgColor color.Color
+}
+
+func (g *Game) Init() {
+    g.bgColor = color.RGBA{R: 20, G: 12, B: 28, A: 255}
+}
+
+func (g *Game) Draw() {
+    gosprite64.ClearScreenWith(g.bgColor)
+}
+</code></pre>
 
                     </main>
 

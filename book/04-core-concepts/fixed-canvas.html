@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,63 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="the-fixed-canvas"><a class="header" href="#the-fixed-canvas">The Fixed Canvas</a></h1>
-<p>How the 288x216 logical canvas maps to the 320x240 framebuffer and why you never need to think about video modes.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>GoSprite64 gives you a single, fixed drawing surface: <strong>288 x 216 logical pixels</strong>. Every drawing function in the library operates in this coordinate space, and the runtime handles everything else.</p>
+<h2 id="the-logical-canvas"><a class="header" href="#the-logical-canvas">The Logical Canvas</a></h2>
+<p>All public drawing APIs use the same coordinate system:</p>
+<ul>
+<li><strong>X</strong> ranges from <code>0</code> (left) to <code>287</code> (right)</li>
+<li><strong>Y</strong> ranges from <code>0</code> (top) to <code>215</code> (bottom)</li>
+</ul>
+<p>When you call <code>FillRect(10, 10, 50, 50, Red)</code>, those numbers are logical pixel coordinates. You never need to think about the physical framebuffer, video output format, or TV overscan.</p>
+<pre><code class="language-go">func (g *Game) Draw() {
+    gosprite64.ClearScreen()
+
+    // These coordinates are always 288x216 logical pixels
+    gosprite64.FillRect(0, 0, 287, 215, gosprite64.DarkBlue)   // full screen
+    gosprite64.DrawRect(10, 10, 277, 205, gosprite64.White)     // 10px inset border
+    gosprite64.DrawText("288x216", 112, 100, gosprite64.Yellow) // centered-ish text
+}
+</code></pre>
+<h2 id="what-happens-under-the-hood"><a class="header" href="#what-happens-under-the-hood">What Happens Under the Hood</a></h2>
+<p>The N64’s actual framebuffer is <strong>320 x 240</strong> pixels. GoSprite64 places your 288x216 canvas inside this framebuffer with a 16-pixel horizontal margin and 12-pixel vertical margin on each side:</p>
+<pre><code>+--- 320x240 framebuffer ------+
+|  16px  +-288x216-+  16px     |
+|  margin| logical |  margin   |
+| 12px   | canvas  |           |
+|        +---------+           |
++-------------------------------+
+</code></pre>
+<p>The origin offset is <code>(16, 12)</code> - every logical coordinate you pass is translated by this amount before being drawn to the framebuffer. The margin area is not accessible to your game code.</p>
+<p>After rendering, the 320x240 framebuffer is scaled up to the TV’s output resolution (640x480 for NTSC, 640x576 for PAL) and centered on screen, ensuring that pixels appear square regardless of the video standard.</p>
+<h2 id="why-288x216"><a class="header" href="#why-288x216">Why 288x216?</a></h2>
+<p>The N64 outputs video in formats where pixels are not naturally square. NTSC displays 640x480 with a 4:3 aspect ratio, but the pixel aspect ratio is not 1:1 at 320x240. By using 288x216 as the logical canvas, GoSprite64 ensures that:</p>
+<ul>
+<li>Your game looks the same on NTSC and PAL televisions</li>
+<li>Circles look like circles, squares look like squares</li>
+<li>Sprite art can be authored at 1:1 pixel ratio in any art tool</li>
+</ul>
+<p>For a deep dive into the math behind this, see the <a href="square-pixels.html">Square Pixels</a> chapter.</p>
+<h2 id="functions-that-use-the-logical-canvas"><a class="header" href="#functions-that-use-the-logical-canvas">Functions That Use the Logical Canvas</a></h2>
+<p>Every drawing function in <code>gosprite64</code> uses logical coordinates:</p>
+<pre><code class="language-go">gosprite64.FillRect(x1, y1, x2, y2, color)
+gosprite64.DrawRect(x1, y1, x2, y2, color)
+gosprite64.DrawLine(x1, y1, x2, y2, color)
+gosprite64.DrawText(str, x, y, color)
+gosprite64.DrawImage(img, x, y)
+gosprite64.DrawSprite(sheet, frame, x, y)
+</code></pre>
+<p>You can also use <code>DrawWorldSprite</code> and <code>DrawWorldImage</code> which accept world-space coordinates and a <code>Camera</code> - but the camera offset is applied before mapping into the same 288x216 space.</p>
+<h2 id="draw-regions"><a class="header" href="#draw-regions">Draw Regions</a></h2>
+<p>If you need to restrict drawing to a sub-area of the screen (for split-screen multiplayer, for example), use <code>SetDrawRegion</code>:</p>
+<pre><code class="language-go">gosprite64.SetDrawRegion(0, 0, 144, 216)   // left half
+// ... draw player 1 ...
+gosprite64.ResetDrawRegion()
+
+gosprite64.SetDrawRegion(144, 0, 144, 216)  // right half
+// ... draw player 2 ...
+gosprite64.ResetDrawRegion()
+</code></pre>
+<p>The coordinates passed to <code>SetDrawRegion</code> are also in logical space. See <a href="../05-graphics/draw-regions.html">Draw Regions</a> for details.</p>
 
                     </main>
 

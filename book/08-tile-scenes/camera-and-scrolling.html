@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,170 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="camera-and-scrolling"><a class="header" href="#camera-and-scrolling">Camera and Scrolling</a></h1>
-<p>Control the camera viewport to scroll through tile worlds larger than the screen.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>The <code>Camera</code> struct defines the visible region of your tile world. By moving the camera, you scroll through maps that are larger than the screen. This page covers camera creation, manual scrolling, smooth follow, bounds clamping, screen shake, and the <code>scene.Draw(camera)</code> rendering call.</p>
+<h2 id="camera-struct"><a class="header" href="#camera-struct">Camera struct</a></h2>
+<pre><code class="language-go">type Camera struct {
+    X, Y          int       // top-left corner of the viewport in world pixels
+    Width, Height int       // viewport size in pixels
+
+    Zoom         float32    // zoom level (0 or unset defaults to 1.0)
+
+    FollowTarget *math2d.Vec2 // world position to follow
+    FollowSpeed  float32      // lerp speed: 0.0-1.0 (1.0 = instant snap)
+
+    Bounds       *math2d.Rect // optional clamping rectangle
+}
+</code></pre>
+<p>Create a camera by specifying the viewport dimensions. On the N64, the standard logical resolution is 288x216:</p>
+<pre><code class="language-go">camera := &amp;gosprite64.Camera{Width: 288, Height: 216}
+</code></pre>
+<h2 id="drawing-with-a-camera"><a class="header" href="#drawing-with-a-camera">Drawing with a camera</a></h2>
+<p>Pass the camera to <code>scene.Draw</code> each frame:</p>
+<pre><code class="language-go">func (g *Game) Draw() {
+    gosprite64.ClearScreen()
+    g.scene.Draw(g.camera)
+}
+</code></pre>
+<p><code>scene.Draw</code> renders only the tiles visible within the camera’s viewport. The renderer uses chunk-based culling to skip off-screen regions efficiently. If the camera is <code>nil</code>, the scene uses its default camera (positioned at the origin).</p>
+<h2 id="manual-scrolling"><a class="header" href="#manual-scrolling">Manual scrolling</a></h2>
+<p>Move the camera by updating <code>X</code> and <code>Y</code> directly. The <code>simplegame</code> example scrolls with the D-pad:</p>
+<pre><code class="language-go">func (g *Game) Update() {
+    speed := 1
+
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadUp) {
+        g.camera.Y -= speed
+    }
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadDown) {
+        g.camera.Y += speed
+    }
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadLeft) {
+        g.camera.X -= speed
+    }
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadRight) {
+        g.camera.X += speed
+    }
+}
+</code></pre>
+<h2 id="clamping-to-map-bounds"><a class="header" href="#clamping-to-map-bounds">Clamping to map bounds</a></h2>
+<p>Without clamping, the camera can scroll past the map edges, showing empty space. There are two approaches to restrict the camera.</p>
+<h3 id="manual-clamping"><a class="header" href="#manual-clamping">Manual clamping</a></h3>
+<p>Compute the maximum scroll position from the map’s pixel dimensions:</p>
+<pre><code class="language-go">m := g.scene.Map()
+maxX := m.PixelWidth() - g.camera.Width
+maxY := m.PixelHeight() - g.camera.Height
+
+if g.camera.X &lt; 0 {
+    g.camera.X = 0
+}
+if g.camera.Y &lt; 0 {
+    g.camera.Y = 0
+}
+if g.camera.X &gt; maxX {
+    g.camera.X = maxX
+}
+if g.camera.Y &gt; maxY {
+    g.camera.Y = maxY
+}
+</code></pre>
+<h3 id="using-camerabounds"><a class="header" href="#using-camerabounds">Using Camera.Bounds</a></h3>
+<p>Set the <code>Bounds</code> field and call <code>ClampToBounds</code> for automatic clamping:</p>
+<pre><code class="language-go">m := g.scene.Map()
+g.camera.Bounds = &amp;math2d.Rect{
+    X: 0, Y: 0,
+    W: float32(m.PixelWidth()),
+    H: float32(m.PixelHeight()),
+}
+
+// In Update(), after moving the camera:
+g.camera.ClampToBounds()
+</code></pre>
+<p><code>ClampToBounds</code> ensures the viewport stays within the bounds rectangle. It accounts for the viewport size so the right/bottom edges do not exceed the map. If <code>Bounds</code> is nil, the call is a no-op.</p>
+<h2 id="smooth-camera-follow"><a class="header" href="#smooth-camera-follow">Smooth camera follow</a></h2>
+<p>To make the camera track a player or other target smoothly, set <code>FollowTarget</code> and <code>FollowSpeed</code>, then call <code>UpdateFollow</code> each frame:</p>
+<pre><code class="language-go">g.camera.FollowTarget = &amp;math2d.Vec2{X: playerX, Y: playerY}
+g.camera.FollowSpeed = 0.1 // smooth lerp (1.0 = instant snap)
+
+func (g *Game) Update() {
+    g.camera.FollowTarget.X = g.playerX
+    g.camera.FollowTarget.Y = g.playerY
+    g.camera.UpdateFollow()
+    g.camera.ClampToBounds()
+}
+</code></pre>
+<p><code>UpdateFollow</code> lerps the camera position toward the target, centering it in the viewport. A speed of <code>0.1</code> gives a smooth trailing feel; <code>1.0</code> snaps instantly. When the camera is within 1 pixel of the target, it snaps to avoid sub-pixel jitter.</p>
+<h2 id="coordinate-conversion"><a class="header" href="#coordinate-conversion">Coordinate conversion</a></h2>
+<p><code>WorldToScreen</code> converts a world position to screen coordinates, accounting for camera position and zoom:</p>
+<pre><code class="language-go">screenX, screenY := g.camera.WorldToScreen(worldX, worldY)
+</code></pre>
+<p>This is useful for placing UI elements or debug overlays relative to world objects.</p>
+<h2 id="zoom"><a class="header" href="#zoom">Zoom</a></h2>
+<p>Set the <code>Zoom</code> field to scale the viewport. A zoom of <code>2.0</code> means each world pixel occupies 2 screen pixels (zoomed in). The default zoom is <code>1.0</code>.</p>
+<pre><code class="language-go">g.camera.Zoom = 2.0
+</code></pre>
+<p><code>EffectiveZoom</code> returns the active zoom level, defaulting to 1.0 when <code>Zoom</code> is zero:</p>
+<pre><code class="language-go">z := g.camera.EffectiveZoom()
+</code></pre>
+<h2 id="screen-shake"><a class="header" href="#screen-shake">Screen shake</a></h2>
+<p>Camera shake adds visual impact to events like explosions or hits. The system uses a trauma model where shake magnitude is the square of the trauma value, producing a natural decay.</p>
+<pre><code class="language-go">// On impact:
+g.camera.AddTrauma(0.5) // 0.0-1.0, multiple hits accumulate up to 1.0
+
+// Every frame in Update():
+g.camera.UpdateShake() // decays trauma over time
+
+// When drawing, apply the shake offset:
+shakeX, shakeY := g.camera.ShakeOffset()
+// Use shakeX/shakeY as an additional draw offset
+</code></pre>
+<ul>
+<li><code>AddTrauma(amount)</code> adds to the trauma value, capping at 1.0</li>
+<li><code>UpdateShake()</code> decays trauma by 1/60 per frame</li>
+<li><code>ShakeOffset()</code> returns pixel displacement for the current frame, with a maximum offset of 8 pixels in each direction</li>
+</ul>
+<h2 id="complete-example"><a class="header" href="#complete-example">Complete example</a></h2>
+<p>This is a condensed version of <code>examples/simplegame</code>:</p>
+<pre><code class="language-go">type Game struct {
+    scene  *gosprite64.Scene
+    camera *gosprite64.Camera
+}
+
+func (g *Game) Init() {
+    bundle, err := gosprite64.OpenBundle("assets/level.bundle")
+    if err != nil {
+        panic(err)
+    }
+    scene, err := gosprite64.LoadScene(bundle)
+    if err != nil {
+        panic(err)
+    }
+    g.scene = scene
+    g.camera = &amp;gosprite64.Camera{Width: 288, Height: 216}
+}
+
+func (g *Game) Update() {
+    speed := 1
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadUp)    { g.camera.Y -= speed }
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadDown)  { g.camera.Y += speed }
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadLeft)  { g.camera.X -= speed }
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadRight) { g.camera.X += speed }
+
+    m := g.scene.Map()
+    maxX := m.PixelWidth() - g.camera.Width
+    maxY := m.PixelHeight() - g.camera.Height
+    if g.camera.X &lt; 0    { g.camera.X = 0 }
+    if g.camera.Y &lt; 0    { g.camera.Y = 0 }
+    if g.camera.X &gt; maxX { g.camera.X = maxX }
+    if g.camera.Y &gt; maxY { g.camera.Y = maxY }
+}
+
+func (g *Game) Draw() {
+    gosprite64.ClearScreen()
+    g.scene.Draw(g.camera)
+
+    stats := g.scene.Stats()
+    gosprite64.DrawText(fmt.Sprintf("vis:%d", stats.VisibleTiles), 2, 2, gosprite64.White)
+}
+</code></pre>
 
                     </main>
 

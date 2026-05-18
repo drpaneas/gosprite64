@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,220 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="scene-graph"><a class="header" href="#scene-graph">Scene Graph</a></h1>
-<p>Organize 3D objects in a hierarchical tree for transform inheritance and rendering.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>The <code>scene3d</code> package provides a hierarchical scene graph for organizing 3D objects. Nodes form a tree where each child inherits its parent’s transform. The scene graph handles transform composition, camera setup, level-of-detail selection, and depth-first traversal for rendering.</p>
+<h2 id="node-types"><a class="header" href="#node-types">Node types</a></h2>
+<p>Every node has a <code>Type</code> field that determines its behavior during traversal:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Type</th><th>Value</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td><code>NodeTransform</code></td><td>0</td><td>Pure transform (position/rotation/scale)</td></tr>
+<tr><td><code>NodeCamera</code></td><td>1</td><td>Camera with projection parameters</td></tr>
+<tr><td><code>NodeMesh</code></td><td>2</td><td>Renderable mesh with a display list</td></tr>
+<tr><td><code>NodeBillboard</code></td><td>3</td><td>Billboard that always faces the camera</td></tr>
+<tr><td><code>NodeRenderFunc</code></td><td>4</td><td>Custom rendering callback</td></tr>
+<tr><td><code>NodeLOD</code></td><td>5</td><td>Level-of-detail selector</td></tr>
+<tr><td><code>NodeGroup</code></td><td>6</td><td>Generic group for organizing children</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="creating-nodes"><a class="header" href="#creating-nodes">Creating nodes</a></h2>
+<h3 id="newnode"><a class="header" href="#newnode">NewNode</a></h3>
+<p>Creates a group node for organizing children. Visibility defaults to <code>true</code> and scale defaults to (1, 1, 1):</p>
+<pre><code class="language-go">root := scene3d.NewNode("world")
+</code></pre>
+<h3 id="newmeshnode"><a class="header" href="#newmeshnode">NewMeshNode</a></h3>
+<p>Creates a mesh node that renders a pre-built display list:</p>
+<pre><code class="language-go">dl := gfx.NewDisplayList(64)
+// ... build display list commands ...
+dl.SPEndDisplayList()
+
+cube := scene3d.NewMeshNode("cube", dl)
+</code></pre>
+<p>The <code>MeshData</code> also supports a bounding sphere for frustum culling:</p>
+<pre><code class="language-go">cube.Mesh.BoundsCenter = math3d.Vec3{X: 0, Y: 0, Z: 0}
+cube.Mesh.BoundsRadius = 5.0
+</code></pre>
+<h3 id="newperspectivecamera"><a class="header" href="#newperspectivecamera">NewPerspectiveCamera</a></h3>
+<p>Creates a camera node with perspective projection:</p>
+<pre><code class="language-go">cam := scene3d.NewPerspectiveCamera("main-cam", 45, 1.333, 10, 1000)
+// fov=45 degrees, aspect=1.333, near=10, far=1000
+</code></pre>
+<h3 id="neworthocamera"><a class="header" href="#neworthocamera">NewOrthoCamera</a></h3>
+<p>Creates a camera node with orthographic projection:</p>
+<pre><code class="language-go">cam := scene3d.NewOrthoCamera("ui-cam", 0, 320, 240, 0, -1, 1)
+</code></pre>
+<h3 id="newlodnode"><a class="header" href="#newlodnode">NewLODNode</a></h3>
+<p>Creates a level-of-detail node that selects a child based on camera distance:</p>
+<pre><code class="language-go">lod := scene3d.NewLODNode("tree-lod", []scene3d.LODLevel{
+    {MaxDistance: 100, Child: highDetailTree},
+    {MaxDistance: 500, Child: lowDetailTree},
+})
+</code></pre>
+<p>The <code>LODData.Select(distance)</code> method returns the first child whose <code>MaxDistance</code> is &gt;= the given distance, or <code>nil</code> if no level matches.</p>
+<h2 id="building-a-node-hierarchy"><a class="header" href="#building-a-node-hierarchy">Building a node hierarchy</a></h2>
+<p>Use <code>AddChild</code> to attach nodes to parents. Transforms compose through the hierarchy:</p>
+<pre><code class="language-go">root := scene3d.NewNode("root")
+
+// Position a group
+platform := scene3d.NewNode("platform")
+platform.Position = math3d.Vec3{X: 10, Y: 0, Z: 0}
+root.AddChild(platform)
+
+// Add a mesh to the group - it inherits the platform's position
+crate := scene3d.NewMeshNode("crate", crateDL)
+crate.Position = math3d.Vec3{X: 0, Y: 2, Z: 0} // 2 units above the platform
+platform.AddChild(crate)
+</code></pre>
+<h2 id="node-transform"><a class="header" href="#node-transform">Node transform</a></h2>
+<p>Each node has <code>Position</code>, <code>Rotation</code>, and <code>Scale</code> fields:</p>
+<pre><code class="language-go">type Node struct {
+    Position math3d.Vec3   // translation
+    Rotation math3d.Vec3   // euler angles in degrees (X, Y, Z)
+    Scale    math3d.Vec3   // scale factors
+    Visible  bool          // if false, node and children are skipped
+    // ...
+}
+</code></pre>
+<h3 id="localtransform"><a class="header" href="#localtransform">LocalTransform</a></h3>
+<p>Computes the local transformation matrix from position, rotation, and scale. The transform order is: translate, then rotate (Z * Y * X), then scale:</p>
+<pre><code class="language-go">localMat := node.LocalTransform()
+</code></pre>
+<p>This returns a <code>math3d.Mat4</code> that can be used directly or composed with parent transforms.</p>
+<h2 id="cameradata"><a class="header" href="#cameradata">CameraData</a></h2>
+<p>The <code>CameraData</code> struct holds projection parameters:</p>
+<pre><code class="language-go">type CameraData struct {
+    FOV    float32  // field of view in degrees (perspective only)
+    Aspect float32  // width/height ratio
+    Near   float32
+    Far    float32
+    Ortho  bool     // if true, use orthographic projection
+
+    // Orthographic extents (only used when Ortho is true)
+    Left, Right, Bottom, Top float32
+}
+</code></pre>
+<p>Get the projection matrix:</p>
+<pre><code class="language-go">projMat, perspNorm := camData.ProjectionMatrix()
+</code></pre>
+<p>For perspective cameras, <code>perspNorm</code> is the RSP normalization value. For orthographic cameras, it is 0.</p>
+<h2 id="meshdata"><a class="header" href="#meshdata">MeshData</a></h2>
+<p>References a pre-built display list for rendering:</p>
+<pre><code class="language-go">type MeshData struct {
+    DisplayList  *gfx.DisplayList
+    BoundsCenter math3d.Vec3
+    BoundsRadius float32
+}
+</code></pre>
+<h2 id="loddata"><a class="header" href="#loddata">LODData</a></h2>
+<p>Selects children based on distance from the camera:</p>
+<pre><code class="language-go">type LODData struct {
+    Levels []LODLevel
+}
+
+type LODLevel struct {
+    MaxDistance float32
+    Child      *Node
+}
+</code></pre>
+<p>During traversal, LOD nodes do not traverse their <code>Children</code> list. Instead, they call <code>LOD.Select(distance)</code> and traverse only the selected child.</p>
+<h2 id="scene"><a class="header" href="#scene">Scene</a></h2>
+<p>A <code>Scene</code> holds the root node and the active camera:</p>
+<pre><code class="language-go">type Scene struct {
+    Root   *Node
+    Camera *Node
+}
+</code></pre>
+<h3 id="newscene"><a class="header" href="#newscene">NewScene</a></h3>
+<p>Creates a scene with an empty root group node named “root”:</p>
+<pre><code class="language-go">scene := scene3d.NewScene()
+</code></pre>
+<h3 id="setting-up-the-camera"><a class="header" href="#setting-up-the-camera">Setting up the camera</a></h3>
+<p>Assign a camera node to the scene:</p>
+<pre><code class="language-go">cam := scene3d.NewPerspectiveCamera("main", 45, 320.0/240.0, 10, 1000)
+cam.Position = math3d.Vec3{X: 0, Y: 100, Z: 200}
+scene.Root.AddChild(cam)
+scene.Camera = cam
+</code></pre>
+<h2 id="traversal"><a class="header" href="#traversal">Traversal</a></h2>
+<h3 id="traverse"><a class="header" href="#traverse">Traverse</a></h3>
+<p><code>Traverse</code> walks the scene graph depth-first, calling a visitor function for each visible node. The <code>RenderContext</code> maintains a matrix stack:</p>
+<pre><code class="language-go">ctx := scene3d.NewRenderContext()
+scene.Traverse(ctx, func(node *scene3d.Node, rc *scene3d.RenderContext) {
+    if node.Type == scene3d.NodeMesh {
+        modelView := rc.CurrentMatrix()
+        // render the mesh with this transform
+    }
+})
+</code></pre>
+<p>The traversal automatically:</p>
+<ul>
+<li>Skips nodes where <code>Visible</code> is <code>false</code></li>
+<li>Pushes/pops the matrix stack at each level</li>
+<li>Multiplies each node’s <code>LocalTransform</code> into the stack</li>
+<li>For LOD nodes, selects the appropriate child based on camera distance</li>
+</ul>
+<h3 id="rendercontext"><a class="header" href="#rendercontext">RenderContext</a></h3>
+<p>The <code>RenderContext</code> tracks state during traversal:</p>
+<pre><code class="language-go">type RenderContext struct {
+    ViewMatrix       math3d.Mat4
+    ProjectionMatrix math3d.Mat4
+    CameraPosition   math3d.Vec3
+    MatrixStack      []math3d.Mat4
+}
+</code></pre>
+<p>Matrix stack operations:</p>
+<pre><code class="language-go">ctx.PushMatrix()                  // duplicate top of stack
+ctx.PopMatrix()                   // remove top of stack
+ctx.MultiplyMatrix(localMat)      // multiply top by given matrix
+current := ctx.CurrentMatrix()    // read top of stack
+</code></pre>
+<h2 id="drawscene"><a class="header" href="#drawscene">DrawScene</a></h2>
+<p><code>DrawScene</code> is the high-level rendering entry point. It sets up the camera, traverses the scene graph, and executes display lists for all visible mesh nodes:</p>
+<pre><code class="language-go">scene3d.DrawScene(scene)
+</code></pre>
+<p>Internally, <code>DrawScene</code>:</p>
+<ol>
+<li>Creates a <code>RenderContext</code></li>
+<li>If a camera node is assigned, computes the projection and view matrices</li>
+<li>Traverses the graph, executing the display list for each <code>NodeMesh</code></li>
+<li>Calls <code>gfx.Flush()</code> to submit all commands to the RDP</li>
+</ol>
+<p>On non-N64 builds, <code>DrawScene</code> is a no-op.</p>
+<h2 id="complete-example"><a class="header" href="#complete-example">Complete example</a></h2>
+<pre><code class="language-go">// Create scene
+scene := scene3d.NewScene()
+
+// Add camera
+cam := scene3d.NewPerspectiveCamera("cam", 45, 320.0/240.0, 10, 1000)
+cam.Position = math3d.Vec3{X: 0, Y: 50, Z: 100}
+scene.Root.AddChild(cam)
+scene.Camera = cam
+
+// Add a mesh
+cubeDL := gfx.NewDisplayList(64)
+// ... build cube display list ...
+cubeDL.SPEndDisplayList()
+cube := scene3d.NewMeshNode("cube", cubeDL)
+cube.Position = math3d.Vec3{X: 0, Y: 0, Z: 0}
+cube.Rotation = math3d.Vec3{Y: 45} // rotated 45 degrees around Y
+scene.Root.AddChild(cube)
+
+// Add LOD object
+highDetail := scene3d.NewMeshNode("tree-hi", highDL)
+lowDetail := scene3d.NewMeshNode("tree-lo", lowDL)
+treeLOD := scene3d.NewLODNode("tree", []scene3d.LODLevel{
+    {MaxDistance: 200, Child: highDetail},
+    {MaxDistance: 1000, Child: lowDetail},
+})
+treeLOD.Position = math3d.Vec3{X: 50, Y: 0, Z: -30}
+scene.Root.AddChild(treeLOD)
+
+// Render
+scene3d.DrawScene(scene)
+</code></pre>
 
                     </main>
 

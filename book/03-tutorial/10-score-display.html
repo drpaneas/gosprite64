@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -176,9 +176,91 @@
                     <main>
                         <h1 id="step-10-score-display"><a class="header" href="#step-10-score-display">Step 10: Score Display</a></h1>
 <p>Draw a HUD overlay showing the player’s score using DrawText.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<h2 id="what-you-will-learn"><a class="header" href="#what-you-will-learn">What you will learn</a></h2>
+<ul>
+<li>Drawing HUD text that stays fixed on screen</li>
+<li>Using <code>fmt.Sprintf</code> to format dynamic values</li>
+<li>Detecting single button presses with <code>IsButtonJustPressed</code></li>
+<li>The difference between screen-space HUD and world-space gameplay</li>
+</ul>
+<h2 id="what-changed-from-step-9"><a class="header" href="#what-changed-from-step-9">What changed from Step 9</a></h2>
+<p>Two additions to <code>PlayState</code>:</p>
+<ol>
+<li>A <code>score int</code> field that tracks points</li>
+<li>Score increment on the A button and a <code>DrawText</code> call to display it</li>
+</ol>
+<h3 id="score-tracking"><a class="header" href="#score-tracking">Score tracking</a></h3>
+<pre><code class="language-go">type PlayState struct {
+	// ... existing fields ...
+	score int
+}
+</code></pre>
+<p>In <code>Update</code>, after the movement code:</p>
+<pre><code class="language-go">if gosprite64.IsButtonJustPressed(gosprite64.ButtonA) {
+	s.score++
+}
+</code></pre>
+<p><code>IsButtonJustPressed</code> returns true only on the frame the button goes from released to pressed. Unlike <code>IsButtonDown</code> (which is true every frame the button is held), this fires once per press. This prevents the score from racing up while the button is held.</p>
+<h3 id="drawing-the-score"><a class="header" href="#drawing-the-score">Drawing the score</a></h3>
+<p>At the end of <code>Draw</code>, before the transition overlay:</p>
+<pre><code class="language-go">gosprite64.DrawText(fmt.Sprintf("SCORE:%d", s.score), 2, 2, gosprite64.White)
+</code></pre>
+<p>This requires adding <code>"fmt"</code> to the imports.</p>
+<p><code>DrawText</code> always uses screen coordinates, not world coordinates. The text stays pinned to the top-left corner of the display regardless of where the camera is. This is what makes it a HUD element rather than a world element.</p>
+<h2 id="the-complete-draw-function"><a class="header" href="#the-complete-draw-function">The complete Draw function</a></h2>
+<pre><code class="language-go">func (s *PlayState) Draw() {
+	gosprite64.ClearScreen()
+
+	s.scene.Draw(s.camera)
+
+	frame := s.player.Frame()
+	gosprite64.DrawWorldSpriteWithOptions(s.charSS, frame, s.playerX, s.playerY, s.camera, gosprite64.DrawSpriteOptions{
+		FlipH: s.flipH,
+	})
+
+	gosprite64.DrawText(fmt.Sprintf("SCORE:%d", s.score), 2, 2, gosprite64.White)
+
+	if s.fade != nil {
+		s.fade.Draw()
+	}
+}
+</code></pre>
+<p>The draw order matters:</p>
+<ol>
+<li>Clear the screen</li>
+<li>Draw the tile world (scrolls with camera)</li>
+<li>Draw the player sprite (world coordinates, scrolls with camera)</li>
+<li>Draw the score text (screen coordinates, stays fixed)</li>
+<li>Draw the transition overlay (on top of everything)</li>
+</ol>
+<h3 id="screen-coordinates-vs-world-coordinates"><a class="header" href="#screen-coordinates-vs-world-coordinates">Screen coordinates vs world coordinates</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Function</th><th>Coordinate space</th><th>Scrolls with camera?</th></tr>
+</thead>
+<tbody>
+<tr><td><code>DrawWorldSprite</code></td><td>World</td><td>Yes</td></tr>
+<tr><td><code>DrawWorldSpriteWithOptions</code></td><td>World</td><td>Yes</td></tr>
+<tr><td><code>scene.Draw(camera)</code></td><td>World</td><td>Yes</td></tr>
+<tr><td><code>DrawText</code></td><td>Screen</td><td>No</td></tr>
+<tr><td><code>DrawSprite</code></td><td>Screen</td><td>No</td></tr>
+</tbody>
+</table>
+</div>
+<p>HUD elements like scores, health bars, and menu text use screen coordinates so they stay in place. Game objects use world coordinates so they move with the camera.</p>
+<h3 id="formatting-tips"><a class="header" href="#formatting-tips">Formatting tips</a></h3>
+<p>The built-in font is monospaced, so columns align naturally. Some useful patterns:</p>
+<pre><code class="language-go">gosprite64.DrawText(fmt.Sprintf("SCORE:%04d", s.score), 2, 2, gosprite64.White)
+gosprite64.DrawText(fmt.Sprintf("HP:%d/%d", hp, maxHP), 2, 12, gosprite64.Red)
+gosprite64.DrawText(fmt.Sprintf("TIME:%02d:%02d", min, sec), 200, 2, gosprite64.Yellow)
+</code></pre>
+<p><code>%04d</code> gives zero-padded display like <code>SCORE:0001</code>. Each character is 8 pixels wide in the default font, so you can calculate positions precisely.</p>
+<h2 id="build-and-run"><a class="header" href="#build-and-run">Build and run</a></h2>
+<pre><code class="language-bash">go generate ./examples/platformer
+GOENV=n64.env go1.24.5-embedded build -o examples/platformer/game.elf ./examples/platformer
+</code></pre>
+<p>The gameplay screen now shows “SCORE:0” in the top-left corner. Press A to increment the score. The text stays fixed on screen while the world scrolls underneath. In a real game you would increment the score on meaningful events like collecting items or defeating enemies rather than on a button press.</p>
 
                     </main>
 

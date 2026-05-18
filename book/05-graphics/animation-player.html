@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,206 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="animation-player"><a class="header" href="#animation-player">Animation Player</a></h1>
-<p>Drive sprite animations with the tick-based AnimationPlayer and JSON animation clips.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>The <code>AnimationPlayer</code> drives sprite animations using a tick-based timing model.
+You define animation clips (lists of frame indices with a playback speed), then
+the player steps through them each time you call <code>Advance</code>.</p>
+<h2 id="core-types"><a class="header" href="#core-types">Core Types</a></h2>
+<h3 id="animationclip"><a class="header" href="#animationclip">AnimationClip</a></h3>
+<p>An <code>AnimationClip</code> describes a single animation sequence:</p>
+<pre><code class="language-go">type AnimationClip struct {
+    Name   string
+    FPS    uint16
+    Frames []uint16
+}
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Name</code></td><td>Human-readable label (e.g. <code>"idle"</code>, <code>"walk"</code>)</td></tr>
+<tr><td><code>FPS</code></td><td>Playback speed in frames per second</td></tr>
+<tr><td><code>Frames</code></td><td>Ordered list of sprite sheet frame indices</td></tr>
+</tbody>
+</table>
+</div>
+<p>Clips are typically loaded from a <code>.anim</code> file via an <code>AnimationSet</code>, but you
+can also build them by hand:</p>
+<pre><code class="language-go">walkClip := gosprite64.AnimationClip{
+    Name:   "walk",
+    FPS:    10,
+    Frames: []uint16{0, 1, 2, 3},
+}
+</code></pre>
+<h3 id="animationset"><a class="header" href="#animationset">AnimationSet</a></h3>
+<p>An <code>AnimationSet</code> groups related clips loaded from a compiled <code>.anim</code> file.
+You get one from a bundle:</p>
+<pre><code class="language-go">animSet, err := bundle.LoadAnimation("anims")
+if err != nil {
+    panic(err)
+}
+
+idle, ok := animSet.Clip("idle")
+walk, ok := animSet.Clip("walk")
+</code></pre>
+<p><code>Clips()</code> returns all clips in the set. <code>Clip(name)</code> returns a single clip
+by name along with a boolean indicating whether it was found.</p>
+<h2 id="creating-a-player"><a class="header" href="#creating-a-player">Creating a Player</a></h2>
+<pre><code class="language-go">func NewAnimationPlayer() *AnimationPlayer
+</code></pre>
+<p>Creates a stopped player with no clip loaded.</p>
+<pre><code class="language-go">player := gosprite64.NewAnimationPlayer()
+</code></pre>
+<h2 id="playback-controls"><a class="header" href="#playback-controls">Playback Controls</a></h2>
+<h3 id="play"><a class="header" href="#play">Play</a></h3>
+<pre><code class="language-go">func (p *AnimationPlayer) Play(clip AnimationClip)
+</code></pre>
+<p>Starts playing the given clip from frame 0. If the clip has no frames, the
+player stops.</p>
+<pre><code class="language-go">player.Play(walkClip)
+</code></pre>
+<h3 id="pause--resume"><a class="header" href="#pause--resume">Pause / Resume</a></h3>
+<pre><code class="language-go">func (p *AnimationPlayer) Pause()
+func (p *AnimationPlayer) Resume()
+</code></pre>
+<p><code>Pause</code> freezes the animation at its current frame. <code>Resume</code> continues from
+where it left off. Calling <code>Pause</code> when not playing (or <code>Resume</code> when not
+paused) is a no-op.</p>
+<h3 id="stop"><a class="header" href="#stop">Stop</a></h3>
+<pre><code class="language-go">func (p *AnimationPlayer) Stop()
+</code></pre>
+<p>Stops playback and resets to frame 0.</p>
+<h3 id="restart"><a class="header" href="#restart">Restart</a></h3>
+<pre><code class="language-go">func (p *AnimationPlayer) Restart()
+</code></pre>
+<p>Jumps back to frame 0 and starts playing. Useful for retriggering an animation
+without constructing a new clip.</p>
+<h3 id="setloop"><a class="header" href="#setloop">SetLoop</a></h3>
+<pre><code class="language-go">func (p *AnimationPlayer) SetLoop(loop bool)
+</code></pre>
+<p>When looping is enabled, the animation wraps around to frame 0 after the last
+frame. When disabled (the default), the player stops on the last frame.</p>
+<pre><code class="language-go">player.SetLoop(true)
+player.Play(idleClip) // will loop forever
+</code></pre>
+<h2 id="advancing-time"><a class="header" href="#advancing-time">Advancing Time</a></h2>
+<pre><code class="language-go">func (p *AnimationPlayer) Advance(ticks int)
+</code></pre>
+<p>Call <code>Advance</code> once per game tick (typically once per frame in your <code>Update</code>
+function). The player uses an internal accumulator to convert ticks into
+frame steps based on the clip’s FPS.</p>
+<p>The timing math assumes a <strong>60-tick-per-second</strong> base rate. A clip with
+<code>FPS: 10</code> advances one animation frame every 6 ticks. A clip with <code>FPS: 30</code>
+advances one frame every 2 ticks.</p>
+<pre><code class="language-go">func (g *Game) Update() {
+    g.player.Advance(1) // one tick per game frame
+}
+</code></pre>
+<p>Passing <code>ticks &lt;= 0</code> or calling <code>Advance</code> on a stopped/paused player is a
+no-op.</p>
+<h2 id="reading-state"><a class="header" href="#reading-state">Reading State</a></h2>
+<h3 id="frame"><a class="header" href="#frame">Frame</a></h3>
+<pre><code class="language-go">func (p *AnimationPlayer) Frame() int
+</code></pre>
+<p>Returns the current sprite sheet frame index. Use this with <code>DrawSprite</code>:</p>
+<pre><code class="language-go">frame := player.Frame()
+gosprite64.DrawSprite(sheet, frame, x, y)
+</code></pre>
+<h3 id="playing--done"><a class="header" href="#playing--done">Playing / Done</a></h3>
+<pre><code class="language-go">func (p *AnimationPlayer) Playing() bool
+func (p *AnimationPlayer) Done() bool
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Method</th><th>Returns <code>true</code> when…</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Playing()</code></td><td>The player is actively advancing frames</td></tr>
+<tr><td><code>Done()</code></td><td>The player is stopped (finished or never started)</td></tr>
+</tbody>
+</table>
+</div>
+<p>These are useful for triggering events at the end of one-shot animations:</p>
+<pre><code class="language-go">if player.Done() {
+    // switch to the next game state
+}
+</code></pre>
+<h2 id="complete-example"><a class="header" href="#complete-example">Complete Example</a></h2>
+<pre><code class="language-go">type Game struct {
+    sheet  *gosprite64.SpriteSheet
+    player *gosprite64.AnimationPlayer
+    idle   gosprite64.AnimationClip
+    walk   gosprite64.AnimationClip
+    flipH  bool
+    moving bool
+}
+
+func (g *Game) Init() {
+    sheet, err := gosprite64.LoadSpriteSheet("assets/character.sheet")
+    if err != nil {
+        panic(err)
+    }
+    g.sheet = sheet
+
+    g.idle = gosprite64.AnimationClip{
+        Name: "idle", FPS: 6, Frames: []uint16{0, 1},
+    }
+    g.walk = gosprite64.AnimationClip{
+        Name: "walk", FPS: 10, Frames: []uint16{2, 3, 4, 5},
+    }
+
+    g.player = gosprite64.NewAnimationPlayer()
+    g.player.SetLoop(true)
+    g.player.Play(g.idle)
+}
+
+func (g *Game) Update() {
+    g.moving = false
+
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadRight) {
+        g.moving = true
+        g.flipH = false
+    }
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadLeft) {
+        g.moving = true
+        g.flipH = true
+    }
+
+    if g.moving {
+        g.player.Play(g.walk)
+    } else {
+        g.player.Play(g.idle)
+    }
+
+    g.player.Advance(1)
+}
+
+func (g *Game) Draw() {
+    gosprite64.ClearScreen()
+
+    frame := g.player.Frame()
+    gosprite64.DrawSpriteWithOptions(g.sheet, frame, 136, 100, gosprite64.DrawSpriteOptions{
+        FlipH: g.flipH,
+    })
+}
+</code></pre>
+<h2 id="compiling-animation-data"><a class="header" href="#compiling-animation-data">Compiling Animation Data</a></h2>
+<p>Use <code>mk2danim</code> to compile a JSON animation definition into a binary <code>.anim</code>
+file:</p>
+<pre><code class="language-bash">go run github.com/drpaneas/gosprite64/cmd/mk2danim \
+    -in anims.json \
+    -out anims.anim
+</code></pre>
+<p>The JSON format defines clips with frame lists and FPS:</p>
+<pre><code class="language-json">{
+  "clips": [
+    { "name": "idle", "fps": 6,  "frames": [0, 1] },
+    { "name": "walk", "fps": 10, "frames": [2, 3, 4, 5] }
+  ]
+}
+</code></pre>
 
                     </main>
 

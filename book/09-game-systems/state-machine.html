@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -287,6 +287,11 @@ type GameOverState struct {
 <li>GameOver – (A pressed) –&gt; Switch to Title</li>
 </ol>
 <p>Each state has its own <code>Enter</code>, <code>Update</code>, <code>Draw</code>, <code>Exit</code>. No state knows about the internals of other states. The <code>StateMachine</code> handles the transitions.</p>
+<h2 id="try-it"><a class="header" href="#try-it">Try It</a></h2>
+<iframe src="../emulator/play.html?rom=state_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+<blockquote>
+<p><strong>Controls:</strong> Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger</p>
+</blockquote>
 <h2 id="complete-example"><a class="header" href="#complete-example">Complete example</a></h2>
 <p>See <code>examples/state_demo</code> for a working demo with all four states. Build it with:</p>
 <pre><code class="language-bash">GOENV=n64.env go1.24.5-embedded build -o state_demo.elf ./examples/state_demo

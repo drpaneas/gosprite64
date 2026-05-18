@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,82 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="text-alignment"><a class="header" href="#text-alignment">Text Alignment</a></h1>
-<p>Control text positioning with left, center, and right alignment options.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>The <code>TextAlign</code> type controls horizontal positioning when drawing text with a
+custom <code>Font</code>.</p>
+<h2 id="the-textalign-type"><a class="header" href="#the-textalign-type">The TextAlign Type</a></h2>
+<pre><code class="language-go">type TextAlign int
+
+const (
+    AlignLeft   TextAlign = iota // 0 - default
+    AlignCenter                  // 1
+    AlignRight                   // 2
+)
+</code></pre>
+<p>You pass a <code>TextAlign</code> value to <code>Font.DrawTextEx</code>:</p>
+<pre><code class="language-go">func (f *Font) DrawTextEx(text string, x, y int, align TextAlign)
+</code></pre>
+<h2 id="how-alignment-works"><a class="header" href="#how-alignment-works">How Alignment Works</a></h2>
+<p>The <code>x</code> coordinate acts as the alignment anchor. The text is positioned
+relative to that anchor depending on the alignment mode:</p>
+<h3 id="alignleft"><a class="header" href="#alignleft">AlignLeft</a></h3>
+<p>Text starts at <code>x</code> and extends to the right. This is the default.</p>
+<pre><code class="language-go">font.DrawTextEx("HELLO", 10, 50, gosprite64.AlignLeft)
+//  x=10
+//  |
+//  HELLO
+</code></pre>
+<h3 id="aligncenter"><a class="header" href="#aligncenter">AlignCenter</a></h3>
+<p>Text is centered around <code>x</code>. More precisely, the widest line determines the
+total width, and each line is centered within that width starting from <code>x</code>.</p>
+<pre><code class="language-go">font.DrawTextEx("GAME OVER", 144, 100, gosprite64.AlignCenter)
+//       x=144
+//         |
+//    GAME OVER
+</code></pre>
+<h3 id="alignright"><a class="header" href="#alignright">AlignRight</a></h3>
+<p>Text ends at the right edge of the measured width, starting from <code>x</code>.</p>
+<pre><code class="language-go">font.DrawTextEx("99999", 280, 4, gosprite64.AlignRight)
+//              x=280
+//                  |
+//              99999
+</code></pre>
+<h2 id="multiline-alignment"><a class="header" href="#multiline-alignment">Multiline Alignment</a></h2>
+<p>For multiline strings (containing <code>\n</code>), each line is aligned independently
+within the bounding box of the widest line:</p>
+<pre><code class="language-go">font.DrawTextEx("GAME OVER\nPRESS START", 144, 80, gosprite64.AlignCenter)
+//       x=144
+//         |
+//    GAME OVER
+//   PRESS START
+</code></pre>
+<p>The total width is measured from the widest line. Shorter lines are shifted
+within that width according to the alignment.</p>
+<h2 id="word-wrapping"><a class="header" href="#word-wrapping">Word Wrapping</a></h2>
+<p>The <code>Font.WrapText</code> method inserts newlines so no line exceeds a given pixel
+width. It breaks on spaces and does not break words that are wider than the
+limit.</p>
+<pre><code class="language-go">func (f *Font) WrapText(text string, maxWidth int) string
+</code></pre>
+<p>Combine it with alignment for paragraph-style text:</p>
+<pre><code class="language-go">wrapped := font.WrapText("This is a long message that should wrap nicely on screen.", 200)
+font.DrawTextEx(wrapped, 144, 50, gosprite64.AlignCenter)
+</code></pre>
+<h2 id="practical-examples"><a class="header" href="#practical-examples">Practical Examples</a></h2>
+<h3 id="centered-title-screen"><a class="header" href="#centered-title-screen">Centered Title Screen</a></h3>
+<pre><code class="language-go">func (g *Game) Draw() {
+    gosprite64.ClearScreenWith(gosprite64.DarkBlue)
+    g.font.DrawTextEx("MY GAME", 144, 60, gosprite64.AlignCenter)
+    g.font.DrawTextEx("PRESS START", 144, 140, gosprite64.AlignCenter)
+}
+</code></pre>
+<h3 id="right-aligned-score"><a class="header" href="#right-aligned-score">Right-Aligned Score</a></h3>
+<pre><code class="language-go">scoreText := gosprite64.FormatScore(g.score, 6)
+g.font.DrawTextEx(scoreText, 280, 4, gosprite64.AlignRight)
+</code></pre>
+<h3 id="left-aligned-dialog"><a class="header" href="#left-aligned-dialog">Left-Aligned Dialog</a></h3>
+<pre><code class="language-go">dialog := g.font.WrapText(npcMessage, 200)
+g.font.DrawTextEx(dialog, 20, 160, gosprite64.AlignLeft)
+</code></pre>
 
                     </main>
 

@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,172 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="screen-transitions"><a class="header" href="#screen-transitions">Screen Transitions</a></h1>
-<p>Fade, wipe, and dissolve effects for smooth transitions between game states.</p>
+<p>Transitions provide smooth visual effects when switching between game states -
+for example, fading to black before loading a new level and fading back in
+once it’s ready.</p>
+<h2 id="transition-styles"><a class="header" href="#transition-styles">Transition Styles</a></h2>
+<p>GoSprite64 currently supports two fade styles:</p>
+<pre><code class="language-go">type TransitionStyle int
+
+const (
+    FadeToBlack   TransitionStyle = iota // screen darkens over time
+    FadeFromBlack                        // screen brightens over time
+)
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Style</th><th>Start</th><th>End</th></tr>
+</thead>
+<tbody>
+<tr><td><code>FadeToBlack</code></td><td>Fully visible (alpha 0)</td><td>Fully black (alpha 255)</td></tr>
+<tr><td><code>FadeFromBlack</code></td><td>Fully black (alpha 255)</td><td>Fully visible (alpha 0)</td></tr>
+</tbody>
+</table>
+</div>
+<p>Both styles draw a semi-transparent black overlay whose opacity changes each
+frame.</p>
+<h2 id="starting-a-transition"><a class="header" href="#starting-a-transition">Starting a Transition</a></h2>
+<pre><code class="language-go">func StartTransition(style TransitionStyle, durationFrames int) *Transition
+</code></pre>
+<p>Creates and returns an active <code>Transition</code>. The <code>durationFrames</code> parameter
+controls how many frames the effect takes to complete. At 60 FPS, a duration
+of 30 gives a half-second fade.</p>
+<pre><code class="language-go">fade := gosprite64.StartTransition(gosprite64.FadeToBlack, 30)
+</code></pre>
+<h2 id="advancing-and-drawing"><a class="header" href="#advancing-and-drawing">Advancing and Drawing</a></h2>
+<p>Each frame, call <code>Advance</code> to step the transition forward, then <code>Draw</code> to
+render the overlay on top of your scene:</p>
+<pre><code class="language-go">func (tr *Transition) Advance()
+func (tr *Transition) Draw()
+</code></pre>
+<p><code>Advance</code> increments an internal frame counter. Once the counter reaches
+<code>Duration</code>, the transition is finished. <code>Draw</code> renders the black overlay at
+the current alpha level. If the alpha is 0 (fully transparent), <code>Draw</code> skips
+rendering entirely.</p>
+<pre><code class="language-go">func (g *Game) Update() {
+    if g.fade != nil {
+        g.fade.Advance()
+    }
+}
+
+func (g *Game) Draw() {
+    gosprite64.ClearScreen()
+    // ... draw your scene ...
+
+    if g.fade != nil {
+        g.fade.Draw()
+    }
+}
+</code></pre>
+<h2 id="checking-state"><a class="header" href="#checking-state">Checking State</a></h2>
+<pre><code class="language-go">func (tr *Transition) Done() bool
+func (tr *Transition) Active() bool
+func (tr *Transition) Stop()
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Method</th><th>Returns / Does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Done()</code></td><td><code>true</code> when the transition has reached its final frame</td></tr>
+<tr><td><code>Active()</code></td><td><code>true</code> when the transition is running and not yet done</td></tr>
+<tr><td><code>Stop()</code></td><td>Immediately deactivates the transition</td></tr>
+</tbody>
+</table>
+</div>
+<p><code>Done</code> returns <code>true</code> on a <code>nil</code> transition, so you can safely check without
+a nil guard. <code>Active</code> is the inverse: it returns <code>false</code> on <code>nil</code> or stopped
+transitions.</p>
+<pre><code class="language-go">if g.fade.Done() {
+    // transition finished - safe to switch states
+}
+</code></pre>
+<h2 id="complete-fade-in--fade-out-example"><a class="header" href="#complete-fade-in--fade-out-example">Complete Fade-In / Fade-Out Example</a></h2>
+<p>A common pattern is to fade out, switch the game state, then fade back in:</p>
+<pre><code class="language-go">type GameState int
+
+const (
+    StatePlaying GameState = iota
+    StateFadingOut
+    StateLoading
+    StateFadingIn
+)
+
+type Game struct {
+    state   GameState
+    fadeOut  *gosprite64.Transition
+    fadeIn   *gosprite64.Transition
+    level   int
+}
+
+func (g *Game) Update() {
+    switch g.state {
+    case StatePlaying:
+        // Normal gameplay...
+        if gosprite64.IsButtonJustPressed(gosprite64.ButtonA) {
+            g.fadeOut = gosprite64.StartTransition(gosprite64.FadeToBlack, 30)
+            g.state = StateFadingOut
+        }
+
+    case StateFadingOut:
+        g.fadeOut.Advance()
+        if g.fadeOut.Done() {
+            g.state = StateLoading
+        }
+
+    case StateLoading:
+        g.level++
+        g.loadLevel(g.level)
+        g.fadeIn = gosprite64.StartTransition(gosprite64.FadeFromBlack, 30)
+        g.state = StateFadingIn
+
+    case StateFadingIn:
+        g.fadeIn.Advance()
+        if g.fadeIn.Done() {
+            g.state = StatePlaying
+        }
+    }
+}
+
+func (g *Game) Draw() {
+    gosprite64.ClearScreen()
+
+    // Always draw the game world
+    g.drawWorld()
+
+    // Draw the active transition overlay on top
+    switch g.state {
+    case StateFadingOut:
+        g.fadeOut.Draw()
+    case StateLoading:
+        // Screen is fully black during load
+        gosprite64.FillRect(0, 0, 287, 215, gosprite64.Black)
+    case StateFadingIn:
+        g.fadeIn.Draw()
+    }
+}
+</code></pre>
+<h2 id="tips"><a class="header" href="#tips">Tips</a></h2>
+<ul>
+<li>A duration of 30 frames (0.5 seconds at 60 FPS) feels snappy. A duration
+of 60 frames (1 second) feels more cinematic.</li>
+<li>You can <code>Stop()</code> a transition early if the player presses a button to skip.</li>
+<li>Transitions draw a full-screen overlay, so call <code>Draw</code> after all your scene
+rendering.</li>
+<li>The alpha interpolation is linear. For eased fades, you could run a shorter
+transition and manage the alpha curve yourself.</li>
+<li>All methods are nil-safe. Calling <code>Advance</code>, <code>Draw</code>, <code>Done</code>, <code>Active</code>, or
+<code>Stop</code> on a <code>nil</code> <code>Transition</code> is a no-op (or returns a safe default).</li>
+</ul>
+<h2 id="try-it"><a class="header" href="#try-it">Try It</a></h2>
+<iframe src="../emulator/play.html?rom=fade_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
 <blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+<p><strong>Controls:</strong> Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger</p>
 </blockquote>
+<h2 id="reference-example"><a class="header" href="#reference-example">Reference Example</a></h2>
+<p>See <code>examples/fade_demo</code> in the GoSprite64 repository for a working fade transition example.</p>
 
                     </main>
 

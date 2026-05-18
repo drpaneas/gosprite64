@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -309,6 +309,11 @@ func (s *TitleState) Draw() {
     gosprite64.DrawText("PRESS START", 100, 160, gosprite64.Yellow)
 }
 </code></pre>
+<h2 id="try-it"><a class="header" href="#try-it">Try It</a></h2>
+<iframe src="../emulator/play.html?rom=replay_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+<blockquote>
+<p><strong>Controls:</strong> Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger</p>
+</blockquote>
 <h2 id="complete-example"><a class="header" href="#complete-example">Complete example</a></h2>
 <p>See <code>examples/replay_demo</code> for a working demo that lets you record input and then watch it play back as a ghost trail. Build it with:</p>
 <pre><code class="language-bash">GOENV=n64.env go1.24.5-embedded build -o replay_demo.elf ./examples/replay_demo

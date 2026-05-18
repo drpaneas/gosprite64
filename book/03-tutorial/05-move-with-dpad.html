@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -174,11 +174,185 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="step-5-move-with-the-d-pad"><a class="header" href="#step-5-move-with-the-d-pad">Step 5: Move with the D-Pad</a></h1>
-<p>Read controller input and move the player sprite around the tile world.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+                        <h1 id="step-5-move-with-d-pad"><a class="header" href="#step-5-move-with-d-pad">Step 5: Move with D-Pad</a></h1>
+<p>Read controller input to move the player and switch between idle and walk animations.</p>
+<h2 id="what-you-will-learn"><a class="header" href="#what-you-will-learn">What you will learn</a></h2>
+<ul>
+<li>Reading D-pad input with <code>IsButtonDown</code></li>
+<li>Moving the player by changing world position</li>
+<li>Flipping the sprite horizontally with <code>DrawSpriteOptions</code></li>
+<li>Switching animation clips based on state</li>
+</ul>
+<h2 id="the-code"><a class="header" href="#the-code">The code</a></h2>
+<pre><code class="language-go">//go:generate sh -c "cd assets-src &amp;&amp; go run gen_assets.go"
+//go:generate sh -c "mkdir -p assets &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dsheet -in assets-src/character.png -out assets/character.sheet -tile-width 16 -tile-height 16 &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dsheet -in assets-src/tiles.png -out assets/tiles.sheet -tile-width 8 -tile-height 8 &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dmap -in assets-src/level.json -out assets/level.map &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2danim -in assets-src/anims.json -out assets/anims.anim &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dbundle -sheet assets/tiles.sheet -map assets/level.map -anim assets/anims.anim -out assets/level.bundle"
+
+package main
+
+import (
+	"github.com/drpaneas/gosprite64"
+)
+
+type Game struct {
+	scene   *gosprite64.Scene
+	camera  *gosprite64.Camera
+	charSS  *gosprite64.SpriteSheet
+	player  *gosprite64.AnimationPlayer
+	idle    gosprite64.AnimationClip
+	walk    gosprite64.AnimationClip
+	playerX float32
+	playerY float32
+	flipH   bool
+	moving  bool
+	curClip string
+}
+
+func (g *Game) Init() {
+	bundle, err := gosprite64.OpenBundle("assets/level.bundle")
+	if err != nil {
+		panic(err)
+	}
+
+	scene, err := gosprite64.LoadScene(bundle)
+	if err != nil {
+		panic(err)
+	}
+	g.scene = scene
+	g.camera = &amp;gosprite64.Camera{Width: 288, Height: 216}
+
+	charSheet, err := gosprite64.LoadSpriteSheet("assets/character.sheet")
+	if err != nil {
+		panic(err)
+	}
+	g.charSS = charSheet
+
+	animSet, err := bundle.LoadAnimation("anims")
+	if err != nil {
+		panic(err)
+	}
+
+	idleClip, ok := animSet.Clip("idle")
+	if !ok {
+		panic("idle clip not found")
+	}
+	g.idle = idleClip
+
+	walkClip, ok := animSet.Clip("walk")
+	if !ok {
+		panic("walk clip not found")
+	}
+	g.walk = walkClip
+
+	g.playerX = 144
+	g.playerY = 108
+
+	g.player = gosprite64.NewAnimationPlayer()
+	g.player.SetLoop(true)
+	g.player.Play(g.idle)
+	g.curClip = "idle"
+}
+
+func (g *Game) Update() {
+	g.moving = false
+	speed := float32(2)
+
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadLeft) {
+		g.playerX -= speed
+		g.flipH = true
+		g.moving = true
+	}
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadRight) {
+		g.playerX += speed
+		g.flipH = false
+		g.moving = true
+	}
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadUp) {
+		g.playerY -= speed
+		g.moving = true
+	}
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadDown) {
+		g.playerY += speed
+		g.moving = true
+	}
+
+	if g.moving {
+		if g.curClip != "walk" {
+			g.player.Play(g.walk)
+			g.curClip = "walk"
+		}
+	} else {
+		if g.curClip != "idle" {
+			g.player.Play(g.idle)
+			g.curClip = "idle"
+		}
+	}
+	g.player.Advance(1)
+}
+
+func (g *Game) Draw() {
+	gosprite64.ClearScreen()
+	g.scene.Draw(g.camera)
+
+	frame := g.player.Frame()
+	gosprite64.DrawWorldSpriteWithOptions(g.charSS, frame, g.playerX, g.playerY, g.camera, gosprite64.DrawSpriteOptions{
+		FlipH: g.flipH,
+	})
+}
+
+func main() {
+	gosprite64.Run(&amp;Game{})
+}
+</code></pre>
+<h2 id="how-it-works"><a class="header" href="#how-it-works">How it works</a></h2>
+<h3 id="reading-input"><a class="header" href="#reading-input">Reading input</a></h3>
+<pre><code class="language-go">if gosprite64.IsButtonDown(gosprite64.ButtonDPadLeft) {
+    g.playerX -= speed
+    g.flipH = true
+    g.moving = true
+}
+</code></pre>
+<p><code>IsButtonDown</code> returns true every frame the button is held. The D-pad constants are:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Constant</th><th>Button</th></tr>
+</thead>
+<tbody>
+<tr><td><code>ButtonDPadUp</code></td><td>D-pad up</td></tr>
+<tr><td><code>ButtonDPadDown</code></td><td>D-pad down</td></tr>
+<tr><td><code>ButtonDPadLeft</code></td><td>D-pad left</td></tr>
+<tr><td><code>ButtonDPadRight</code></td><td>D-pad right</td></tr>
+</tbody>
+</table>
+</div>
+<p>Each frame, we check all four directions. Multiple directions can be pressed simultaneously for diagonal movement. We track whether any direction was pressed in <code>g.moving</code>.</p>
+<h3 id="horizontal-flip"><a class="header" href="#horizontal-flip">Horizontal flip</a></h3>
+<p>When moving left, we set <code>g.flipH = true</code>. When moving right, <code>g.flipH = false</code>. In Draw, we pass this to <code>DrawSpriteOptions</code>:</p>
+<pre><code class="language-go">gosprite64.DrawWorldSpriteWithOptions(g.charSS, frame, g.playerX, g.playerY, g.camera, gosprite64.DrawSpriteOptions{
+    FlipH: g.flipH,
+})
+</code></pre>
+<p><code>DrawWorldSpriteWithOptions</code> works like <code>DrawWorldSprite</code> but accepts extra options. <code>FlipH: true</code> mirrors the sprite horizontally so the character faces left without needing separate left-facing art.</p>
+<h3 id="switching-animations"><a class="header" href="#switching-animations">Switching animations</a></h3>
+<pre><code class="language-go">if g.moving {
+    if g.curClip != "walk" {
+        g.player.Play(g.walk)
+        g.curClip = "walk"
+    }
+} else {
+    if g.curClip != "idle" {
+        g.player.Play(g.idle)
+        g.curClip = "idle"
+    }
+}
+</code></pre>
+<p>We only call <code>Play()</code> when the clip actually changes. Calling <code>Play()</code> resets the animation to frame 0, so calling it every frame would prevent the animation from advancing. The <code>curClip</code> string tracks which clip is currently active.</p>
+<p>The walk clip plays at 8 FPS (faster leg movement), while idle plays at 4 FPS (slow breathing). The AnimationPlayer handles the FPS conversion internally.</p>
+<h2 id="build-and-run"><a class="header" href="#build-and-run">Build and run</a></h2>
+<pre><code class="language-bash">go generate ./examples/platformer
+GOENV=n64.env go1.24.5-embedded build -o examples/platformer/game.elf ./examples/platformer
+</code></pre>
+<p>Build and run to see the character respond to the D-pad. Push left or right to walk (the sprite flips direction). Push up or down to move vertically. Release all buttons to see the idle animation. The walk animation is noticeably faster than idle.</p>
 
                     </main>
 

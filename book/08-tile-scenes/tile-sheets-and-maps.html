@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,160 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="tile-sheets-and-maps"><a class="header" href="#tile-sheets-and-maps">Tile Sheets and Maps</a></h1>
-<p>How tile sheets and map JSON files are structured, compiled, and loaded at runtime.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>GoSprite64 uses two types of source assets for tile scenes: <strong>PNG tilesheets</strong> (the graphics) and <strong>JSON map files</strong> (the layout). Build-time tools compile these into compact binary formats that the runtime loads efficiently. This page covers the asset formats, the compilation tools, and the key configuration fields. For the full build-to-render pipeline, see <a href="./pipeline-overview.html">Pipeline Overview</a>.</p>
+<h2 id="source-asset-overview"><a class="header" href="#source-asset-overview">Source asset overview</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Asset</th><th>Source format</th><th>Tool</th><th>Output</th><th>Binary magic</th></tr>
+</thead>
+<tbody>
+<tr><td>Tilesheet</td><td>PNG image</td><td><code>mk2dsheet</code></td><td><code>.sheet</code></td><td><code>SHT2</code></td></tr>
+<tr><td>Tile map</td><td>JSON file</td><td><code>mk2dmap</code></td><td><code>.map</code></td><td><code>MAP2</code></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="png-tilesheets"><a class="header" href="#png-tilesheets">PNG tilesheets</a></h2>
+<p>A tilesheet is a PNG atlas where every tile has the same dimensions. The image is sliced into a grid of equal-sized cells:</p>
+<pre><code> ┌────┬────┬────┬────┐
+ │ 0  │ 1  │ 2  │ 3  │    tiles.png (32x16, tile size 8x8)
+ ├────┼────┼────┼────┤    -&gt; 8 tiles total
+ │ 4  │ 5  │ 6  │ 7  │
+ └────┴────┴────┴────┘
+</code></pre>
+<p>Requirements:</p>
+<ul>
+<li>Image width must be evenly divisible by <code>tile-width</code></li>
+<li>Image height must be evenly divisible by <code>tile-height</code></li>
+<li>Maximum tile count is 65535 (uint16)</li>
+<li>Pixels are stored internally as NRGBA (pre-multiplied alpha is not used)</li>
+</ul>
+<h3 id="compiling-with-mk2dsheet"><a class="header" href="#compiling-with-mk2dsheet">Compiling with mk2dsheet</a></h3>
+<p>The <code>mk2dsheet</code> tool converts a PNG tilesheet into the binary <code>.sheet</code> format:</p>
+<pre><code class="language-bash">go run github.com/drpaneas/gosprite64/cmd/mk2dsheet \
+  -in assets-src/tiles.png \
+  -out assets/tiles.sheet \
+  -tile-width 8 \
+  -tile-height 8
+</code></pre>
+<p>Flags:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Flag</th><th>Default</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>-in</code></td><td>(required)</td><td>Input PNG path</td></tr>
+<tr><td><code>-out</code></td><td>(required)</td><td>Output <code>.sheet</code> path</td></tr>
+<tr><td><code>-tile-width</code></td><td><code>8</code></td><td>Tile width in pixels</td></tr>
+<tr><td><code>-tile-height</code></td><td><code>8</code></td><td>Tile height in pixels</td></tr>
+</tbody>
+</table>
+</div>
+<p>The output binary encodes tile dimensions, tile count, palette entry count, image dimensions, and the raw NRGBA pixel data.</p>
+<h2 id="json-map-files"><a class="header" href="#json-map-files">JSON map files</a></h2>
+<p>A map file describes the tile layout as a grid of cell indices that reference tiles in one or more tilesheets. Each map has one or more <strong>layers</strong>, and each layer references a tilesheet by <code>sheet_id</code>.</p>
+<h3 id="map-json-structure"><a class="header" href="#map-json-structure">Map JSON structure</a></h3>
+<pre><code class="language-json">{
+  "width": 32,
+  "height": 18,
+  "layer_count": 2,
+  "cell_bits": 16,
+  "chunk_width": 8,
+  "chunk_height": 8,
+  "layers": [
+    {"sheet_id": 1, "cells": [1, 2, 3, 0, 0, ...]},
+    {"sheet_id": 2, "cells": [0, 0, 1, 4, 0, ...]}
+  ]
+}
+</code></pre>
+<h3 id="field-reference"><a class="header" href="#field-reference">Field reference</a></h3>
+<h4 id="top-level-fields"><a class="header" href="#top-level-fields">Top-level fields</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>width</code></td><td>uint16</td><td>Map width in tiles (must be &gt; 0)</td></tr>
+<tr><td><code>height</code></td><td>uint16</td><td>Map height in tiles (must be &gt; 0)</td></tr>
+<tr><td><code>layer_count</code></td><td>uint16</td><td>Number of tile layers (must be &gt; 0, must match length of <code>layers</code> array)</td></tr>
+<tr><td><code>cell_bits</code></td><td>uint8</td><td>Bits per cell index: <code>8</code> (max 255 tiles) or <code>16</code> (max 65535 tiles)</td></tr>
+<tr><td><code>chunk_width</code></td><td>uint16</td><td>Chunk width in tiles for streaming/culling</td></tr>
+<tr><td><code>chunk_height</code></td><td>uint16</td><td>Chunk height in tiles for streaming/culling</td></tr>
+<tr><td><code>layers</code></td><td>array</td><td>Per-layer tile data</td></tr>
+</tbody>
+</table>
+</div>
+<h4 id="layer-fields"><a class="header" href="#layer-fields">Layer fields</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>sheet_id</code></td><td>uint16</td><td>Which tilesheet this layer uses (1-based; defaults to 1 if omitted)</td></tr>
+<tr><td><code>cells</code></td><td>[]uint16</td><td>Flat array of tile indices, length must equal <code>width * height</code></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="cell_bits"><a class="header" href="#cell_bits">cell_bits</a></h3>
+<p>The <code>cell_bits</code> field controls how many bits each tile index occupies in the compiled binary:</p>
+<ul>
+<li><strong>8</strong> - Each cell is a single byte. Supports up to 255 unique tiles per layer. Use this for small tilesets to save memory.</li>
+<li><strong>16</strong> - Each cell is two bytes. Supports up to 65535 unique tiles per layer. Use this for larger tilesets or when you need more than 255 distinct tiles.</li>
+</ul>
+<p>A cell value of <code>0</code> means “empty” (no tile drawn at this position).</p>
+<h3 id="chunk-dimensions"><a class="header" href="#chunk-dimensions">Chunk dimensions</a></h3>
+<p><code>chunk_width</code> and <code>chunk_height</code> define the size of streaming/culling chunks. The renderer uses chunks to skip drawing regions of the map that are off-screen. Typical values are 8x8 or 16x16 tiles. Smaller chunks give finer culling granularity at the cost of more chunk metadata.</p>
+<h3 id="sheet_id"><a class="header" href="#sheet_id">sheet_id</a></h3>
+<p>Each layer references a tilesheet by its 1-based <code>sheet_id</code>. When a bundle contains multiple tilesheets, different layers can draw from different sheets. For example, a background layer might use a terrain sheet (sheet_id 1) while a foreground layer uses a decoration sheet (sheet_id 2).</p>
+<p>If <code>sheet_id</code> is omitted or set to 0, it defaults to 1.</p>
+<h3 id="compiling-with-mk2dmap"><a class="header" href="#compiling-with-mk2dmap">Compiling with mk2dmap</a></h3>
+<p>The <code>mk2dmap</code> tool converts a JSON map file into the binary <code>.map</code> format:</p>
+<pre><code class="language-bash">go run github.com/drpaneas/gosprite64/cmd/mk2dmap \
+  -in assets-src/level.json \
+  -out assets/level.map
+</code></pre>
+<p>Flags:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Flag</th><th>Default</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>-in</code></td><td>(required)</td><td>Input JSON path</td></tr>
+<tr><td><code>-out</code></td><td>(required)</td><td>Output <code>.map</code> path</td></tr>
+</tbody>
+</table>
+</div>
+<p>The tool validates that:</p>
+<ul>
+<li>Map dimensions are non-zero</li>
+<li><code>layer_count</code> is non-zero and matches the actual number of layers</li>
+<li><code>cell_bits</code> is 8 or 16</li>
+<li>Chunk dimensions are non-zero</li>
+<li>Each layer’s <code>cells</code> array length equals <code>width * height</code></li>
+<li>8-bit cells do not exceed 255</li>
+</ul>
+<h2 id="putting-it-together-with-go-generate"><a class="header" href="#putting-it-together-with-go-generate">Putting it together with go generate</a></h2>
+<p>The typical workflow uses <code>go:generate</code> to run both tools as part of your build:</p>
+<pre><code class="language-go">//go:generate sh -c "mkdir -p assets &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dsheet -in assets-src/tiles.png -out assets/tiles.sheet -tile-width 8 -tile-height 8 &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dmap -in assets-src/level.json -out assets/level.map"
+</code></pre>
+<p>Then combine the compiled assets into a bundle using <code>mk2dbundle</code>. See <a href="./bundles-and-loading.html">Bundles and Loading</a> for details.</p>
+<h2 id="runtime-map-access"><a class="header" href="#runtime-map-access">Runtime map access</a></h2>
+<p>Once loaded through a bundle, you can query map properties:</p>
+<pre><code class="language-go">scene, _ := gosprite64.LoadScene(bundle)
+m := scene.Map()
+
+fmt.Println(m.Width(), m.Height())         // map size in tiles
+fmt.Println(m.TileWidth(), m.TileHeight()) // tile size in pixels
+fmt.Println(m.PixelWidth(), m.PixelHeight()) // total size in pixels
+fmt.Println(m.LayerCount())                // number of layers
+
+tile, ok := m.TileAt(0, 5, 3) // layer 0, column 5, row 3
+info, ok := m.LayerInfo(0)    // SheetID and NonZeroTiles for layer 0
+</code></pre>
 
                     </main>
 

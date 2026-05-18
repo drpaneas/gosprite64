@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -369,6 +369,11 @@ gosprite64.DrawWorldSpriteWithOptions(charSheet, frame, playerX, playerY, camera
 <li>Overlapping blended sprites compound cost: each overlapping pixel runs the blend math again. Minimize large transparent overlaps in hot scenes.</li>
 <li>The <code>DrawSpriteWithOptions</code> fast path kicks in when all options are at defaults, falling through to the plain <code>DrawSprite</code> code.</li>
 </ul>
+<h2 id="try-it"><a class="header" href="#try-it">Try It</a></h2>
+<iframe src="../emulator/play.html?rom=sprite_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+<blockquote>
+<p><strong>Controls:</strong> Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger</p>
+</blockquote>
 <h2 id="reference-example"><a class="header" href="#reference-example">Reference example</a></h2>
 <p>See <code>examples/sprite_demo</code> for a complete working example that demonstrates:</p>
 <ul>

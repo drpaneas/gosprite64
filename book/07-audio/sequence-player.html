@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -176,9 +176,130 @@
                     <main>
                         <h1 id="sequence-player"><a class="header" href="#sequence-player">Sequence Player</a></h1>
 <p>Play MIDI-style sequenced music using the N64’s audio hardware.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<pre><code class="language-go">import "github.com/drpaneas/gosprite64/audio/sequence"
+</code></pre>
+<h2 id="how-sequences-work"><a class="header" href="#how-sequences-work">How sequences work</a></h2>
+<p>N64 games do not stream audio like modern platforms. Instead, music is stored as a compact sequence of note events (similar to MIDI) that drive instrument samples loaded into audio RAM. The sequence player reads these events and produces sound through the RSP audio microcode.</p>
+<p>This approach uses very little ROM space - a full song might be only a few kilobytes of sequence data plus shared instrument samples.</p>
+<h2 id="creating-a-player"><a class="header" href="#creating-a-player">Creating a player</a></h2>
+<pre><code class="language-go">player := sequence.NewPlayer()
+</code></pre>
+<p><code>NewPlayer</code> returns a player with sensible defaults:</p>
+<ul>
+<li>Tempo: 120 BPM</li>
+<li>Master volume: 127 (maximum)</li>
+<li>All 16 channel volumes: 127</li>
+</ul>
+<h2 id="loading-sequence-data"><a class="header" href="#loading-sequence-data">Loading sequence data</a></h2>
+<p>Assign raw sequence bytes to the player’s <code>Data</code> field before calling <code>Play</code>:</p>
+<pre><code class="language-go">player.Data = sequenceBytes
+</code></pre>
+<p>The sequence data is typically loaded from a ROM asset at startup.</p>
+<h2 id="playback-controls"><a class="header" href="#playback-controls">Playback controls</a></h2>
+<h3 id="play"><a class="header" href="#play">Play</a></h3>
+<p>Starts (or restarts) playback from the beginning:</p>
+<pre><code class="language-go">player.Play()
+</code></pre>
+<p>If the player is already playing, this resets to position 0 and starts over.</p>
+<h3 id="stop"><a class="header" href="#stop">Stop</a></h3>
+<p>Halts playback and resets position to the beginning:</p>
+<pre><code class="language-go">player.Stop()
+</code></pre>
+<h3 id="pause-and-resume"><a class="header" href="#pause-and-resume">Pause and Resume</a></h3>
+<p>Pause freezes playback at the current position. Resume continues from where it left off:</p>
+<pre><code class="language-go">player.Pause()
+// ...later...
+player.Resume()
+</code></pre>
+<p>Calling <code>Pause</code> when not playing has no effect. Calling <code>Resume</code> when not paused has no effect.</p>
+<h3 id="isplaying"><a class="header" href="#isplaying">IsPlaying</a></h3>
+<p>Returns <code>true</code> if the player is actively producing audio (playing and not paused):</p>
+<pre><code class="language-go">if player.IsPlaying() {
+    drawMusicIcon()
+}
+</code></pre>
+<h2 id="tempo"><a class="header" href="#tempo">Tempo</a></h2>
+<p><code>SetTempo</code> controls playback speed in beats per minute:</p>
+<pre><code class="language-go">player.SetTempo(140)    // faster
+player.SetTempo(80)     // slower
+
+bpm := player.Tempo()   // read current tempo
+</code></pre>
+<p>The default is 120 BPM. The internal tick resolution is 48 ticks per beat.</p>
+<h2 id="volume"><a class="header" href="#volume">Volume</a></h2>
+<h3 id="master-volume"><a class="header" href="#master-volume">Master volume</a></h3>
+<p><code>SetVolume</code> sets the overall output level (0-127):</p>
+<pre><code class="language-go">player.SetVolume(100)   // slightly quieter
+player.SetVolume(0)     // muted
+
+vol := player.Volume()  // read current volume
+</code></pre>
+<h3 id="per-channel-volume"><a class="header" href="#per-channel-volume">Per-channel volume</a></h3>
+<p><code>SetChannelVolume</code> controls individual channels (0-15). Useful for muting or emphasizing specific instrument parts:</p>
+<pre><code class="language-go">player.SetChannelVolume(9, 0)    // mute channel 9 (often drums)
+player.SetChannelVolume(0, 80)   // soften the melody channel
+
+vol := player.ChannelVolume(0)   // read channel volume
+</code></pre>
+<h2 id="looping"><a class="header" href="#looping">Looping</a></h2>
+<p><code>SetLoop</code> configures loop behavior. The first parameter is the byte position to loop back to. The second is the loop count: use -1 for infinite looping, or a positive number for a fixed repeat count.</p>
+<pre><code class="language-go">player.SetLoop(0, -1)      // loop the whole song forever
+player.SetLoop(1024, 3)    // after reaching the end, jump to byte 1024, repeat 3 times
+player.SetLoop(0, 0)       // no looping (play once and stop)
+</code></pre>
+<h2 id="advancing-playback"><a class="header" href="#advancing-playback">Advancing playback</a></h2>
+<p>Call <code>Tick</code> once per audio frame in your game loop, passing the audio sample rate. It advances the internal position based on the current tempo and returns any note events generated during the tick:</p>
+<pre><code class="language-go">func (g *Game) Update() {
+    events := g.musicPlayer.Tick(32000) // N64 typical: 32000 Hz
+    for _, ev := range events {
+        // Feed events to the audio mixer
+        if ev.On {
+            g.mixer.NoteOn(ev.Channel, ev.Note, ev.Velocity)
+        } else {
+            g.mixer.NoteOff(ev.Channel, ev.Note)
+        }
+    }
+}
+</code></pre>
+<h2 id="noteevent"><a class="header" href="#noteevent">NoteEvent</a></h2>
+<p>Each event returned by <code>Tick</code> is a <code>NoteEvent</code>:</p>
+<pre><code class="language-go">type NoteEvent struct {
+    Channel  uint8   // MIDI channel (0-15)
+    Note     uint8   // MIDI note number (0-127)
+    Velocity uint8   // Strike intensity (0-127)
+    On       bool    // true = note on, false = note off
+}
+</code></pre>
+<h2 id="complete-example"><a class="header" href="#complete-example">Complete example</a></h2>
+<pre><code class="language-go">func NewGame() *Game {
+    g := &amp;Game{}
+
+    g.music = sequence.NewPlayer()
+    g.music.Data = loadAsset("overworld.seq")
+    g.music.SetLoop(0, -1)
+    g.music.SetVolume(100)
+    g.music.Play()
+
+    return g
+}
+
+func (g *Game) Update() {
+    events := g.music.Tick(32000)
+    for _, ev := range events {
+        handleNoteEvent(ev)
+    }
+
+    // Pause music when game is paused
+    if gs.IsButtonJustPressed(gs.ButtonStart) {
+        if g.paused {
+            g.music.Resume()
+        } else {
+            g.music.Pause()
+        }
+        g.paused = !g.paused
+    }
+}
+</code></pre>
 
                     </main>
 

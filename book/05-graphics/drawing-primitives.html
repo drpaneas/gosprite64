@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,124 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="drawing-primitives"><a class="header" href="#drawing-primitives">Drawing Primitives</a></h1>
-<p>How to draw rectangles, lines, and pixels using FillRect, DrawRect, DrawLine, and PutPixel.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>GoSprite64 provides a small set of drawing functions for shapes, lines, text,
+and images. All coordinates use the <strong>288x216 logical canvas</strong> - the library
+maps them to the actual framebuffer resolution automatically.</p>
+<h2 id="clearing-the-screen"><a class="header" href="#clearing-the-screen">Clearing the Screen</a></h2>
+<p>Every frame typically starts by wiping the previous contents:</p>
+<pre><code class="language-go">func ClearScreen()
+func ClearScreenWith(c color.Color)
+</code></pre>
+<p><code>ClearScreen</code> fills the entire screen with <code>gosprite64.Black</code>.
+<code>ClearScreenWith</code> lets you pick the color:</p>
+<pre><code class="language-go">func (g *Game) Draw() {
+    gosprite64.ClearScreen()            // solid black
+    // or
+    gosprite64.ClearScreenWith(gosprite64.DarkBlue) // night-sky blue
+}
+</code></pre>
+<h2 id="filled-rectangles"><a class="header" href="#filled-rectangles">Filled Rectangles</a></h2>
+<pre><code class="language-go">func FillRect(x1, y1, x2, y2 int, c color.Color)
+</code></pre>
+<p>Draws a solid rectangle from the top-left corner <code>(x1, y1)</code> to the
+bottom-right corner <code>(x2, y2)</code>, inclusive. The coordinates are automatically
+swapped if you pass them in the wrong order.</p>
+<pre><code class="language-go">// A 32x16 red rectangle starting at (10, 10)
+gosprite64.FillRect(10, 10, 41, 25, gosprite64.Red)
+</code></pre>
+<p>Coordinates are clipped to the screen bounds, so you don’t need to worry about
+drawing outside the 288x216 area.</p>
+<h2 id="outlined-rectangles"><a class="header" href="#outlined-rectangles">Outlined Rectangles</a></h2>
+<pre><code class="language-go">func DrawRect(x1, y1, x2, y2 int, c color.Color)
+</code></pre>
+<p>Draws a 1-pixel outline around the given rectangle. Corners are drawn exactly
+once (no overdraw).</p>
+<pre><code class="language-go">// A green border around a 50x50 area
+gosprite64.DrawRect(20, 20, 69, 69, gosprite64.Green)
+</code></pre>
+<h2 id="lines"><a class="header" href="#lines">Lines</a></h2>
+<pre><code class="language-go">func DrawLine(x1, y1, x2, y2 int, c color.Color)
+</code></pre>
+<p>Draws a 1-pixel line between two points. Horizontal and vertical lines are
+optimized into a single <code>FillRect</code> call. Diagonal lines use Bresenham’s
+algorithm.</p>
+<pre><code class="language-go">// Horizontal line across the top
+gosprite64.DrawLine(0, 0, 287, 0, gosprite64.White)
+
+// Diagonal line
+gosprite64.DrawLine(0, 0, 100, 80, gosprite64.Yellow)
+</code></pre>
+<h2 id="text"><a class="header" href="#text">Text</a></h2>
+<pre><code class="language-go">func DrawText(str string, x, y int, c color.Color)
+</code></pre>
+<p>Renders a string using the built-in 8x8 monospace bitmap font. Each character
+occupies exactly 8 pixels wide. Characters outside the printable ASCII range
+(32-127) are skipped but still advance the cursor by 8 pixels.</p>
+<pre><code class="language-go">gosprite64.DrawText("HELLO WORLD", 10, 10, gosprite64.White)
+
+// Display coordinates
+gosprite64.DrawText(
+    fmt.Sprintf("x:%d y:%d", playerX, playerY),
+    2, 2,
+    gosprite64.White,
+)
+</code></pre>
+<p>The built-in font is good for debug overlays and quick prototyping. For
+styled text with variable-width characters, see
+<a href="custom-fonts.html">Custom Fonts</a>.</p>
+<h2 id="drawing-images"><a class="header" href="#drawing-images">Drawing Images</a></h2>
+<pre><code class="language-go">func DrawImage(src image.Image, x, y int)
+</code></pre>
+<p>Blits a Go <code>image.Image</code> at the given logical position. The image is clipped
+to the 288x216 canvas automatically.</p>
+<pre><code class="language-go">gosprite64.DrawImage(myImage, 50, 30)
+</code></pre>
+<h3 id="world-space-images"><a class="header" href="#world-space-images">World-Space Images</a></h3>
+<pre><code class="language-go">func DrawWorldImage(src image.Image, worldX, worldY int, cam *Camera)
+</code></pre>
+<p>Works like <code>DrawImage</code> but offsets the position by the camera’s scroll. If
+<code>cam</code> is <code>nil</code>, it behaves identically to <code>DrawImage</code>.</p>
+<pre><code class="language-go">// Draw a pickup item at world coordinates, offset by the camera
+gosprite64.DrawWorldImage(coinImg, coinWorldX, coinWorldY, g.camera)
+</code></pre>
+<h2 id="coordinate-quick-reference"><a class="header" href="#coordinate-quick-reference">Coordinate Quick Reference</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Concept</th><th>Range</th></tr>
+</thead>
+<tbody>
+<tr><td>Logical canvas width</td><td>0 - 287</td></tr>
+<tr><td>Logical canvas height</td><td>0 - 215</td></tr>
+<tr><td>Origin</td><td>Top-left corner (0, 0)</td></tr>
+<tr><td>Inclusive corners</td><td>Both <code>(x1,y1)</code> and <code>(x2,y2)</code> are drawn</td></tr>
+</tbody>
+</table>
+</div>
+<p>All drawing functions accept coordinates in this logical space. The library
+handles scaling to the physical framebuffer and clipping to screen bounds.</p>
+<h2 id="complete-example"><a class="header" href="#complete-example">Complete Example</a></h2>
+<pre><code class="language-go">func (g *Game) Draw() {
+    gosprite64.ClearScreenWith(gosprite64.DarkBlue)
+
+    // Sky gradient (stacked horizontal bars)
+    for y := 0; y &lt; 80; y++ {
+        gosprite64.DrawLine(0, y, 287, y, gosprite64.DarkPurple)
+    }
+
+    // Ground
+    gosprite64.FillRect(0, 160, 287, 215, gosprite64.DarkGreen)
+
+    // House outline
+    gosprite64.DrawRect(100, 120, 180, 160, gosprite64.White)
+
+    // Door
+    gosprite64.FillRect(130, 140, 150, 160, gosprite64.Brown)
+
+    // HUD text
+    gosprite64.DrawText("SCORE: 0042", 2, 2, gosprite64.Yellow)
+}
+</code></pre>
 
                     </main>
 

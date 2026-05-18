@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -176,9 +176,100 @@
                     <main>
                         <h1 id="step-9-screen-transitions"><a class="header" href="#step-9-screen-transitions">Step 9: Screen Transitions</a></h1>
 <p>Add fade-in and fade-out transitions between game states.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<h2 id="what-you-will-learn"><a class="header" href="#what-you-will-learn">What you will learn</a></h2>
+<ul>
+<li>Creating transitions with <code>StartTransition</code></li>
+<li>The <code>FadeToBlack</code> and <code>FadeFromBlack</code> transition styles</li>
+<li>Advancing and drawing transitions each frame</li>
+<li>Checking <code>Done()</code> to clean up finished transitions</li>
+</ul>
+<h2 id="what-changed-from-step-8"><a class="header" href="#what-changed-from-step-8">What changed from Step 8</a></h2>
+<p>Both states now have a <code>fade *gosprite64.Transition</code> field. The title screen fades in when it appears and fades out when the player presses Start. The gameplay state fades in when it starts. The changes are small but the visual difference is significant.</p>
+<h3 id="titlestate-changes"><a class="header" href="#titlestate-changes">TitleState changes</a></h3>
+<pre><code class="language-go">type TitleState struct {
+	sm    *gosprite64.StateMachine
+	blink int
+	show  bool
+	fade  *gosprite64.Transition
+}
+
+func (s *TitleState) Enter() {
+	s.show = true
+	s.fade = gosprite64.StartTransition(gosprite64.FadeFromBlack, 30)
+}
+</code></pre>
+<p>On Enter, a 30-frame fade-from-black plays. The screen starts fully black and gradually reveals the title over half a second.</p>
+<p>When the player presses Start, a fade-to-black begins before switching states:</p>
+<pre><code class="language-go">if gosprite64.IsButtonJustPressed(gosprite64.ButtonA) || gosprite64.IsButtonJustPressed(gosprite64.ButtonStart) {
+	s.fade = gosprite64.StartTransition(gosprite64.FadeToBlack, 20)
+	s.sm.Switch(&amp;PlayState{sm: s.sm})
+}
+</code></pre>
+<h3 id="playstate-changes"><a class="header" href="#playstate-changes">PlayState changes</a></h3>
+<pre><code class="language-go">func (s *PlayState) Enter() {
+	// ... asset loading (unchanged) ...
+	s.fade = gosprite64.StartTransition(gosprite64.FadeFromBlack, 30)
+}
+</code></pre>
+<p>The gameplay state fades in from black when it starts. This creates a smooth visual bridge: title fades to black, gameplay fades from black.</p>
+<h3 id="the-transition-loop"><a class="header" href="#the-transition-loop">The transition loop</a></h3>
+<p>Both states share the same pattern in Update and Draw:</p>
+<pre><code class="language-go">func (s *PlayState) Update() {
+	if s.fade != nil {
+		s.fade.Advance()
+		if s.fade.Done() {
+			s.fade.Stop()
+			s.fade = nil
+		}
+	}
+	// ... rest of update ...
+}
+
+func (s *PlayState) Draw() {
+	// ... draw everything ...
+	if s.fade != nil {
+		s.fade.Draw()
+	}
+}
+</code></pre>
+<p><code>Advance()</code> ticks the transition forward by one frame. <code>Done()</code> returns true when all frames have played. <code>Stop()</code> deactivates it and <code>Draw()</code> renders a semi-transparent black overlay whose opacity changes each frame.</p>
+<p>The transition must be drawn last so it appears on top of everything else.</p>
+<h2 id="the-complete-code"><a class="header" href="#the-complete-code">The complete code</a></h2>
+<p>The full listing is the same as Step 8 with the <code>fade</code> field added to both states. Here are the key differences:</p>
+<p><strong>TitleState</strong> - Added <code>fade</code> field. Enter starts <code>FadeFromBlack</code>. Update advances and cleans up the fade. Draw renders the fade overlay last. The button press starts <code>FadeToBlack</code>.</p>
+<p><strong>PlayState</strong> - Added <code>fade</code> field. Enter starts <code>FadeFromBlack</code>. Update advances and cleans up the fade. Draw renders the fade overlay last.</p>
+<h2 id="transition-api-reference"><a class="header" href="#transition-api-reference">Transition API reference</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Function/Method</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>StartTransition(style, frames)</code></td><td>Create and start a new transition</td></tr>
+<tr><td><code>Advance()</code></td><td>Tick forward one frame</td></tr>
+<tr><td><code>Done()</code></td><td>True when all frames have played</td></tr>
+<tr><td><code>Stop()</code></td><td>Deactivate the transition</td></tr>
+<tr><td><code>Draw()</code></td><td>Render the overlay (call last in Draw)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Style</th><th>Effect</th></tr>
+</thead>
+<tbody>
+<tr><td><code>FadeToBlack</code></td><td>Screen gradually goes black (alpha 0 to 255)</td></tr>
+<tr><td><code>FadeFromBlack</code></td><td>Screen gradually reveals (alpha 255 to 0)</td></tr>
+</tbody>
+</table>
+</div>
+<p>The duration is in frames. At 60 FPS, 30 frames is half a second and 60 frames is one full second.</p>
+<h2 id="build-and-run"><a class="header" href="#build-and-run">Build and run</a></h2>
+<pre><code class="language-bash">go generate ./examples/platformer
+GOENV=n64.env go1.24.5-embedded build -o examples/platformer/game.elf ./examples/platformer
+</code></pre>
+<p>The title screen now fades in from black when the game starts. Press Start and the screen fades to black, then the gameplay fades in. The transitions are short (20-30 frames) to feel snappy rather than sluggish.</p>
 
                     </main>
 

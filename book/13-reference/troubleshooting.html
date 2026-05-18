@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -176,9 +176,126 @@
                     <main>
                         <h1 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h1>
 <p>Common build errors, runtime issues, and emulator quirks with solutions.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<h2 id="build-errors"><a class="header" href="#build-errors">Build Errors</a></h2>
+<h3 id="ambiguous-import-or-multiple-module-errors"><a class="header" href="#ambiguous-import-or-multiple-module-errors">“ambiguous import” or multiple module errors</a></h3>
+<p><strong>Symptom:</strong> <code>go build</code> reports an “ambiguous import” error, or complains about a package being provided by multiple modules.</p>
+<p><strong>Cause:</strong> There is a stray <code>go.mod</code> file inside one of the <code>examples/</code> subdirectories. Go sees it as a separate module that conflicts with the root module.</p>
+<p><strong>Fix:</strong> Make sure you are building from the repository root and that no example directory has its own <code>go.mod</code>. Each example should be part of the root module. If you find an extra <code>go.mod</code> in an example folder, delete it:</p>
+<pre><code class="language-bash">rm examples/mygame/go.mod
+rm examples/mygame/go.sum
+</code></pre>
+<p>Then run <code>go mod tidy</code> from the repository root.</p>
+<h3 id="package-x-is-not-in-std"><a class="header" href="#package-x-is-not-in-std">“package X is not in std”</a></h3>
+<p><strong>Symptom:</strong> The compiler reports that packages like <code>embedded/rtos</code> or <code>embedded/arch/r4000/systim</code> are not in the standard library.</p>
+<p><strong>Cause:</strong> You are using the standard <code>go build</code> command instead of the N64 cross-compilation toolchain. GoSprite64 targets the N64 via a custom Go fork and requires the <code>n64.env</code> environment file.</p>
+<p><strong>Fix:</strong> Source the N64 environment and use the correct build command:</p>
+<pre><code class="language-bash">source n64.env
+go build -tags n64 -o game.elf ./examples/mygame
+</code></pre>
+<p>The <code>n64.env</code> file sets <code>GOOS</code>, <code>GOARCH</code>, <code>GOROOT</code>, and other variables needed for the embedded Go toolchain. Without it, Go tries to resolve N64-specific packages against your host’s standard library.</p>
+<h3 id="build-fails-with-embedded-errors"><a class="header" href="#build-fails-with-embedded-errors">Build fails with embedded/* errors</a></h3>
+<p><strong>Symptom:</strong> Compilation fails with errors referencing <code>embedded/rtos</code>, <code>embedded/arch/...</code>, or other packages under the <code>embedded/</code> prefix.</p>
+<p><strong>Cause:</strong> You need the <code>go1.24.5-embedded</code> toolchain (or later) and the <code>n64.env</code> environment file. The standard Go toolchain does not include the embedded runtime packages.</p>
+<p><strong>Fix:</strong></p>
+<ol>
+<li>Install the N64-capable Go toolchain. Follow the installation guide in <a href="../02-getting-started/installation.html">Getting Started</a>.</li>
+<li>Make sure <code>n64.env</code> exists in your project root and is sourced before building:</li>
+</ol>
+<pre><code class="language-bash">source n64.env
+</code></pre>
+<ol start="3">
+<li>Verify your Go version:</li>
+</ol>
+<pre><code class="language-bash">go version
+</code></pre>
+<p>It should report <code>go1.24.5-embedded</code> or similar. If it shows a standard Go version like <code>go1.24.5</code>, your <code>GOROOT</code> is not pointing to the embedded fork.</p>
+<h3 id="go-mod-tidy-fails-with-network-or-version-errors"><a class="header" href="#go-mod-tidy-fails-with-network-or-version-errors"><code>go mod tidy</code> fails with network or version errors</a></h3>
+<p><strong>Symptom:</strong> Running <code>go mod tidy</code> produces errors about missing versions or fails to fetch dependencies.</p>
+<p><strong>Cause:</strong> The N64 environment variables (<code>GOOS</code>, <code>GOARCH</code>, etc.) from <code>n64.env</code> can confuse <code>go mod tidy</code> because it tries to resolve dependencies for the embedded target platform.</p>
+<p><strong>Fix:</strong> Run <code>go mod tidy</code> with the N64-specific environment variables unset:</p>
+<pre><code class="language-bash">env -u GOOS -u GOARCH -u GOARM -u CGO_ENABLED go mod tidy
+</code></pre>
+<p>This tells Go to use your host platform for dependency resolution while keeping the rest of your environment intact. After tidy completes, you can source <code>n64.env</code> again for building.</p>
+<h2 id="runtime-issues"><a class="header" href="#runtime-issues">Runtime Issues</a></h2>
+<h3 id="black-screen-nothing-renders"><a class="header" href="#black-screen-nothing-renders">Black screen (nothing renders)</a></h3>
+<p><strong>Symptom:</strong> The ROM boots but the screen stays black. No tiles, sprites, or text appear.</p>
+<p><strong>Cause:</strong> You forgot to call <code>RegisterAssetFS</code> before <code>Run()</code>. Without it, the cartridge filesystem is not mounted and all asset loads silently fail.</p>
+<p><strong>Fix:</strong> In your <code>main.go</code>, register the embedded filesystem before starting the game loop:</p>
+<pre><code class="language-go">//go:embed assets/*
+var assets embed.FS
+
+func main() {
+    gosprite64.RegisterAssetFS(assets)
+    gosprite64.Run(&amp;MyGame{})
+}
+</code></pre>
+<p>Make sure the <code>go:embed</code> directive matches the directory where your compiled assets live. If you renamed or moved your assets folder, update the embed path accordingly.</p>
+<h3 id="no-audio-sound-effects-and-music-are-silent"><a class="header" href="#no-audio-sound-effects-and-music-are-silent">No audio (sound effects and music are silent)</a></h3>
+<p><strong>Symptom:</strong> The game runs and renders correctly, but <code>PlaySoundEffect</code> and <code>PlayMusic</code> do nothing. No sound is heard.</p>
+<p><strong>Cause:</strong> The audio bundle is not registered. GoSprite64 requires a generated <code>audio_embed.go</code> file that calls <code>RegisterAudioBundle</code> with your compiled audio assets.</p>
+<p><strong>Fix:</strong></p>
+<ol>
+<li>Make sure you have run the <code>audiogen</code> tool to compile your audio assets:</li>
+</ol>
+<pre><code class="language-bash">go run ./cmd/audiogen -manifest audio/manifest.json -out audio_embed.go
+</code></pre>
+<ol start="2">
+<li>
+<p>Verify that <code>audio_embed.go</code> exists in your game directory and contains a call to <code>gosprite64.RegisterAudioBundle(...)</code>.</p>
+</li>
+<li>
+<p>The <code>RegisterAudioBundle</code> call must execute before <code>Run()</code>. The generated file typically uses an <code>init()</code> function, so simply having the file in your package is enough.</p>
+</li>
+</ol>
+<p>If you still hear no audio, check that your emulator supports audio output (ares, simple64, and cen64 all support it; some older emulators may not).</p>
+<h3 id="scene-only-fills-part-of-the-screen"><a class="header" href="#scene-only-fills-part-of-the-screen">Scene only fills part of the screen</a></h3>
+<p><strong>Symptom:</strong> The tile scene renders but only covers a portion of the screen, leaving black bars or empty space.</p>
+<p><strong>Cause:</strong> The camera’s <code>Width</code> and <code>Height</code> do not match the logical canvas size of 288x216.</p>
+<p><strong>Fix:</strong> Set the camera dimensions to match the canvas:</p>
+<pre><code class="language-go">cam := &amp;gosprite64.Camera{
+    Width:  288,
+    Height: 216,
+}
+</code></pre>
+<p>If you are using <code>Scene.Draw(nil)</code>, the scene creates a default camera with the correct dimensions automatically. But if you create your own camera and forget to set the size, it defaults to zero, which means no tiles fall within the viewport.</p>
+<h3 id="d-pad-does-not-respond"><a class="header" href="#d-pad-does-not-respond">D-pad does not respond</a></h3>
+<p><strong>Symptom:</strong> <code>IsButtonDown(ButtonDPadUp)</code> and similar calls always return false, even though the D-pad works in other games.</p>
+<p><strong>Cause:</strong> This is usually an emulator input mapping issue. Some emulators map keyboard arrow keys to the analog stick by default rather than the D-pad.</p>
+<p><strong>Fix (ares):</strong></p>
+<ol>
+<li>Go to <strong>Settings &gt; Input</strong>.</li>
+<li>Find the D-pad mappings (DPad Up, DPad Down, DPad Left, DPad Right).</li>
+<li>Bind them to your preferred keyboard keys.</li>
+</ol>
+<p><strong>Fix (simple64):</strong></p>
+<ol>
+<li>Go to <strong>Options &gt; Configure Controller</strong>.</li>
+<li>Verify that the D-pad entries are mapped. By default, simple64 may only map the analog stick.</li>
+</ol>
+<p>If you want your game to respond to both the D-pad and analog stick, check both in your update logic:</p>
+<pre><code class="language-go">func (g *MyGame) Update() {
+    sx, sy := gosprite64.StickPosition(0.2)
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadLeft) || sx &lt; -0.5 {
+        // move left
+    }
+}
+</code></pre>
+<h2 id="emulator-notes"><a class="header" href="#emulator-notes">Emulator Notes</a></h2>
+<h3 id="which-emulators-work"><a class="header" href="#which-emulators-work">Which emulators work?</a></h3>
+<p>GoSprite64 ROMs are tested primarily with:</p>
+<ul>
+<li><strong>ares</strong> - Recommended. Accurate N64 emulation with good audio and input support.</li>
+<li><strong>simple64</strong> - Good alternative with a user-friendly interface.</li>
+<li><strong>cen64</strong> - Cycle-accurate but slower. Useful for verifying hardware accuracy.</li>
+</ul>
+<p>Project64 and Mupen64Plus may also work but are not regularly tested.</p>
+<h3 id="rom-does-not-boot-in-the-emulator"><a class="header" href="#rom-does-not-boot-in-the-emulator">ROM does not boot in the emulator</a></h3>
+<p>If the emulator shows an error or the ROM does not start:</p>
+<ol>
+<li>Make sure you built a <code>.z64</code> ROM file (big-endian format), not a <code>.elf</code> file. The ELF is an intermediate output; you need to convert it with <code>n64tool</code> or similar.</li>
+<li>Check that the ROM header is correct. Some emulators are strict about the header format.</li>
+<li>Try a different emulator to narrow down whether it is a ROM issue or an emulator compatibility issue.</li>
+</ol>
 
                     </main>
 

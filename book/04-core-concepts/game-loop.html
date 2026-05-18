@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,154 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="the-game-loop"><a class="header" href="#the-game-loop">The Game Loop</a></h1>
-<p>How GoSprite64’s Init/Update/Draw game loop works and why it runs at a fixed 60 FPS.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>GoSprite64 runs your game with a fixed-timestep loop at 60 FPS. You provide the logic; the engine handles timing, input polling, and frame presentation.</p>
+<h2 id="the-game-interface"><a class="header" href="#the-game-interface">The Game Interface</a></h2>
+<p>Every GoSprite64 game implements the <code>Game</code> interface:</p>
+<pre><code class="language-go">type Game interface {
+    Init()
+    Update()
+    Draw()
+}
+</code></pre>
+<p>Each method has a specific role:</p>
+<ul>
+<li><strong><code>Init()</code></strong> - Called once before the game loop starts. Load your resources, set up your initial state, and create your game objects here.</li>
+<li><strong><code>Update()</code></strong> - Called once per logic tick at a fixed 60 Hz rate. Read input, move objects, check collisions, and update game state here. Do not draw anything in Update.</li>
+<li><strong><code>Draw()</code></strong> - Called once per rendered frame. Clear the screen, draw your sprites, text, and UI here. Do not update game state in Draw.</li>
+</ul>
+<h2 id="starting-the-game"><a class="header" href="#starting-the-game">Starting the Game</a></h2>
+<p>Call <code>Run</code> with a pointer to your Game implementation:</p>
+<pre><code class="language-go">func main() {
+    gosprite64.Run(&amp;Game{})
+}
+</code></pre>
+<p><code>Run</code> never returns. It initializes the N64 video and audio hardware, calls your <code>Init()</code> once, then enters the main loop.</p>
+<h2 id="how-the-loop-works"><a class="header" href="#how-the-loop-works">How the Loop Works</a></h2>
+<p>The game loop uses a fixed-timestep accumulator pattern:</p>
+<ol>
+<li>Measure the elapsed time since the last frame</li>
+<li>Add elapsed time to an accumulator</li>
+<li>While the accumulator has enough time for a tick (1/60th of a second), call <code>Update()</code> and subtract the tick duration</li>
+<li>Call <code>Draw()</code> once per frame</li>
+<li>Sleep for the remaining time to hit the target frame rate</li>
+</ol>
+<p>This means <code>Update()</code> always runs at a consistent rate regardless of how long drawing takes. If the system falls behind, multiple <code>Update()</code> calls run before the next <code>Draw()</code> to catch up.</p>
+<p>The relevant source code in <code>gameloop.go</code>:</p>
+<pre><code class="language-go">var TargetFPS = 60
+var frameDuration = time.Second / time.Duration(TargetFPS)
+
+func Run(g Game) {
+    // ... hardware initialization ...
+
+    g.Init()
+
+    lastTime := rtos.Nanotime()
+    accumulator := time.Duration(0)
+
+    for {
+        currentTime := rtos.Nanotime()
+        elapsed := time.Duration(currentTime - lastTime)
+        lastTime = currentTime
+        accumulator += elapsed
+
+        for accumulator &gt;= frameDuration {
+            updateControllerState()
+            g.Update()
+            accumulator -= frameDuration
+        }
+
+        beginDrawing()
+        g.Draw()
+        endDrawing()
+
+        sleepDuration := frameDuration - (rtos.Nanotime() - currentTime)
+        if sleepDuration &gt; 0 {
+            time.Sleep(sleepDuration)
+        }
+    }
+}
+</code></pre>
+<p>Key details:</p>
+<ul>
+<li>Controller input is polled automatically before each <code>Update()</code> call</li>
+<li>Audio is initialized after <code>Init()</code> returns, so audio calls in <code>Init()</code> are silent no-ops</li>
+<li>The loop runs forever - there is no quit mechanism (the N64 has no OS to return to)</li>
+</ul>
+<h2 id="minimal-example"><a class="header" href="#minimal-example">Minimal Example</a></h2>
+<p>Here is the simplest possible GoSprite64 game - a solid red screen:</p>
+<pre><code class="language-go">package main
+
+import "github.com/drpaneas/gosprite64"
+
+type Game struct{}
+
+func (g *Game) Init()   {}
+func (g *Game) Update() {}
+
+func (g *Game) Draw() {
+    gosprite64.ClearScreenWith(gosprite64.Red)
+}
+
+func main() {
+    gosprite64.Run(&amp;Game{})
+}
+</code></pre>
+<p>A slightly more interesting example that responds to input:</p>
+<pre><code class="language-go">package main
+
+import "github.com/drpaneas/gosprite64"
+
+type Game struct {
+    x, y int
+}
+
+func (g *Game) Init() {
+    g.x = 144
+    g.y = 108
+}
+
+func (g *Game) Update() {
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadUp) {
+        g.y--
+    }
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadDown) {
+        g.y++
+    }
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadLeft) {
+        g.x--
+    }
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadRight) {
+        g.x++
+    }
+}
+
+func (g *Game) Draw() {
+    gosprite64.ClearScreen()
+    gosprite64.FillRect(g.x-4, g.y-4, g.x+4, g.y+4, gosprite64.Green)
+    gosprite64.DrawText("MOVE WITH D-PAD", 80, 4, gosprite64.White)
+}
+
+func main() {
+    gosprite64.Run(&amp;Game{})
+}
+</code></pre>
+<h2 id="update-vs-draw"><a class="header" href="#update-vs-draw">Update vs Draw</a></h2>
+<p>Keep these two methods cleanly separated:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th><code>Update()</code></th><th><code>Draw()</code></th></tr>
+</thead>
+<tbody>
+<tr><td>Read input</td><td>Clear the screen</td></tr>
+<tr><td>Move objects</td><td>Draw sprites and shapes</td></tr>
+<tr><td>Check collisions</td><td>Draw text and UI</td></tr>
+<tr><td>Update timers</td><td>Render transitions</td></tr>
+<tr><td>Change game state</td><td>Read-only access to state</td></tr>
+</tbody>
+</table>
+</div>
+<p>This separation matters because <code>Update()</code> and <code>Draw()</code> can run a different number of times per frame. If the game falls behind, <code>Update()</code> catches up with multiple calls while <code>Draw()</code> only runs once.</p>
 
                     </main>
 

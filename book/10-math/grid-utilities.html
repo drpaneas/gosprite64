@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,13 +175,175 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="grid-utilities"><a class="header" href="#grid-utilities">Grid Utilities</a></h1>
-<p>The <code>math2d</code> package provides generic grid data structures for spatial operations. Import it with:</p>
+<p>The <code>math2d</code> package provides a generic 2D grid for tile-based collision, puzzle logic, and spatial queries.</p>
 <pre><code class="language-go">import "github.com/drpaneas/gosprite64/math2d"
 </code></pre>
-<p>Covers <code>math2d.Grid[T]</code>, <code>Run</code>, <code>GridCell</code>, <code>ScanRow</code>, and <code>ScanCol</code>.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<h2 id="gridt"><a class="header" href="#gridt">Grid[T]</a></h2>
+<p><code>Grid[T]</code> is a generic two-dimensional array of cells. The type parameter <code>T</code> must be <code>comparable</code>. Addressing is column-first: <code>Get(col, row)</code> where column is the X axis and row is the Y axis.</p>
+<h3 id="creating-a-grid"><a class="header" href="#creating-a-grid">Creating a grid</a></h3>
+<pre><code class="language-go">func NewGrid[T comparable](cols, rows int) *Grid[T]
+</code></pre>
+<pre><code class="language-go">// A 20x15 grid of integers (all cells start at zero value)
+grid := math2d.NewGrid[int](20, 15)
+
+// A 10x10 grid of booleans
+walls := math2d.NewGrid[bool](10, 10)
+</code></pre>
+<h3 id="dimensions"><a class="header" href="#dimensions">Dimensions</a></h3>
+<pre><code class="language-go">grid.Cols()  // number of columns (X)
+grid.Rows()  // number of rows (Y)
+</code></pre>
+<h2 id="reading-and-writing-cells"><a class="header" href="#reading-and-writing-cells">Reading and writing cells</a></h2>
+<h3 id="get"><a class="header" href="#get">Get</a></h3>
+<p>Returns the cell value at (col, row). Returns the zero value of <code>T</code> if the position is out of bounds.</p>
+<pre><code class="language-go">value := grid.Get(5, 3)
+</code></pre>
+<h3 id="set"><a class="header" href="#set">Set</a></h3>
+<p>Writes a value to (col, row). No-op if out of bounds.</p>
+<pre><code class="language-go">grid.Set(5, 3, 42)
+</code></pre>
+<h3 id="inbounds"><a class="header" href="#inbounds">InBounds</a></h3>
+<p>Checks whether a position is inside the grid:</p>
+<pre><code class="language-go">if grid.InBounds(col, row) {
+    // safe to read or write
+}
+</code></pre>
+<p>You do not need to call <code>InBounds</code> before <code>Get</code> or <code>Set</code> - they handle out-of-bounds access gracefully. Use <code>InBounds</code> when you need the check result for game logic.</p>
+<h2 id="bulk-operations"><a class="header" href="#bulk-operations">Bulk operations</a></h2>
+<h3 id="fill"><a class="header" href="#fill">Fill</a></h3>
+<p>Sets every cell to the given value:</p>
+<pre><code class="language-go">grid.Fill(1)  // all cells become 1
+</code></pre>
+<h3 id="clear"><a class="header" href="#clear">Clear</a></h3>
+<p>Resets every cell to the zero value of <code>T</code>:</p>
+<pre><code class="language-go">grid.Clear()  // all cells become 0 (for int), false (for bool), etc.
+</code></pre>
+<h2 id="searching"><a class="header" href="#searching">Searching</a></h2>
+<h3 id="findall"><a class="header" href="#findall">FindAll</a></h3>
+<p>Returns the positions of all cells matching a predicate:</p>
+<pre><code class="language-go">// Find all cells with value 3
+cells := grid.FindAll(func(v int) bool { return v == 3 })
+for _, cell := range cells {
+    fmt.Printf("Found at col=%d, row=%d\n", cell.Col, cell.Row)
+}
+</code></pre>
+<p>Each result is a <code>GridCell</code>:</p>
+<pre><code class="language-go">type GridCell struct {
+    Col, Row int
+}
+</code></pre>
+<h3 id="countvalue"><a class="header" href="#countvalue">CountValue</a></h3>
+<p>Counts how many cells equal a specific value:</p>
+<pre><code class="language-go">solidCount := grid.CountValue(1)
+emptyCount := grid.CountValue(0)
+</code></pre>
+<h2 id="neighbors"><a class="header" href="#neighbors">Neighbors</a></h2>
+<h3 id="neighbors4"><a class="header" href="#neighbors4">Neighbors4</a></h3>
+<p>Returns the values of the four orthogonal neighbors (up, down, left, right) that are within bounds:</p>
+<pre><code class="language-go">neighbors := grid.Neighbors4(5, 5)
+// Up to 4 values; fewer at edges/corners
+</code></pre>
+<p>Corner cells return 2 neighbors, edge cells return 3, and interior cells return 4.</p>
+<h2 id="row-and-column-scanning"><a class="header" href="#row-and-column-scanning">Row and column scanning</a></h2>
+<p><code>ScanRow</code> and <code>ScanCol</code> find consecutive runs of cells with the same non-zero group value. You provide a grouping function that maps cell values to group identifiers; cells returning 0 are treated as empty and break runs.</p>
+<h3 id="scanrow"><a class="header" href="#scanrow">ScanRow</a></h3>
+<p>Scans a row left-to-right:</p>
+<pre><code class="language-go">type Run struct {
+    Start  int  // starting column (for rows) or row (for columns)
+    Length int  // number of consecutive cells
+    Value  int  // the group identifier
+}
+</code></pre>
+<pre><code class="language-go">// Find horizontal runs of matching colors
+runs := grid.ScanRow(3, func(v int) int { return v })
+for _, r := range runs {
+    if r.Length &gt;= 3 {
+        // Three or more in a row - clear them
+    }
+}
+</code></pre>
+<h3 id="scancol"><a class="header" href="#scancol">ScanCol</a></h3>
+<p>Same as <code>ScanRow</code> but scans a column top-to-bottom:</p>
+<pre><code class="language-go">runs := grid.ScanCol(5, func(v int) int { return v })
+</code></pre>
+<h2 id="tile-collision-map-example"><a class="header" href="#tile-collision-map-example">Tile collision map example</a></h2>
+<p>A common use case is building a collision grid from a tile map, where solid tiles are marked <code>true</code> and empty tiles are <code>false</code>:</p>
+<pre><code class="language-go">const (
+    tileSize = 16
+    mapCols  = 20
+    mapRows  = 15
+)
+
+func buildCollisionGrid(tileData []int) *math2d.Grid[bool] {
+    grid := math2d.NewGrid[bool](mapCols, mapRows)
+    for row := 0; row &lt; mapRows; row++ {
+        for col := 0; col &lt; mapCols; col++ {
+            tileID := tileData[row*mapCols+col]
+            if tileID &gt; 0 {
+                grid.Set(col, row, true)
+            }
+        }
+    }
+    return grid
+}
+
+func isSolidAt(grid *math2d.Grid[bool], worldX, worldY float32) bool {
+    col := int(worldX) / tileSize
+    row := int(worldY) / tileSize
+    return grid.Get(col, row)
+}
+
+func (g *Game) Update() {
+    // Check the tile the player is about to move into
+    nextX := g.player.X + g.player.VelX
+    nextY := g.player.Y + g.player.VelY
+
+    if isSolidAt(g.collisionGrid, nextX, g.player.Y) {
+        g.player.VelX = 0
+    }
+    if isSolidAt(g.collisionGrid, g.player.X, nextY) {
+        g.player.VelY = 0
+    }
+
+    g.player.X += g.player.VelX
+    g.player.Y += g.player.VelY
+}
+</code></pre>
+<h2 id="puzzle-game-example"><a class="header" href="#puzzle-game-example">Puzzle game example</a></h2>
+<p>Grids are also useful for match-three or Dr. Mario-style puzzle games. Use <code>ScanRow</code> and <code>ScanCol</code> to find matches:</p>
+<pre><code class="language-go">const (
+    colorRed   = 1
+    colorBlue  = 2
+    colorGreen = 3
+)
+
+func findMatches(grid *math2d.Grid[int], minRun int) []math2d.GridCell {
+    matched := math2d.NewGrid[bool](grid.Cols(), grid.Rows())
+
+    identity := func(v int) int { return v }
+
+    for row := 0; row &lt; grid.Rows(); row++ {
+        for _, run := range grid.ScanRow(row, identity) {
+            if run.Length &gt;= minRun {
+                for c := run.Start; c &lt; run.Start+run.Length; c++ {
+                    matched.Set(c, row, true)
+                }
+            }
+        }
+    }
+    for col := 0; col &lt; grid.Cols(); col++ {
+        for _, run := range grid.ScanCol(col, identity) {
+            if run.Length &gt;= minRun {
+                for r := run.Start; r &lt; run.Start+run.Length; r++ {
+                    matched.Set(col, r, true)
+                }
+            }
+        }
+    }
+
+    return matched.FindAll(func(v bool) bool { return v })
+}
+</code></pre>
 
                     </main>
 

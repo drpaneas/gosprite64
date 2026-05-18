@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,130 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="step-4-animate-the-player"><a class="header" href="#step-4-animate-the-player">Step 4: Animate the Player</a></h1>
-<p>Use the AnimationPlayer to drive idle and walk animations from clip data.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>Use the AnimationPlayer to cycle through sprite frames automatically.</p>
+<h2 id="what-you-will-learn"><a class="header" href="#what-you-will-learn">What you will learn</a></h2>
+<ul>
+<li>Loading animation clips from a bundle</li>
+<li>Using <code>AnimationPlayer</code> to drive frame playback</li>
+<li>The Play / Advance / Frame pattern</li>
+</ul>
+<h2 id="the-code"><a class="header" href="#the-code">The code</a></h2>
+<pre><code class="language-go">//go:generate sh -c "cd assets-src &amp;&amp; go run gen_assets.go"
+//go:generate sh -c "mkdir -p assets &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dsheet -in assets-src/character.png -out assets/character.sheet -tile-width 16 -tile-height 16 &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dsheet -in assets-src/tiles.png -out assets/tiles.sheet -tile-width 8 -tile-height 8 &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dmap -in assets-src/level.json -out assets/level.map &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2danim -in assets-src/anims.json -out assets/anims.anim &amp;&amp; go run github.com/drpaneas/gosprite64/cmd/mk2dbundle -sheet assets/tiles.sheet -map assets/level.map -anim assets/anims.anim -out assets/level.bundle"
+
+package main
+
+import (
+	"github.com/drpaneas/gosprite64"
+)
+
+type Game struct {
+	scene   *gosprite64.Scene
+	camera  *gosprite64.Camera
+	charSS  *gosprite64.SpriteSheet
+	player  *gosprite64.AnimationPlayer
+	idle    gosprite64.AnimationClip
+	playerX float32
+	playerY float32
+}
+
+func (g *Game) Init() {
+	bundle, err := gosprite64.OpenBundle("assets/level.bundle")
+	if err != nil {
+		panic(err)
+	}
+
+	scene, err := gosprite64.LoadScene(bundle)
+	if err != nil {
+		panic(err)
+	}
+	g.scene = scene
+	g.camera = &amp;gosprite64.Camera{Width: 288, Height: 216}
+
+	charSheet, err := gosprite64.LoadSpriteSheet("assets/character.sheet")
+	if err != nil {
+		panic(err)
+	}
+	g.charSS = charSheet
+
+	animSet, err := bundle.LoadAnimation("anims")
+	if err != nil {
+		panic(err)
+	}
+
+	idleClip, ok := animSet.Clip("idle")
+	if !ok {
+		panic("idle clip not found")
+	}
+	g.idle = idleClip
+
+	g.playerX = 144
+	g.playerY = 108
+
+	g.player = gosprite64.NewAnimationPlayer()
+	g.player.SetLoop(true)
+	g.player.Play(g.idle)
+}
+
+func (g *Game) Update() {
+	g.player.Advance(1)
+}
+
+func (g *Game) Draw() {
+	gosprite64.ClearScreen()
+	g.scene.Draw(g.camera)
+
+	frame := g.player.Frame()
+	gosprite64.DrawWorldSprite(g.charSS, frame, g.playerX, g.playerY, g.camera)
+}
+
+func main() {
+	gosprite64.Run(&amp;Game{})
+}
+</code></pre>
+<h2 id="how-it-works"><a class="header" href="#how-it-works">How it works</a></h2>
+<h3 id="animation-data"><a class="header" href="#animation-data">Animation data</a></h3>
+<p>The <code>anims.json</code> file defines two clips:</p>
+<pre><code class="language-json">{
+  "clips": [
+    {"name": "idle", "fps": 4, "frames": [0, 1]},
+    {"name": "walk", "fps": 8, "frames": [0, 1, 2, 3]}
+  ]
+}
+</code></pre>
+<p>Each clip has a name, a playback rate (frames per second), and a list of sprite frame indices. The idle clip alternates between frames 0 and 1 at 4 FPS. The walk clip cycles all 4 frames at 8 FPS.</p>
+<p>The <code>mk2danim</code> tool compiles this JSON into a binary <code>.anim</code> file, and <code>mk2dbundle</code> includes it in the bundle.</p>
+<h3 id="loading-clips"><a class="header" href="#loading-clips">Loading clips</a></h3>
+<pre><code class="language-go">animSet, err := bundle.LoadAnimation("anims")
+idleClip, ok := animSet.Clip("idle")
+</code></pre>
+<p><code>LoadAnimation</code> loads the compiled animation data. <code>Clip("idle")</code> retrieves a specific named clip. An <code>AnimationClip</code> holds the FPS and frame sequence.</p>
+<h3 id="the-animationplayer"><a class="header" href="#the-animationplayer">The AnimationPlayer</a></h3>
+<pre><code class="language-go">g.player = gosprite64.NewAnimationPlayer()
+g.player.SetLoop(true)
+g.player.Play(g.idle)
+</code></pre>
+<p>The <code>AnimationPlayer</code> tracks which clip is playing, the current frame index, and an internal accumulator that converts game ticks into animation frames at the clip’s FPS rate.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Method</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Play(clip)</code></td><td>Start playing a clip from the beginning</td></tr>
+<tr><td><code>SetLoop(true)</code></td><td>Repeat the clip when it reaches the end</td></tr>
+<tr><td><code>Advance(ticks)</code></td><td>Advance the internal clock by N game ticks</td></tr>
+<tr><td><code>Frame()</code></td><td>Return the current sprite frame index</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="the-pattern"><a class="header" href="#the-pattern">The pattern</a></h3>
+<p>In <code>Update()</code>, call <code>Advance(1)</code> every frame. In <code>Draw()</code>, call <code>Frame()</code> to get the current frame index and pass it to <code>DrawWorldSprite</code>. The player handles all the FPS math internally.</p>
+<h2 id="build-and-run"><a class="header" href="#build-and-run">Build and run</a></h2>
+<pre><code class="language-bash">go generate ./examples/platformer
+GOENV=n64.env go1.24.5-embedded build -o examples/platformer/game.elf ./examples/platformer
+</code></pre>
+<p>Build and run to see the character animating in place. The idle animation slowly alternates between two frames - a subtle breathing effect. The character still does not respond to input yet.</p>
 
                     </main>
 

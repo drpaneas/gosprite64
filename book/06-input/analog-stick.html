@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -176,9 +176,74 @@
                     <main>
                         <h1 id="analog-stick"><a class="header" href="#analog-stick">Analog Stick</a></h1>
 <p>Read the N64 analog stick for smooth directional movement and aiming.</p>
+<pre><code class="language-go">import gs "github.com/drpaneas/gosprite64"
+</code></pre>
+<h2 id="stickposition"><a class="header" href="#stickposition">StickPosition</a></h2>
+<p><code>StickPosition</code> returns the analog stick’s X and Y position as two <code>float64</code> values, each in the range -1.0 to 1.0.</p>
+<pre><code class="language-go">func StickPosition(deadzone float64) (float64, float64)
+</code></pre>
+<ul>
+<li><strong>X axis:</strong> -1.0 is full left, 1.0 is full right.</li>
+<li><strong>Y axis:</strong> -1.0 is full up, 1.0 is full down. The Y axis is flipped compared to raw hardware values so that “down on the screen” is positive, matching screen coordinates.</li>
+<li>Values are clamped to [-1.0, 1.0] even if the hardware reports values slightly outside that range.</li>
+</ul>
+<h3 id="the-deadzone-parameter"><a class="header" href="#the-deadzone-parameter">The deadzone parameter</a></h3>
+<p>N64 analog sticks rarely rest at a perfect zero position. A worn stick might report small non-zero values even when the player is not touching it. The <code>deadzone</code> parameter defines a threshold: any axis value between <code>-deadzone</code> and <code>+deadzone</code> is snapped to zero.</p>
+<p>A deadzone of <code>0.15</code> is a good starting point for most games:</p>
+<pre><code class="language-go">x, y := gs.StickPosition(0.15)
+</code></pre>
+<ul>
+<li><code>0.0</code> - No deadzone. The raw (clamped) value is returned. Fine for menus or testing, but can cause drift on worn controllers.</li>
+<li><code>0.10 - 0.20</code> - Typical range for action games. Filters out stick drift while preserving sensitivity.</li>
+<li><code>0.25+</code> - Large deadzone. The player must push the stick further before movement registers. Useful for games where accidental input is costly.</li>
+</ul>
+<h2 id="character-movement-example"><a class="header" href="#character-movement-example">Character movement example</a></h2>
+<pre><code class="language-go">const moveSpeed = 3.0
+
+func (g *Game) Update() {
+    x, y := gs.StickPosition(0.15)
+
+    player.X += x * moveSpeed
+    player.Y += y * moveSpeed
+}
+</code></pre>
+<p>Because <code>StickPosition</code> returns values between -1.0 and 1.0, multiplying by a speed constant gives smooth, proportional movement. Gentle stick tilts produce slow movement; full tilts produce maximum speed.</p>
+<h2 id="eight-directional-movement-with-normalization"><a class="header" href="#eight-directional-movement-with-normalization">Eight-directional movement with normalization</a></h2>
+<p>When the stick is pushed diagonally, both X and Y are non-zero. Naively adding both axes makes diagonal movement ~41% faster than cardinal movement. Normalize the direction vector to fix this:</p>
+<pre><code class="language-go">import "math"
+
+func (g *Game) Update() {
+    x, y := gs.StickPosition(0.15)
+
+    length := math.Sqrt(x*x + y*y)
+    if length &gt; 0 {
+        if length &gt; 1.0 {
+            length = 1.0
+        }
+        player.X += (x / length) * moveSpeed * length
+        player.Y += (y / length) * moveSpeed * length
+    }
+}
+</code></pre>
+<h2 id="aiming-and-cursor-control"><a class="header" href="#aiming-and-cursor-control">Aiming and cursor control</a></h2>
+<p>The analog stick works well for aiming a cursor or rotating a character:</p>
+<pre><code class="language-go">func (g *Game) Update() {
+    x, y := gs.StickPosition(0.2)
+
+    if x != 0 || y != 0 {
+        player.AimAngle = math.Atan2(y, x)
+    }
+}
+</code></pre>
+<h2 id="port-zero-convenience"><a class="header" href="#port-zero-convenience">Port-zero convenience</a></h2>
+<p><code>StickPosition</code> reads from controller port 0. For multiplayer input, use <code>PlayerStickPosition(port, deadzone)</code> - see <a href="multi-controller.html">Multi-Controller Support</a>.</p>
+<h2 id="try-it"><a class="header" href="#try-it">Try It</a></h2>
+<iframe src="../emulator/play.html?rom=analog_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
 <blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+<p><strong>Controls:</strong> Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger</p>
 </blockquote>
+<h2 id="reference-example"><a class="header" href="#reference-example">Reference Example</a></h2>
+<p>See <code>examples/analog_demo</code> in the GoSprite64 repository for a visual demonstration of analog stick input with a crosshair following the stick position.</p>
 
                     </main>
 

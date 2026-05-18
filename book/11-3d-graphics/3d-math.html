@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,155 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="3d-math"><a class="header" href="#3d-math">3D Math</a></h1>
-<p>Vectors, matrices, and transforms for 3D rendering on the N64.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>The <code>math3d</code> package provides vectors, matrices, and transform functions for 3D rendering on the N64. All types use <code>float32</code> as the working format, matching the N64’s RSP pipeline expectations. The package includes conversion to the N64’s fixed-point hardware matrix format.</p>
+<h2 id="vectors"><a class="header" href="#vectors">Vectors</a></h2>
+<h3 id="vec3"><a class="header" href="#vec3">Vec3</a></h3>
+<p>A 3-component vector for positions, directions, and normals:</p>
+<pre><code class="language-go">type Vec3 struct {
+    X, Y, Z float32
+}
+</code></pre>
+<p>Operations:</p>
+<pre><code class="language-go">a := math3d.Vec3{X: 1, Y: 2, Z: 3}
+b := math3d.Vec3{X: 4, Y: 5, Z: 6}
+
+sum   := a.Add(b)        // component-wise addition
+diff  := a.Sub(b)        // component-wise subtraction
+scaled := a.Scale(2.0)   // multiply all components by scalar
+dot   := a.Dot(b)        // dot product
+cross := a.Cross(b)      // cross product
+length := a.Length()      // Euclidean length
+norm  := a.Normalize()   // unit vector (returns zero vector if length is 0)
+</code></pre>
+<h3 id="vec4"><a class="header" href="#vec4">Vec4</a></h3>
+<p>A 4-component vector for homogeneous coordinates and matrix multiplication:</p>
+<pre><code class="language-go">type Vec4 struct {
+    X, Y, Z, W float32
+}
+</code></pre>
+<p><code>Vec4</code> is used primarily with <code>Mat4.MulVec4</code> for transforming points through projection matrices.</p>
+<h2 id="matrices"><a class="header" href="#matrices">Matrices</a></h2>
+<h3 id="mat4"><a class="header" href="#mat4">Mat4</a></h3>
+<p>A 4x4 matrix in row-major order:</p>
+<pre><code class="language-go">type Mat4 [4][4]float32
+</code></pre>
+<h3 id="identity"><a class="header" href="#identity">Identity</a></h3>
+<p>Returns a 4x4 identity matrix:</p>
+<pre><code class="language-go">m := math3d.Identity()
+</code></pre>
+<h3 id="matrix-multiplication"><a class="header" href="#matrix-multiplication">Matrix multiplication</a></h3>
+<p>Multiply two matrices or transform a vector:</p>
+<pre><code class="language-go">result := a.Mul(b)          // Mat4 * Mat4
+v := m.MulVec4(math3d.Vec4{X: 1, Y: 0, Z: 0, W: 1})  // Mat4 * Vec4
+</code></pre>
+<h2 id="transform-functions"><a class="header" href="#transform-functions">Transform functions</a></h2>
+<p>All transform functions return a new <code>Mat4</code>. Chain them with <code>Mul</code> to compose transforms.</p>
+<h3 id="translate"><a class="header" href="#translate">Translate</a></h3>
+<pre><code class="language-go">t := math3d.Translate(10, 0, -5)
+</code></pre>
+<p>Builds a translation matrix. Moves objects by (x, y, z) in world space.</p>
+<h3 id="scale"><a class="header" href="#scale">Scale</a></h3>
+<pre><code class="language-go">s := math3d.Scale(2, 2, 2)
+</code></pre>
+<p>Builds a uniform or non-uniform scale matrix.</p>
+<h3 id="rotate"><a class="header" href="#rotate">Rotate</a></h3>
+<pre><code class="language-go">r := math3d.Rotate(45, 0, 1, 0)  // 45 degrees around the Y axis
+</code></pre>
+<p>Builds a rotation matrix. The angle is in <strong>degrees</strong>. The axis (x, y, z) is normalized internally. Matches libultra’s <code>guRotateF</code>.</p>
+<h3 id="composing-transforms"><a class="header" href="#composing-transforms">Composing transforms</a></h3>
+<p>Apply transforms right-to-left. To scale, then rotate, then translate:</p>
+<pre><code class="language-go">model := math3d.Translate(10, 0, 0).
+    Mul(math3d.Rotate(45, 0, 1, 0)).
+    Mul(math3d.Scale(2, 2, 2))
+</code></pre>
+<h2 id="view-matrix"><a class="header" href="#view-matrix">View matrix</a></h2>
+<h3 id="lookat"><a class="header" href="#lookat">LookAt</a></h3>
+<p>Builds a view matrix that positions and orients the camera:</p>
+<pre><code class="language-go">view := math3d.LookAt(
+    0, 5, 10,    // eye position
+    0, 0, 0,     // look-at target
+    0, 1, 0,     // up direction
+)
+</code></pre>
+<p>Matches libultra’s <code>guLookAtReflectF</code>. The eye looks toward the target with the given up vector defining the camera’s vertical orientation.</p>
+<h2 id="projection-matrices"><a class="header" href="#projection-matrices">Projection matrices</a></h2>
+<h3 id="perspective"><a class="header" href="#perspective">Perspective</a></h3>
+<p>Builds a perspective projection matrix for 3D rendering:</p>
+<pre><code class="language-go">proj, perspNorm := math3d.Perspective(
+    45,     // fovy: vertical field of view in degrees
+    1.333,  // aspect: width / height (e.g. 320/240)
+    10,     // near plane distance
+    1000,   // far plane distance
+    1.0,    // scale factor
+)
+</code></pre>
+<p>Returns two values:</p>
+<ul>
+<li><code>Mat4</code> - the projection matrix</li>
+<li><code>uint16</code> - the <code>perspNorm</code> value that the RSP needs for correct clipping. Pass this to the display list via <code>SPPerspNormalize</code>.</li>
+</ul>
+<p>Matches libultra’s <code>guPerspectiveF</code>.</p>
+<h3 id="ortho"><a class="header" href="#ortho">Ortho</a></h3>
+<p>Builds an orthographic projection matrix for 2D overlays or isometric views:</p>
+<pre><code class="language-go">ortho := math3d.Ortho(
+    0, 320,     // left, right
+    240, 0,     // bottom, top (flipped for screen coords)
+    -1, 1,      // near, far
+    1.0,        // scale factor
+)
+</code></pre>
+<p>Matches libultra’s <code>guOrthoF</code>.</p>
+<h2 id="setting-up-a-perspective-projection"><a class="header" href="#setting-up-a-perspective-projection">Setting up a perspective projection</a></h2>
+<p>A typical 3D scene setup combines all three matrices:</p>
+<pre><code class="language-go">// Projection
+proj, perspNorm := math3d.Perspective(45, 320.0/240.0, 10, 1000, 1.0)
+
+// View
+view := math3d.LookAt(
+    0, 100, 200,  // eye
+    0, 0, 0,      // target
+    0, 1, 0,      // up
+)
+
+// Model (per object)
+model := math3d.Translate(0, 0, 0).
+    Mul(math3d.Rotate(angle, 0, 1, 0)).
+    Mul(math3d.Scale(1, 1, 1))
+
+// Combined model-view-projection
+mvp := proj.Mul(view).Mul(model)
+</code></pre>
+<h2 id="n64-fixed-point-conversion"><a class="header" href="#n64-fixed-point-conversion">N64 fixed-point conversion</a></h2>
+<p>The N64 RSP uses a fixed-point matrix format (s15.16) stored as 16 uint32 words. The first 8 words hold integer portions, the last 8 hold fractional portions. Total size: 64 bytes.</p>
+<h3 id="ton64mtx"><a class="header" href="#ton64mtx">ToN64Mtx</a></h3>
+<p>Convert a float32 <code>Mat4</code> to the hardware format:</p>
+<pre><code class="language-go">type N64Mtx [16]uint32
+
+hwMtx := mvp.ToN64Mtx()
+</code></pre>
+<p>Matches libultra’s <code>guMtxF2L</code>. The resulting <code>N64Mtx</code> can be DMA’d to RDRAM and loaded by the RSP via <code>SPMatrix</code>.</p>
+<h3 id="fromn64mtx"><a class="header" href="#fromn64mtx">FromN64Mtx</a></h3>
+<p>Convert back from hardware format to float32 (useful for debugging):</p>
+<pre><code class="language-go">floatMtx := math3d.FromN64Mtx(hwMtx)
+</code></pre>
+<p>Matches libultra’s <code>guMtxL2F</code>.</p>
+<h2 id="complete-example-perspective-setup-with-display-list"><a class="header" href="#complete-example-perspective-setup-with-display-list">Complete example: perspective setup with display list</a></h2>
+<pre><code class="language-go">// Build matrices
+proj, perspNorm := math3d.Perspective(45, 320.0/240.0, 10, 1000, 1.0)
+view := math3d.LookAt(0, 100, 200, 0, 0, 0, 0, 1, 0)
+model := math3d.Translate(0, 0, 0).Mul(math3d.Rotate(angle, 0, 1, 0))
+
+// Convert to N64 format
+projMtx := proj.ToN64Mtx()
+mvMtx := view.Mul(model).ToN64Mtx()
+
+// Load into RSP via display list
+dl := gfx.NewDisplayList(32)
+dl.SPPerspNormalize(perspNorm)
+dl.SPMatrix(projAddr, gfx.MtxProjection|gfx.MtxLoad|gfx.MtxNoPush)
+dl.SPMatrix(mvAddr, gfx.MtxModelView|gfx.MtxLoad|gfx.MtxNoPush)
+</code></pre>
+<p>See <a href="./display-lists.html">Display Lists</a> for the full command reference.</p>
 
                     </main>
 

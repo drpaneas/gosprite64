@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,91 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="d-pad-and-buttons"><a class="header" href="#d-pad-and-buttons">D-Pad and Buttons</a></h1>
-<p>Read digital button presses with IsButtonDown, IsButtonJustPressed, and IsButtonJustReleased.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>Read digital button presses from the player-one controller. GoSprite64 polls controller state once per frame automatically, so these functions always reflect the current frame’s input.</p>
+<pre><code class="language-go">import gs "github.com/drpaneas/gosprite64"
+</code></pre>
+<h2 id="button-constants"><a class="header" href="#button-constants">Button constants</a></h2>
+<p>The N64 controller has 14 digital buttons. Each constant is a <code>ButtonMask</code> bitmask, so you can combine them with bitwise OR when needed.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Constant</th><th>Button</th></tr>
+</thead>
+<tbody>
+<tr><td><code>gs.ButtonA</code></td><td>A (green, right thumb)</td></tr>
+<tr><td><code>gs.ButtonB</code></td><td>B (blue, right thumb)</td></tr>
+<tr><td><code>gs.ButtonZ</code></td><td>Z (trigger, underside)</td></tr>
+<tr><td><code>gs.ButtonStart</code></td><td>Start</td></tr>
+<tr><td><code>gs.ButtonL</code></td><td>Left shoulder</td></tr>
+<tr><td><code>gs.ButtonR</code></td><td>Right shoulder</td></tr>
+<tr><td><code>gs.ButtonDPadUp</code></td><td>D-Pad up</td></tr>
+<tr><td><code>gs.ButtonDPadDown</code></td><td>D-Pad down</td></tr>
+<tr><td><code>gs.ButtonDPadLeft</code></td><td>D-Pad left</td></tr>
+<tr><td><code>gs.ButtonDPadRight</code></td><td>D-Pad right</td></tr>
+<tr><td><code>gs.ButtonCUp</code></td><td>C-up (yellow)</td></tr>
+<tr><td><code>gs.ButtonCDown</code></td><td>C-down (yellow)</td></tr>
+<tr><td><code>gs.ButtonCLeft</code></td><td>C-left (yellow)</td></tr>
+<tr><td><code>gs.ButtonCRight</code></td><td>C-right (yellow)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="checking-held-buttons"><a class="header" href="#checking-held-buttons">Checking held buttons</a></h2>
+<p><code>IsButtonDown</code> returns <code>true</code> for every frame the button is physically held down:</p>
+<pre><code class="language-go">func (g *Game) Update() {
+    if gs.IsButtonDown(gs.ButtonDPadRight) {
+        player.X += speed
+    }
+    if gs.IsButtonDown(gs.ButtonDPadLeft) {
+        player.X -= speed
+    }
+    if gs.IsButtonDown(gs.ButtonDPadUp) {
+        player.Y -= speed
+    }
+    if gs.IsButtonDown(gs.ButtonDPadDown) {
+        player.Y += speed
+    }
+}
+</code></pre>
+<p>Use <code>IsButtonDown</code> for continuous actions like movement - the callback fires every frame while the button is pressed.</p>
+<h2 id="detecting-a-fresh-press"><a class="header" href="#detecting-a-fresh-press">Detecting a fresh press</a></h2>
+<p><code>IsButtonJustPressed</code> returns <code>true</code> only on the first frame the button transitions from released to pressed. It will not fire again until the player releases and re-presses the button.</p>
+<pre><code class="language-go">func (g *Game) Update() {
+    if gs.IsButtonJustPressed(gs.ButtonA) {
+        player.Jump()
+    }
+    if gs.IsButtonJustPressed(gs.ButtonB) {
+        player.Attack()
+    }
+    if gs.IsButtonJustPressed(gs.ButtonStart) {
+        g.TogglePause()
+    }
+}
+</code></pre>
+<p>Use <code>IsButtonJustPressed</code> for one-shot actions like jumping, attacking, or opening a menu - actions that should not repeat while the button is held.</p>
+<h2 id="combining-both"><a class="header" href="#combining-both">Combining both</a></h2>
+<p>A common pattern uses <code>IsButtonJustPressed</code> for the initial action and <code>IsButtonDown</code> for sustained behavior:</p>
+<pre><code class="language-go">func (g *Game) Update() {
+    // Charge attack: start on press, charge while held
+    if gs.IsButtonJustPressed(gs.ButtonB) {
+        player.StartCharge()
+    }
+    if gs.IsButtonDown(gs.ButtonB) {
+        player.AddCharge(1)
+    }
+
+    // D-Pad movement (continuous)
+    if gs.IsButtonDown(gs.ButtonDPadRight) {
+        player.X += 2
+    }
+
+    // Menu navigation (one tap per press)
+    if gs.IsButtonJustPressed(gs.ButtonDPadDown) {
+        menu.MoveDown()
+    }
+}
+</code></pre>
+<h2 id="port-zero-convenience"><a class="header" href="#port-zero-convenience">Port-zero convenience</a></h2>
+<p><code>IsButtonDown</code> and <code>IsButtonJustPressed</code> read from controller port 0 (the first controller). For multiplayer input, see <a href="multi-controller.html">Multi-Controller Support</a>.</p>
 
                     </main>
 

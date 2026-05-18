@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoSprite64 Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #1a1a2e; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: sans-serif; color: #eee; }
+        #canvas { border: 2px solid #333; background: #000; image-rendering: pixelated; }
+        .controls { margin-top: 12px; font-size: 12px; color: #888; text-align: center; }
+        .controls kbd { background: #333; padding: 2px 6px; border-radius: 3px; }
+        .loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 16px; }
+        #start-btn { margin-top: 16px; padding: 10px 24px; font-size: 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        #start-btn:hover { background: #45a049; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <button id="start-btn">Click to Start</button>
+    <div class="controls">
+        <p><kbd>Arrow Keys</kbd> = D-Pad | <kbd>X</kbd> = A | <kbd>C</kbd> = B | <kbd>Enter</kbd> = Start | <kbd>Z</kbd> = Z</p>
+    </div>
+
+    <script>
+        var Module = {
+            canvas: document.getElementById('canvas'),
+            noInitialRun: true
+        };
+    </script>
+    <script src="n64wasm.js"></script>
+    <script src="script.js"></script>
+    <script src="input_controller.js"></script>
+    <script>
+        var romName = new URLSearchParams(window.location.search).get('rom') || 'platformer.z64';
+        var startBtn = document.getElementById('start-btn');
+
+        startBtn.addEventListener('click', function() {
+            startBtn.style.display = 'none';
+            loadROM('roms/' + romName);
+        });
+
+        function loadROM(url) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.responseType = 'arraybuffer';
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var data = new Uint8Array(xhr.response);
+                    FS.writeFile('/game.z64', data);
+                    Module.ccall('loadRom', 'number', ['string'], ['/game.z64']);
+                    Module.ccall('runEmulator', null, [], []);
+                }
+            };
+            xhr.send();
+        }
+    </script>
+</body>
+</html>

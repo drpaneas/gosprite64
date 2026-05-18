@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -250,7 +250,7 @@ func (g *Game) Update() {
 <p><code>gosprite64.PlaySoundEffect</code> returns <code>true</code> if the sound was accepted, <code>false</code> if it was dropped (engine not ready or command ring full). Sound effects are one-shot and can overlap. The same effect can play up to 4 times simultaneously. If you trigger a 5th instance, the oldest one is evicted.</p>
 <h3 id="playing-background-music"><a class="header" href="#playing-background-music">Playing background music</a></h3>
 <p>Import the generated <code>music</code> package and call <code>gosprite64.PlayMusic</code>:</p>
-<pre><code class="language-go">import "github.com/drpaneas/gosprite64/examples/mygame/music"
+<pre><code class="language-go">import "github.com/yourname/mygame/music"
 
 func (g *Game) Init() {
     gosprite64.PlayMusic(music.Overworld)
@@ -443,6 +443,11 @@ func (g *Game) Update() {
 <li>check <code>build/audio_report.json</code> for budget violations</li>
 </ul>
 <p>If you hear distortion or clicking, verify that <code>go generate</code> ran successfully after your last asset change.</p>
+<h2 id="try-it"><a class="header" href="#try-it">Try It</a></h2>
+<iframe src="../emulator/play.html?rom=pong.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+<blockquote>
+<p><strong>Controls:</strong> Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger</p>
+</blockquote>
 
                     </main>
 

@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -176,9 +176,149 @@
                     <main>
                         <h1 id="save-data"><a class="header" href="#save-data">Save Data</a></h1>
 <p>Persist game progress using EEPROM, SRAM, or FlashRAM cartridge storage.</p>
+<pre><code class="language-go">import "github.com/drpaneas/gosprite64/save"
+</code></pre>
+<h2 id="storage-types"><a class="header" href="#storage-types">Storage types</a></h2>
+<p>The N64 cartridge supports several save storage technologies. Each has different capacity and access characteristics:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Type</th><th>Constructor</th><th>Capacity</th><th>Notable games</th></tr>
+</thead>
+<tbody>
+<tr><td>EEPROM 4Kbit</td><td><code>save.NewEEPROM4K()</code></td><td>512 bytes</td><td>Super Mario 64, Mario Kart 64</td></tr>
+<tr><td>EEPROM 16Kbit</td><td><code>save.NewEEPROM16K()</code></td><td>2,048 bytes</td><td>Yoshi’s Story</td></tr>
+<tr><td>SRAM 256Kbit</td><td><code>save.NewSRAM()</code></td><td>32,768 bytes</td><td>Many third-party games</td></tr>
+<tr><td>FlashRAM 1Mbit</td><td><code>save.NewFlashRAM()</code></td><td>131,072 bytes</td><td>Paper Mario, Pokemon Stadium</td></tr>
+</tbody>
+</table>
+</div>
+<p>Choose the smallest type that fits your save data. EEPROM 4K is enough for most games that only store settings and a few save slots. FlashRAM gives 128 KB for games with large worlds or replay data.</p>
+<h2 id="the-storage-interface"><a class="header" href="#the-storage-interface">The Storage interface</a></h2>
+<p>All storage types implement the <code>Storage</code> interface:</p>
+<pre><code class="language-go">type Storage interface {
+    Type() StorageType  // which backend (StorageEEPROM4K, StorageSRAM, etc.)
+    Read(addr int, buf []byte) error
+    Write(addr int, data []byte) error
+    Size() int          // total capacity in bytes
+}
+</code></pre>
+<p><code>Read</code> fills <code>buf</code> with data starting at byte address <code>addr</code>. <code>Write</code> writes <code>data</code> starting at <code>addr</code>. Both return <code>save.ErrOutOfRange</code> if the operation would exceed the storage capacity.</p>
+<h2 id="creating-storage"><a class="header" href="#creating-storage">Creating storage</a></h2>
+<pre><code class="language-go">// Pick the type that matches your cartridge configuration
+storage := save.NewEEPROM4K()    // 512 bytes
+storage := save.NewEEPROM16K()   // 2 KB
+storage := save.NewSRAM()        // 32 KB
+storage := save.NewFlashRAM()    // 128 KB
+</code></pre>
+<h2 id="reading-and-writing"><a class="header" href="#reading-and-writing">Reading and writing</a></h2>
+<h3 id="low-level-read-and-write"><a class="header" href="#low-level-read-and-write">Low-level: Read and Write</a></h3>
+<p>Read and write at specific byte addresses:</p>
+<pre><code class="language-go">// Write 8 bytes at address 0
+err := storage.Write(0, []byte{1, 2, 3, 4, 5, 6, 7, 8})
+
+// Read them back
+buf := make([]byte, 8)
+err := storage.Read(0, buf)
+</code></pre>
+<h3 id="high-level-readall-and-writeall"><a class="header" href="#high-level-readall-and-writeall">High-level: ReadAll and WriteAll</a></h3>
+<p><code>ReadAll</code> reads the entire storage into a new byte slice. <code>WriteAll</code> writes a byte slice to the beginning of storage:</p>
+<pre><code class="language-go">// Read the full contents
+data, err := save.ReadAll(storage)
+
+// Write new data (must not exceed capacity)
+err := save.WriteAll(storage, data)
+</code></pre>
+<p><code>WriteAll</code> returns <code>save.ErrOutOfRange</code> if the data is larger than the storage capacity.</p>
+<h2 id="checksum"><a class="header" href="#checksum">Checksum</a></h2>
+<p><code>Checksum</code> computes a simple additive checksum over a byte slice. Use it to detect corrupted save data:</p>
+<pre><code class="language-go">func Checksum(data []byte) uint32
+</code></pre>
+<pre><code class="language-go">sum := save.Checksum(saveData)
+</code></pre>
+<p>The checksum is a straightforward sum of all bytes cast to <code>uint32</code>. It catches accidental corruption (bit flips, incomplete writes) but is not cryptographically secure.</p>
+<h2 id="errors"><a class="header" href="#errors">Errors</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Error</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>save.ErrNotAvailable</code></td><td>Storage backend not initialized (no read/write function set)</td></tr>
+<tr><td><code>save.ErrOutOfRange</code></td><td>Address + length exceeds storage capacity</td></tr>
+<tr><td><code>save.ErrReadFailed</code></td><td>Hardware read error</td></tr>
+<tr><td><code>save.ErrWriteFailed</code></td><td>Hardware write error</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="complete-saveload-example"><a class="header" href="#complete-saveload-example">Complete save/load example</a></h2>
+<pre><code class="language-go">type SaveData struct {
+    Level    uint8
+    Score    uint32
+    Lives    uint8
+    Checksum uint32
+}
+
+func encodeSave(s *SaveData) []byte {
+    buf := make([]byte, 7)
+    buf[0] = s.Level
+    buf[1] = byte(s.Score &gt;&gt; 24)
+    buf[2] = byte(s.Score &gt;&gt; 16)
+    buf[3] = byte(s.Score &gt;&gt; 8)
+    buf[4] = byte(s.Score)
+    buf[5] = s.Lives
+    // Compute checksum over the payload bytes
+    sum := save.Checksum(buf[:6])
+    buf[6] = byte(sum)
+    return buf
+}
+
+func decodeSave(data []byte) (*SaveData, bool) {
+    if len(data) &lt; 7 {
+        return nil, false
+    }
+    s := &amp;SaveData{
+        Level: data[0],
+        Score: uint32(data[1])&lt;&lt;24 | uint32(data[2])&lt;&lt;16 |
+               uint32(data[3])&lt;&lt;8 | uint32(data[4]),
+        Lives: data[5],
+    }
+    expected := byte(save.Checksum(data[:6]))
+    if data[6] != expected {
+        return nil, false // corrupted
+    }
+    return s, true
+}
+
+func saveGame(storage save.Storage, s *SaveData) error {
+    return save.WriteAll(storage, encodeSave(s))
+}
+
+func loadGame(storage save.Storage) (*SaveData, error) {
+    data, err := save.ReadAll(storage)
+    if err != nil {
+        return nil, err
+    }
+    s, ok := decodeSave(data)
+    if !ok {
+        return nil, fmt.Errorf("save data corrupted")
+    }
+    return s, nil
+}
+</code></pre>
+<h2 id="eeprom-details"><a class="header" href="#eeprom-details">EEPROM details</a></h2>
+<p>EEPROM is accessed in 8-byte blocks through the N64’s serial interface (SI/PIF). The <code>EEPROM</code> type handles block alignment internally. EEPROM is the most common save type for first-party Nintendo 64 games.</p>
+<h2 id="sram-details"><a class="header" href="#sram-details">SRAM details</a></h2>
+<p>SRAM is battery-backed static RAM accessed via PI DMA at address <code>0x08000000</code>. It offers fast random access but requires a battery in the cartridge to retain data when powered off.</p>
+<h2 id="flashram-details"><a class="header" href="#flashram-details">FlashRAM details</a></h2>
+<p>FlashRAM uses a command-based protocol via the PI interface. Write operations require erasing 16 KB sectors before writing new data. The <code>FlashRAM</code> type handles the erase-before-write protocol internally. FlashRAM does not require a battery - data persists without power.</p>
+<h2 id="try-it"><a class="header" href="#try-it">Try It</a></h2>
+<iframe src="../emulator/play.html?rom=save_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
 <blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+<p><strong>Controls:</strong> Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger</p>
 </blockquote>
+<h2 id="reference-example"><a class="header" href="#reference-example">Reference Example</a></h2>
+<p>See <code>examples/save_demo</code> in the GoSprite64 repository for a minimal working save/load example using SRAM.</p>
 
                     </main>
 

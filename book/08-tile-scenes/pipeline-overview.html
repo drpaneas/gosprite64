@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -294,6 +294,11 @@ fmt.Printf("map: %dx%d tiles, %d layers\n", m.Width(), m.Height(), m.LayerCount(
 stats := scene.Stats()
 fmt.Printf("visible: %d, uploads: %d\n", stats.VisibleTiles, stats.UploadCount)
 </code></pre>
+<h2 id="try-it"><a class="header" href="#try-it">Try It</a></h2>
+<iframe src="../emulator/play.html?rom=simplegame.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+<blockquote>
+<p><strong>Controls:</strong> Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger</p>
+</blockquote>
 <h2 id="reference-examples"><a class="header" href="#reference-examples">Reference examples</a></h2>
 <p>See <code>examples/simplegame</code> for a minimal working example that follows this tutorial step by step: source PNG + JSON assets, <code>go generate</code> pipeline, bundle loading, camera scrolling with D-pad input, and runtime stats overlay.</p>
 <p>For a more advanced example with multiple layers, overlay sheets, and tile animations, see <code>examples/tilemap</code>.</p>

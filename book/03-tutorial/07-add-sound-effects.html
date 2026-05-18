@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,110 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="step-7-add-sound-effects"><a class="header" href="#step-7-add-sound-effects">Step 7: Add Sound Effects</a></h1>
-<p>Add jump and collect sound effects using the audio pipeline.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>Add audio to the game using the VADPCM audio pipeline.</p>
+<h2 id="what-you-will-learn"><a class="header" href="#what-you-will-learn">What you will learn</a></h2>
+<ul>
+<li>The GoSprite64 audio pipeline (WAV to compressed VADPCM)</li>
+<li>Setting up <code>audiogen</code> code generation</li>
+<li>Calling <code>PlaySoundEffect</code> on game events</li>
+<li>The generated <code>sfx</code> package with typed IDs</li>
+</ul>
+<h2 id="how-the-audio-pipeline-works"><a class="header" href="#how-the-audio-pipeline-works">How the audio pipeline works</a></h2>
+<p>GoSprite64 compresses audio at build time using VADPCM (the same compression family the original N64 used). You provide standard <code>.wav</code> files, the <code>audiogen</code> tool compresses them, and the engine plays them at runtime. Your game code never deals with codecs or sample rates.</p>
+<p>The pipeline:</p>
+<pre><code class="language-text">.wav files --&gt; audiogen --&gt; VADPCM compressed --&gt; embedded in ROM --&gt; pure Go mixer --&gt; N64 DAC
+</code></pre>
+<h2 id="adding-audio-to-the-platformer"><a class="header" href="#adding-audio-to-the-platformer">Adding audio to the platformer</a></h2>
+<p>The platformer example does not ship with audio assets, but adding sound effects follows a standard pattern. Here is how you would add a jump sound.</p>
+<h3 id="1-create-the-audio-directories"><a class="header" href="#1-create-the-audio-directories">1. Create the audio directories</a></h3>
+<pre><code class="language-bash">mkdir -p examples/platformer/assets/audio/sfx
+</code></pre>
+<h3 id="2-add-a-wav-file"><a class="header" href="#2-add-a-wav-file">2. Add a WAV file</a></h3>
+<p>Place a 16-bit PCM WAV file at <code>examples/platformer/assets/audio/sfx/jump.wav</code>. Any sample rate works - <code>audiogen</code> resamples automatically. Stereo is downmixed to mono.</p>
+<h3 id="3-add-the-audiogen-generate-line"><a class="header" href="#3-add-the-audiogen-generate-line">3. Add the audiogen generate line</a></h3>
+<p>Add this to the top of <code>main.go</code>, alongside the existing <code>go:generate</code> lines:</p>
+<pre><code class="language-go">//go:generate go run github.com/drpaneas/gosprite64/cmd/audiogen -dir .
+</code></pre>
+<h3 id="4-run-code-generation"><a class="header" href="#4-run-code-generation">4. Run code generation</a></h3>
+<pre><code class="language-bash">go generate ./examples/platformer
+</code></pre>
+<p>This produces:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Generated file</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td><code>sfx/ids.go</code></td><td>Typed constants like <code>sfx.Jump</code></td></tr>
+<tr><td><code>audio_embed.go</code></td><td>Registers compressed audio with the engine at startup</td></tr>
+<tr><td><code>build/audio_v1.bin</code></td><td>Compressed audio data</td></tr>
+<tr><td><code>build/audio_v1_aux.bin</code></td><td>VADPCM predictor coefficients</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="5-play-sounds-from-game-code"><a class="header" href="#5-play-sounds-from-game-code">5. Play sounds from game code</a></h3>
+<p>Import the generated <code>sfx</code> package and call <code>PlaySoundEffect</code>:</p>
+<pre><code class="language-go">import (
+	"github.com/drpaneas/gosprite64"
+	"github.com/yourname/mygame/sfx"
+)
+
+func (g *Game) Update() {
+	// ... movement code ...
+
+	if gosprite64.IsButtonJustPressed(gosprite64.ButtonA) {
+		gosprite64.PlaySoundEffect(sfx.Jump)
+	}
+}
+</code></pre>
+<p><code>PlaySoundEffect</code> returns <code>true</code> if the sound was accepted, <code>false</code> if the engine was not ready or the command ring was full. Sound effects are fire-and-forget - they play once and overlap naturally. The same effect can play up to 4 simultaneous instances.</p>
+<h3 id="playing-background-music"><a class="header" href="#playing-background-music">Playing background music</a></h3>
+<p>Music works the same way. Place <code>.wav</code> files in <code>assets/audio/music/</code> and call <code>PlayMusic</code>:</p>
+<pre><code class="language-go">import "github.com/yourname/mygame/music"
+
+func (g *Game) Init() {
+	gosprite64.PlayMusic(music.Overworld)
+}
+</code></pre>
+<p>Music always loops. Call <code>gosprite64.StopMusic()</code> to stop it.</p>
+<h3 id="volume-control"><a class="header" href="#volume-control">Volume control</a></h3>
+<pre><code class="language-go">gosprite64.SetSoundEffectVolume(0.5) // SFX at half volume
+gosprite64.SetMusicVolume(0.8)       // music at 80%
+</code></pre>
+<p>Volume is a float32 from 0.0 (silent) to 1.0 (full). Music and SFX volumes are independent.</p>
+<h2 id="wav-file-requirements"><a class="header" href="#wav-file-requirements">WAV file requirements</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Requirement</th><th>Details</th></tr>
+</thead>
+<tbody>
+<tr><td>Format</td><td>PCM WAV, 16-bit samples</td></tr>
+<tr><td>Channels</td><td>Mono or stereo (stereo downmixed automatically)</td></tr>
+<tr><td>Sample rate</td><td>Any (resampled to 16 kHz for SFX, 22 kHz for music)</td></tr>
+<tr><td>Duration</td><td>Keep SFX short (under 2 seconds) for best compression</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="how-the-pong-example-uses-audio"><a class="header" href="#how-the-pong-example-uses-audio">How the Pong example uses audio</a></h2>
+<p>The <code>examples/pong</code> directory shows a complete audio setup. It has six sound effects (paddle hits, wall bounce, scoring) that compress from 663 KB of raw PCM down to 32 KB of VADPCM - a 20x reduction.</p>
+<pre><code class="language-go">func (g *Game) Update() {
+	if collide(g.ball, g.player) {
+		gosprite64.PlaySoundEffect(sfx.PaddlePlayer)
+	}
+	if g.ball.y &lt;= courtTop || g.ball.y &gt;= courtBottom {
+		gosprite64.PlaySoundEffect(sfx.Wall)
+	}
+}
+</code></pre>
+<p>The generated <code>sfx</code> package provides typed constants. No strings, no maps, no runtime lookups.</p>
+<h2 id="build-and-run"><a class="header" href="#build-and-run">Build and run</a></h2>
+<p>If you added audio assets and the <code>audiogen</code> generate line:</p>
+<pre><code class="language-bash">go generate ./examples/platformer
+GOENV=n64.env go1.24.5-embedded build -o examples/platformer/game.elf ./examples/platformer
+</code></pre>
+<p>The game code from Step 6 is unchanged apart from the new <code>go:generate</code> line and the <code>PlaySoundEffect</code> call. Everything else - camera following, animation, input - works exactly as before.</p>
+<p>For the remaining tutorial steps we will continue without audio assets to keep the code simple. You can add sound effects to any step by following the pattern above.</p>
 
                     </main>
 

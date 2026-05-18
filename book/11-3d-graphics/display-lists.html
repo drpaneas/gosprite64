@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,211 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="display-lists"><a class="header" href="#display-lists">Display Lists</a></h1>
-<p>Build and submit RDP display lists for efficient batched rendering.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>The <code>gfx</code> package provides a Go API for building N64 display lists. A display list is a sequence of 64-bit commands that drive the RSP (Reality Signal Processor) and RDP (Reality Display Processor). GoSprite64’s display list API mirrors the F3DEX2 microcode command set used by most N64 games.</p>
+<h2 id="f3dex2-microcode-context"><a class="header" href="#f3dex2-microcode-context">F3DEX2 microcode context</a></h2>
+<p>The N64’s RSP runs microcode that interprets display list commands. F3DEX2 is the most common variant, supporting:</p>
+<ul>
+<li>32 vertex buffer slots (vs 16 in original Fast3D)</li>
+<li>Two-triangle commands for better throughput</li>
+<li>Matrix stack operations for hierarchical transforms</li>
+<li>Geometry mode flags for lighting, culling, and shading</li>
+</ul>
+<p>GoSprite64’s display list commands match the F3DEX2 encoding. The <code>gfx</code> package handles the bit packing so you work with typed Go calls instead of raw uint64 values.</p>
+<h2 id="displaylist-type"><a class="header" href="#displaylist-type">DisplayList type</a></h2>
+<pre><code class="language-go">type DisplayList struct {
+    cmds []Gfx
+}
+</code></pre>
+<p>Each command is a <code>Gfx</code> struct holding two 32-bit words (matching the N64’s 64-bit command format):</p>
+<pre><code class="language-go">type Gfx struct {
+    W0, W1 uint32
+    Raw    []uint64  // for multi-word RDP commands
+}
+</code></pre>
+<h3 id="creating-and-managing"><a class="header" href="#creating-and-managing">Creating and managing</a></h3>
+<pre><code class="language-go">dl := gfx.NewDisplayList(64)    // pre-allocate capacity for 64 commands
+dl.Len()                         // number of commands so far
+dl.Reset()                       // clear for reuse without deallocating
+cmds := dl.Commands()            // access the raw command slice
+</code></pre>
+<h2 id="rsp-commands-sp-prefix"><a class="header" href="#rsp-commands-sp-prefix">RSP commands (SP prefix)</a></h2>
+<p>SP commands are processed by the RSP microcode.</p>
+<h3 id="spmatrix"><a class="header" href="#spmatrix">SPMatrix</a></h3>
+<p>Loads or multiplies a matrix into the RSP matrix stack:</p>
+<pre><code class="language-go">dl.SPMatrix(addr, gfx.MtxProjection|gfx.MtxLoad|gfx.MtxNoPush)
+dl.SPMatrix(addr, gfx.MtxModelView|gfx.MtxLoad|gfx.MtxPush)
+</code></pre>
+<p><code>addr</code> is the RDRAM address of an <code>N64Mtx</code> (64 bytes). Flags:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Flag</th><th>Value</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>MtxModelView</code></td><td>0x00</td><td>Target the model-view stack</td></tr>
+<tr><td><code>MtxProjection</code></td><td>0x01</td><td>Target the projection stack</td></tr>
+<tr><td><code>MtxMul</code></td><td>0x00</td><td>Multiply with current matrix</td></tr>
+<tr><td><code>MtxLoad</code></td><td>0x02</td><td>Replace current matrix</td></tr>
+<tr><td><code>MtxNoPush</code></td><td>0x00</td><td>Do not push before write</td></tr>
+<tr><td><code>MtxPush</code></td><td>0x04</td><td>Push current matrix before write</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="spvertex"><a class="header" href="#spvertex">SPVertex</a></h3>
+<p>Loads vertices into the RSP vertex buffer:</p>
+<pre><code class="language-go">dl.SPVertex(addr, n, v0)
+// addr: RDRAM address of vertex array
+// n:    number of vertices to load (1-16)
+// v0:   starting vertex buffer index
+</code></pre>
+<p>Each vertex is 16 bytes, matching the <code>Vtx</code> struct:</p>
+<pre><code class="language-go">type Vtx struct {
+    X, Y, Z int16
+    Flag    uint16
+    S, T    int16      // texture coordinates
+    R, G, B, A uint8   // vertex color
+}
+</code></pre>
+<p>For lit meshes, use <code>VtxN</code> which replaces color with normals:</p>
+<pre><code class="language-go">type VtxN struct {
+    X, Y, Z int16
+    Flag    uint16
+    S, T    int16
+    NX, NY, NZ int8
+    A          uint8
+}
+</code></pre>
+<h3 id="sp1triangle"><a class="header" href="#sp1triangle">SP1Triangle</a></h3>
+<p>Draws a single triangle from vertex buffer indices:</p>
+<pre><code class="language-go">dl.SP1Triangle(v0, v1, v2, flag)
+// v0, v1, v2: vertex buffer indices (0-31)
+// flag: which vertex is used for flat shading (usually 0)
+</code></pre>
+<h3 id="sp2triangles"><a class="header" href="#sp2triangles">SP2Triangles</a></h3>
+<p>Draws two triangles. In the current implementation, this emits two <code>SP1Triangle</code> commands:</p>
+<pre><code class="language-go">dl.SP2Triangles(v00, v01, v02, flag0, v10, v11, v12, flag1)
+</code></pre>
+<h3 id="spdisplaylist"><a class="header" href="#spdisplaylist">SPDisplayList</a></h3>
+<p>Calls a child display list (with return - like a function call):</p>
+<pre><code class="language-go">dl.SPDisplayList(childAddr)
+</code></pre>
+<h3 id="spbranchlist"><a class="header" href="#spbranchlist">SPBranchList</a></h3>
+<p>Jumps to another display list without return:</p>
+<pre><code class="language-go">dl.SPBranchList(otherAddr)
+</code></pre>
+<h3 id="spenddisplaylist"><a class="header" href="#spenddisplaylist">SPEndDisplayList</a></h3>
+<p>Terminates display list processing. Every display list must end with this:</p>
+<pre><code class="language-go">dl.SPEndDisplayList()
+</code></pre>
+<h3 id="spsegment"><a class="header" href="#spsegment">SPSegment</a></h3>
+<p>Sets a segment register for address translation. The RSP uses 16 segments (0-15) to translate segmented addresses to physical RDRAM addresses:</p>
+<pre><code class="language-go">dl.SPSegment(6, baseAddr) // segment 6 = baseAddr
+</code></pre>
+<h3 id="spviewport"><a class="header" href="#spviewport">SPViewport</a></h3>
+<p>Sets the viewport parameters:</p>
+<pre><code class="language-go">vp := gfx.NewViewport(320, 240)
+dl.SPViewport(vpAddr)
+</code></pre>
+<p>The <code>Viewport</code> struct matches the N64’s <code>Vp_t</code>:</p>
+<pre><code class="language-go">type Viewport struct {
+    ScaleX, ScaleY, ScaleZ, ScalePad int16
+    TransX, TransY, TransZ, TransPad int16
+}
+</code></pre>
+<p><code>NewViewport(width, height)</code> creates a viewport centered on the screen with proper scale factors.</p>
+<h3 id="spperspnormalize"><a class="header" href="#spperspnormalize">SPPerspNormalize</a></h3>
+<p>Sets the perspective normalization value for correct RSP clipping:</p>
+<pre><code class="language-go">dl.SPPerspNormalize(perspNorm) // perspNorm from math3d.Perspective()
+</code></pre>
+<h3 id="spsetgeometrymode--spcleargeometrymode"><a class="header" href="#spsetgeometrymode--spcleargeometrymode">SPSetGeometryMode / SPClearGeometryMode</a></h3>
+<p>Enable or disable geometry mode flags:</p>
+<pre><code class="language-go">dl.SPSetGeometryMode(gfx.GeomShade | gfx.GeomZBuffer)
+dl.SPClearGeometryMode(gfx.GeomCullBack)
+</code></pre>
+<h2 id="rdp-commands-dp-prefix"><a class="header" href="#rdp-commands-dp-prefix">RDP commands (DP prefix)</a></h2>
+<p>DP commands are forwarded to the RDP for pixel processing.</p>
+<h3 id="dpsetscissor"><a class="header" href="#dpsetscissor">DPSetScissor</a></h3>
+<p>Defines the scissor rectangle. Only pixels inside this rectangle are drawn:</p>
+<pre><code class="language-go">dl.DPSetScissor(0, 0, 0, 320, 240) // mode, ulx, uly, lrx, lry
+</code></pre>
+<p>Coordinates are in screen pixels.</p>
+<h3 id="dpsetcombinemode"><a class="header" href="#dpsetcombinemode">DPSetCombineMode</a></h3>
+<p>Configures the RDP color combiner. The combiner controls how texture, shade, and environment colors are mixed:</p>
+<pre><code class="language-go">dl.DPSetCombineMode(w0hi, w1)
+</code></pre>
+<p>The two parameters are the raw 64-bit combiner encoding split into upper and lower words. Predefined modes are typically used as constants.</p>
+<h3 id="dppipesync"><a class="header" href="#dppipesync">DPPipeSync</a></h3>
+<p>Inserts a pipeline sync barrier. Required before changing RDP state (tile descriptors, combine mode, render mode) to ensure previous rendering has completed:</p>
+<pre><code class="language-go">dl.DPPipeSync()
+</code></pre>
+<h3 id="dptilesync--dploadsync--dpfullsync"><a class="header" href="#dptilesync--dploadsync--dpfullsync">DPTileSync / DPLoadSync / DPFullSync</a></h3>
+<p>Other synchronization barriers:</p>
+<pre><code class="language-go">dl.DPTileSync()     // sync before tile descriptor changes
+dl.DPLoadSync()     // sync before texture loads
+dl.DPFullSync()     // signal RDP completion (end of frame)
+</code></pre>
+<h3 id="dpsetcolorimage"><a class="header" href="#dpsetcolorimage">DPSetColorImage</a></h3>
+<p>Sets the RDP’s render target (framebuffer):</p>
+<pre><code class="language-go">dl.DPSetColorImage(fmt, siz, width, addr)
+</code></pre>
+<h3 id="dpsetfillcolor"><a class="header" href="#dpsetfillcolor">DPSetFillColor</a></h3>
+<p>Sets the fill color for <code>DPFillRect</code>:</p>
+<pre><code class="language-go">dl.DPSetFillColor(color) // packed 16-bit RGBA doubled, or 32-bit
+</code></pre>
+<h3 id="dpfillrect"><a class="header" href="#dpfillrect">DPFillRect</a></h3>
+<p>Fills a rectangle with the current fill color. Coordinates are in 10.2 fixed-point:</p>
+<pre><code class="language-go">dl.DPFillRect(ulx, uly, lrx, lry)
+</code></pre>
+<h3 id="dpsettextureimage--dpsettile--dploadblock--dpsettilesize"><a class="header" href="#dpsettextureimage--dpsettile--dploadblock--dpsettilesize">DPSetTextureImage / DPSetTile / DPLoadBlock / DPSetTileSize</a></h3>
+<p>Texture loading sequence:</p>
+<pre><code class="language-go">dl.DPSetTextureImage(fmt, siz, width, texAddr)
+dl.DPSetTile(fmt, siz, line, tmem, tile, palette, cmt, maskt, shiftt, cms, masks, shifts)
+dl.DPLoadBlock(tile, uls, ult, lrs, dxt)
+dl.DPSetTileSize(tile, uls, ult, lrs, lrt)
+</code></pre>
+<h3 id="dpsetprimcolor--dpsetenvcolor--dpsetfogcolor"><a class="header" href="#dpsetprimcolor--dpsetenvcolor--dpsetfogcolor">DPSetPrimColor / DPSetEnvColor / DPSetFogColor</a></h3>
+<p>Set special RDP colors:</p>
+<pre><code class="language-go">dl.DPSetPrimColor(minLevel, fracLevel, r, g, b, a)
+dl.DPSetEnvColor(r, g, b, a)
+dl.DPSetFogColor(r, g, b, a)
+</code></pre>
+<h3 id="dpsetrendermode"><a class="header" href="#dpsetrendermode">DPSetRenderMode</a></h3>
+<p>Sets the RDP render mode via <code>SetOtherModeL</code>:</p>
+<pre><code class="language-go">dl.DPSetRenderMode(cycle0, cycle1)
+</code></pre>
+<h3 id="dpsetzimage"><a class="header" href="#dpsetzimage">DPSetZImage</a></h3>
+<p>Sets the Z-buffer address:</p>
+<pre><code class="language-go">dl.DPSetZImage(zbufAddr)
+</code></pre>
+<h3 id="dpraw"><a class="header" href="#dpraw">DPRaw</a></h3>
+<p>Appends raw 64-bit command words for advanced use cases like CPU-built triangle commands:</p>
+<pre><code class="language-go">dl.DPRaw(words...)
+</code></pre>
+<h2 id="typical-rendering-sequence"><a class="header" href="#typical-rendering-sequence">Typical rendering sequence</a></h2>
+<p>A minimal 3D frame looks like this:</p>
+<pre><code class="language-go">dl := gfx.NewDisplayList(128)
+
+// Set up viewport and projection
+dl.SPSegment(0, 0)
+dl.SPViewport(vpAddr)
+dl.SPPerspNormalize(perspNorm)
+dl.SPMatrix(projAddr, gfx.MtxProjection|gfx.MtxLoad|gfx.MtxNoPush)
+dl.SPMatrix(mvAddr, gfx.MtxModelView|gfx.MtxLoad|gfx.MtxNoPush)
+
+// Set up RDP state
+dl.DPPipeSync()
+dl.DPSetScissor(0, 0, 0, 320, 240)
+dl.DPSetCombineMode(combinerHi, combinerLo)
+
+// Load and draw geometry
+dl.SPVertex(vertAddr, 3, 0)
+dl.SP1Triangle(0, 1, 2, 0)
+
+// Finish
+dl.DPFullSync()
+dl.SPEndDisplayList()
+</code></pre>
+<p>See <a href="./triangle-rendering.html">Triangle Rendering</a> for CPU-side triangle commands that bypass the RSP vertex pipeline.</p>
 
                     </main>
 

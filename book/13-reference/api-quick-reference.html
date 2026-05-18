@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -176,9 +176,400 @@
                     <main>
                         <h1 id="api-quick-reference"><a class="header" href="#api-quick-reference">API Quick Reference</a></h1>
 <p>A compact listing of every public function, type, and constant in the GoSprite64 API.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<h2 id="core"><a class="header" href="#core">Core</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Run(g Game)</code></td><td>Starts the game loop with fixed-step timing at 60 FPS</td></tr>
+<tr><td><code>Game</code> (interface)</td><td>Implement <code>Init()</code>, <code>Update()</code>, <code>Draw()</code> to define your game</td></tr>
+<tr><td><code>TargetFPS</code> (var, int)</td><td>Target frame rate, defaults to 60</td></tr>
+<tr><td><code>RegisterAssetFS(f cartfs.FS)</code></td><td>Registers the embedded cartridge filesystem for asset loading</td></tr>
+<tr><td><code>LoadFromCartridge(filename string) ([]byte, error)</code></td><td>Reads a raw file from the cartridge filesystem</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="drawing"><a class="header" href="#drawing">Drawing</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>ClearScreen()</code></td><td>Fills the screen with Black</td></tr>
+<tr><td><code>ClearScreenWith(c color.Color)</code></td><td>Fills the screen with the given color</td></tr>
+<tr><td><code>FillRect(x1, y1, x2, y2 int, c color.Color)</code></td><td>Draws a filled rectangle (inclusive coordinates)</td></tr>
+<tr><td><code>DrawRect(x1, y1, x2, y2 int, c color.Color)</code></td><td>Draws a rectangle outline</td></tr>
+<tr><td><code>DrawLine(x1, y1, x2, y2 int, c color.Color)</code></td><td>Draws a 1-pixel line (Bresenham for diagonals)</td></tr>
+<tr><td><code>DrawImage(src image.Image, x, y int)</code></td><td>Draws a Go <code>image.Image</code> at screen coordinates</td></tr>
+<tr><td><code>DrawWorldImage(src image.Image, worldX, worldY int, cam *Camera)</code></td><td>Draws an image in world space, offset by camera</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="colors"><a class="header" href="#colors">Colors</a></h2>
+<p>All 16 predefined palette colors are exported as <code>color.Color</code> variables:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Variable</th><th>RGB</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Black</code></td><td>(0, 0, 0)</td></tr>
+<tr><td><code>DarkBlue</code></td><td>(29, 43, 83)</td></tr>
+<tr><td><code>DarkPurple</code></td><td>(126, 37, 83)</td></tr>
+<tr><td><code>DarkGreen</code></td><td>(0, 135, 81)</td></tr>
+<tr><td><code>Brown</code></td><td>(171, 82, 54)</td></tr>
+<tr><td><code>DarkGray</code></td><td>(95, 87, 79)</td></tr>
+<tr><td><code>LightGray</code></td><td>(194, 195, 199)</td></tr>
+<tr><td><code>White</code></td><td>(255, 241, 232)</td></tr>
+<tr><td><code>Red</code></td><td>(255, 0, 77)</td></tr>
+<tr><td><code>Orange</code></td><td>(255, 163, 0)</td></tr>
+<tr><td><code>Yellow</code></td><td>(255, 236, 39)</td></tr>
+<tr><td><code>Green</code></td><td>(0, 228, 54)</td></tr>
+<tr><td><code>Blue</code></td><td>(41, 173, 255)</td></tr>
+<tr><td><code>Indigo</code></td><td>(131, 118, 156)</td></tr>
+<tr><td><code>Pink</code></td><td>(255, 119, 168)</td></tr>
+<tr><td><code>Peach</code></td><td>(255, 204, 170)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="sprites"><a class="header" href="#sprites">Sprites</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>SpriteSheet</code> (struct)</td><td>A loaded sprite sheet containing animation frames</td></tr>
+<tr><td><code>LoadSpriteSheet(path string) (*SpriteSheet, error)</code></td><td>Loads a sprite sheet from the cartridge filesystem</td></tr>
+<tr><td><code>(*SpriteSheet).FrameCount() int</code></td><td>Returns the total number of frames</td></tr>
+<tr><td><code>(*SpriteSheet).FrameWidth() int</code></td><td>Returns the width of each frame in pixels</td></tr>
+<tr><td><code>(*SpriteSheet).FrameHeight() int</code></td><td>Returns the height of each frame in pixels</td></tr>
+<tr><td><code>DrawSprite(sheet *SpriteSheet, frame int, x, y float32)</code></td><td>Draws a sprite frame at screen coordinates</td></tr>
+<tr><td><code>DrawSpriteWithOptions(sheet *SpriteSheet, frame int, x, y float32, opts DrawSpriteOptions)</code></td><td>Draws a sprite with flip, scale, rotation, blend</td></tr>
+<tr><td><code>DrawWorldSprite(sheet *SpriteSheet, frame int, worldX, worldY float32, cam *Camera)</code></td><td>Draws a sprite in world space</td></tr>
+<tr><td><code>DrawWorldSpriteWithOptions(sheet *SpriteSheet, frame int, worldX, worldY float32, cam *Camera, opts DrawSpriteOptions)</code></td><td>World-space sprite with options</td></tr>
+<tr><td><code>DrawSpriteOptions</code> (struct)</td><td>FlipH, FlipV, ScaleX, ScaleY, Rotation, OriginX, OriginY, Blend, Alpha</td></tr>
+<tr><td><code>BlendMode</code> (uint8)</td><td>Blend mode enum type</td></tr>
+<tr><td><code>BlendNone</code></td><td>No blending (fastest, opaque blit)</td></tr>
+<tr><td><code>BlendMasked</code></td><td>Binary alpha (pixels are fully opaque or fully transparent)</td></tr>
+<tr><td><code>BlendAlpha</code></td><td>Per-pixel alpha blending</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="sheet--tile"><a class="header" href="#sheet--tile">Sheet &amp; Tile</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Sheet</code> (struct)</td><td>A tile sheet loaded from a bundle</td></tr>
+<tr><td><code>SheetInfo</code> (struct)</td><td>TileWidth, TileHeight, TileCount, AtlasWidth, AtlasHeight</td></tr>
+<tr><td><code>(*Sheet).Info() SheetInfo</code></td><td>Returns tile dimensions and atlas size</td></tr>
+<tr><td><code>(*Sheet).Tile(tileID uint16) image.Image</code></td><td>Returns the image for a single tile</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="animation"><a class="header" href="#animation">Animation</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>AnimationSet</code> (struct)</td><td>A named collection of animation clips</td></tr>
+<tr><td><code>AnimationClip</code> (struct)</td><td>Name, FPS, and frame indices for one clip</td></tr>
+<tr><td><code>(*AnimationSet).Name() string</code></td><td>Returns the animation set’s name</td></tr>
+<tr><td><code>(*AnimationSet).Clips() []AnimationClip</code></td><td>Returns all clips in the set</td></tr>
+<tr><td><code>(*AnimationSet).Clip(name string) (AnimationClip, bool)</code></td><td>Looks up a clip by name</td></tr>
+<tr><td><code>AnimationPlayer</code> (struct)</td><td>Drives frame-by-frame playback of a clip</td></tr>
+<tr><td><code>NewAnimationPlayer() *AnimationPlayer</code></td><td>Creates a new player (stopped)</td></tr>
+<tr><td><code>(*AnimationPlayer).Play(clip AnimationClip)</code></td><td>Starts playing a clip from frame 0</td></tr>
+<tr><td><code>(*AnimationPlayer).Pause()</code></td><td>Pauses playback</td></tr>
+<tr><td><code>(*AnimationPlayer).Resume()</code></td><td>Resumes a paused player</td></tr>
+<tr><td><code>(*AnimationPlayer).Stop()</code></td><td>Stops playback and resets to frame 0</td></tr>
+<tr><td><code>(*AnimationPlayer).Restart()</code></td><td>Replays the current clip from the start</td></tr>
+<tr><td><code>(*AnimationPlayer).SetLoop(loop bool)</code></td><td>Enables or disables looping</td></tr>
+<tr><td><code>(*AnimationPlayer).Advance(ticks int)</code></td><td>Advances playback by the given number of ticks</td></tr>
+<tr><td><code>(*AnimationPlayer).Frame() int</code></td><td>Returns the current frame index</td></tr>
+<tr><td><code>(*AnimationPlayer).Playing() bool</code></td><td>True if the player is actively playing</td></tr>
+<tr><td><code>(*AnimationPlayer).Done() bool</code></td><td>True if playback has stopped</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="fonts--text"><a class="header" href="#fonts--text">Fonts &amp; Text</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>DrawText(str string, x, y int, c color.Color)</code></td><td>Draws text using the built-in 8x8 font</td></tr>
+<tr><td><code>Font</code> (struct)</td><td>Custom font with per-glyph metrics from a sprite sheet</td></tr>
+<tr><td><code>Glyph</code> (struct)</td><td>Frame, Width, Advance, OffsetX, OffsetY</td></tr>
+<tr><td><code>NewFont(sheet *SpriteSheet, glyphs map[rune]Glyph, lineHeight int) *Font</code></td><td>Creates a custom font</td></tr>
+<tr><td><code>(*Font).LineHeight() int</code></td><td>Vertical distance between baselines</td></tr>
+<tr><td><code>(*Font).GlyphFor(r rune) (Glyph, bool)</code></td><td>Looks up a glyph, falls back to <code>Font.Fallback</code></td></tr>
+<tr><td><code>(*Font).MeasureText(text string) (width, height int)</code></td><td>Measures pixel size of rendered text</td></tr>
+<tr><td><code>(*Font).DrawTextEx(text string, x, y int, align TextAlign)</code></td><td>Draws text with alignment</td></tr>
+<tr><td><code>(*Font).WrapText(text string, maxWidth int) string</code></td><td>Inserts newlines to wrap text at a pixel width</td></tr>
+<tr><td><code>FormatScore(score int, width int) string</code></td><td>Formats an integer with leading zeros</td></tr>
+<tr><td><code>TextAlign</code> (int)</td><td>Horizontal alignment enum</td></tr>
+<tr><td><code>AlignLeft</code></td><td>Left-aligned (default)</td></tr>
+<tr><td><code>AlignCenter</code></td><td>Center-aligned</td></tr>
+<tr><td><code>AlignRight</code></td><td>Right-aligned</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="input"><a class="header" href="#input">Input</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>IsButtonDown(button ButtonMask) bool</code></td><td>True if button is held (port 0)</td></tr>
+<tr><td><code>IsButtonJustPressed(button ButtonMask) bool</code></td><td>True on the frame a button transitions to pressed (port 0)</td></tr>
+<tr><td><code>StickPosition(deadzone float64) (float64, float64)</code></td><td>Analog stick X/Y in [-1, 1] (port 0)</td></tr>
+<tr><td><code>PlayerButtonDown(port int, button ButtonMask) bool</code></td><td>Per-port button held check</td></tr>
+<tr><td><code>PlayerButtonJustPressed(port int, button ButtonMask) bool</code></td><td>Per-port just-pressed check</td></tr>
+<tr><td><code>PlayerStickPosition(port int, deadzone float64) (float64, float64)</code></td><td>Per-port analog stick</td></tr>
+<tr><td><code>IsControllerConnected(port int) bool</code></td><td>True if a controller is plugged into the given port</td></tr>
+<tr><td><code>ConnectedControllers() int</code></td><td>Number of connected controllers</td></tr>
+<tr><td><code>SetRumble(port int, enabled bool)</code></td><td>Enables or disables the rumble pak</td></tr>
+<tr><td><code>ButtonMask</code> (type alias)</td><td>Bitmask type for button constants</td></tr>
+<tr><td><code>MaxControllers</code> (const, 4)</td><td>Number of controller ports</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Button constants:</strong> <code>ButtonA</code>, <code>ButtonB</code>, <code>ButtonZ</code>, <code>ButtonStart</code>, <code>ButtonDPadUp</code>, <code>ButtonDPadDown</code>, <code>ButtonDPadLeft</code>, <code>ButtonDPadRight</code>, <code>ButtonL</code>, <code>ButtonR</code>, <code>ButtonCUp</code>, <code>ButtonCDown</code>, <code>ButtonCLeft</code>, <code>ButtonCRight</code></p>
+<h2 id="input-replay"><a class="header" href="#input-replay">Input Replay</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>FrameInput</code> (struct)</td><td>Buttons, StickX, StickY for one player/frame</td></tr>
+<tr><td><code>ReplayData</code> (struct)</td><td>PlayerCount, FrameCount, and recorded frames</td></tr>
+<tr><td><code>InputRecorder</code> (struct)</td><td>Records per-frame input during gameplay</td></tr>
+<tr><td><code>NewInputRecorder(playerCount int) *InputRecorder</code></td><td>Creates a recorder</td></tr>
+<tr><td><code>(*InputRecorder).CaptureFrame(player int, input FrameInput)</code></td><td>Records one frame</td></tr>
+<tr><td><code>(*InputRecorder).Finish() *ReplayData</code></td><td>Finalizes recording</td></tr>
+<tr><td><code>InputPlayer</code> (struct)</td><td>Replays recorded input</td></tr>
+<tr><td><code>NewInputPlayer(data *ReplayData) *InputPlayer</code></td><td>Creates a replay player</td></tr>
+<tr><td><code>(*InputPlayer).NextFrame(player int) (FrameInput, bool)</code></td><td>Gets next frame for a player</td></tr>
+<tr><td><code>(*InputPlayer).Done() bool</code></td><td>True when all frames consumed</td></tr>
+<tr><td><code>(*InputPlayer).Reset()</code></td><td>Restarts playback from the beginning</td></tr>
+<tr><td><code>(*InputPlayer).CurrentFrame() int</code></td><td>Current playback position</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="audio"><a class="header" href="#audio">Audio</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>AudioAsset</code> (struct)</td><td>Describes a single audio asset (ID, rate, loop points, etc.)</td></tr>
+<tr><td><code>AudioBundle</code> (struct)</td><td>Collection of audio assets with data and name resolver</td></tr>
+<tr><td><code>RegisterAudioBundle(bundle AudioBundle)</code></td><td>Registers audio assets before <code>Run()</code></td></tr>
+<tr><td><code>PlaySoundEffect(id sfx.ID) bool</code></td><td>Plays a sound effect, returns true if queued</td></tr>
+<tr><td><code>PlayMusic(id music.ID) bool</code></td><td>Starts music playback</td></tr>
+<tr><td><code>StopMusic()</code></td><td>Stops the current music track</td></tr>
+<tr><td><code>SetSoundEffectVolume(v float32)</code></td><td>Sets SFX volume (0.0-1.0)</td></tr>
+<tr><td><code>SetMusicVolume(v float32)</code></td><td>Sets music volume (0.0-1.0)</td></tr>
+<tr><td><code>DefaultAudioOutputRate</code> (const, 48000)</td><td>DAC output rate in Hz</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="tile-scenes"><a class="header" href="#tile-scenes">Tile Scenes</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Bundle</code> (struct)</td><td>A loaded asset bundle containing sheets, maps, and animations</td></tr>
+<tr><td><code>OpenBundle(path string) (*Bundle, error)</code></td><td>Opens a bundle from the cartridge filesystem</td></tr>
+<tr><td><code>(*Bundle).LoadSheet(name string) (*Sheet, error)</code></td><td>Loads a named sheet from the bundle</td></tr>
+<tr><td><code>(*Bundle).LoadMap(name string) (*Map, error)</code></td><td>Loads a named map from the bundle</td></tr>
+<tr><td><code>(*Bundle).LoadAnimation(name string) (*AnimationSet, error)</code></td><td>Loads a named animation set</td></tr>
+<tr><td><code>Scene</code> (struct)</td><td>A fully loaded tile scene with map, sheets, and animations</td></tr>
+<tr><td><code>LoadScene(bundle *Bundle) (*Scene, error)</code></td><td>Loads all assets from a bundle into a renderable scene</td></tr>
+<tr><td><code>(*Scene).Draw(cam *Camera)</code></td><td>Renders all visible layers with the given camera</td></tr>
+<tr><td><code>(*Scene).Map() *Map</code></td><td>Returns the scene’s map</td></tr>
+<tr><td><code>(*Scene).Sheet(index int) *Sheet</code></td><td>Returns a sheet by index</td></tr>
+<tr><td><code>(*Scene).SheetByID(id uint16) *Sheet</code></td><td>Returns a sheet by 1-based ID</td></tr>
+<tr><td><code>(*Scene).SheetCount() int</code></td><td>Number of sheets in the scene</td></tr>
+<tr><td><code>(*Scene).Animation(index int) *AnimationSet</code></td><td>Returns an animation by index</td></tr>
+<tr><td><code>(*Scene).AnimationByName(name string) *AnimationSet</code></td><td>Looks up an animation set by name</td></tr>
+<tr><td><code>(*Scene).AnimationCount() int</code></td><td>Number of animation sets</td></tr>
+<tr><td><code>(*Scene).LayerSheet(layer int) (*Sheet, bool)</code></td><td>Returns the sheet assigned to a layer</td></tr>
+<tr><td><code>(*Scene).LayerAssets(layer int) (MapLayerInfo, *Sheet, bool)</code></td><td>Returns layer info and sheet together</td></tr>
+<tr><td><code>(*Scene).LayerSheetInfo(layer int) (SheetInfo, bool)</code></td><td>Returns the SheetInfo for a layer</td></tr>
+<tr><td><code>(*Scene).Stats() RuntimeStats</code></td><td>Returns rendering statistics (allocation-free)</td></tr>
+<tr><td><code>Map</code> (struct)</td><td>Tile map with layers of cell data</td></tr>
+<tr><td><code>MapLayerInfo</code> (struct)</td><td>SheetID, NonZeroTiles</td></tr>
+<tr><td><code>(*Map).Width() int</code></td><td>Map width in tiles</td></tr>
+<tr><td><code>(*Map).Height() int</code></td><td>Map height in tiles</td></tr>
+<tr><td><code>(*Map).TileWidth() int</code></td><td>Width of each tile in pixels</td></tr>
+<tr><td><code>(*Map).TileHeight() int</code></td><td>Height of each tile in pixels</td></tr>
+<tr><td><code>(*Map).PixelWidth() int</code></td><td>Total map width in pixels</td></tr>
+<tr><td><code>(*Map).PixelHeight() int</code></td><td>Total map height in pixels</td></tr>
+<tr><td><code>(*Map).LayerCount() int</code></td><td>Number of layers</td></tr>
+<tr><td><code>(*Map).LayerInfo(layer int) (MapLayerInfo, bool)</code></td><td>Returns cached info for a layer (O(1))</td></tr>
+<tr><td><code>(*Map).LayerSheetID(layer int) (uint16, bool)</code></td><td>Returns the sheet ID for a layer</td></tr>
+<tr><td><code>(*Map).TileAt(layer, x, y int) (uint16, bool)</code></td><td>Returns the tile ID at a grid position</td></tr>
+<tr><td><code>RuntimeStats</code> (struct)</td><td>SheetRAMBytes, MapRAMBytes, CachedChunks, VisibleTiles, SheetCount, LayerCount, UploadCount</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="game-systems"><a class="header" href="#game-systems">Game Systems</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>GameState</code> (interface)</td><td>Enter, Update, Draw, Exit for screen management</td></tr>
+<tr><td><code>StateMachine</code> (struct)</td><td>Stack-based game state manager</td></tr>
+<tr><td><code>NewStateMachine(initial GameState) *StateMachine</code></td><td>Creates a state machine</td></tr>
+<tr><td><code>(*StateMachine).Init()</code></td><td>Triggers <code>Enter()</code> on the initial state</td></tr>
+<tr><td><code>(*StateMachine).Update()</code></td><td>Delegates to the top state’s <code>Update()</code></td></tr>
+<tr><td><code>(*StateMachine).Draw()</code></td><td>Delegates to the top state’s <code>Draw()</code></td></tr>
+<tr><td><code>(*StateMachine).Switch(state GameState)</code></td><td>Replaces the top state</td></tr>
+<tr><td><code>(*StateMachine).Push(state GameState)</code></td><td>Overlays a new state (for pause menus, dialogs)</td></tr>
+<tr><td><code>(*StateMachine).Pop()</code></td><td>Removes the top state</td></tr>
+<tr><td><code>(*StateMachine).Current() GameState</code></td><td>Returns the active state</td></tr>
+<tr><td><code>(*StateMachine).Depth() int</code></td><td>Number of states on the stack</td></tr>
+<tr><td><code>MenuItem</code> (struct)</td><td>Label, Disabled, OnConfirm callback</td></tr>
+<tr><td><code>Menu</code> (struct)</td><td>D-pad-navigated list with cursor tracking</td></tr>
+<tr><td><code>NewMenu(items []MenuItem) *Menu</code></td><td>Creates a menu</td></tr>
+<tr><td><code>(*Menu).HandleInput() bool</code></td><td>Reads D-pad/A button, returns true on confirm</td></tr>
+<tr><td><code>(*Menu).Draw()</code></td><td>Renders the menu using <code>DrawText</code></td></tr>
+<tr><td><code>(*Menu).MoveUp()</code></td><td>Moves cursor up (skips disabled items)</td></tr>
+<tr><td><code>(*Menu).MoveDown()</code></td><td>Moves cursor down (skips disabled items)</td></tr>
+<tr><td><code>(*Menu).Confirm()</code></td><td>Triggers the selected item’s callback</td></tr>
+<tr><td><code>(*Menu).Cursor() int</code></td><td>Returns the cursor position</td></tr>
+<tr><td><code>(*Menu).SetCursor(index int)</code></td><td>Sets the cursor position</td></tr>
+<tr><td><code>(*Menu).Selected() MenuItem</code></td><td>Returns the highlighted item</td></tr>
+<tr><td><code>(*Menu).Count() int</code></td><td>Number of items</td></tr>
+<tr><td><code>Timer</code> (struct)</td><td>Counts down a fixed number of frames</td></tr>
+<tr><td><code>NewTimer(durationFrames int) *Timer</code></td><td>Creates a one-shot timer</td></tr>
+<tr><td><code>(*Timer).Tick() bool</code></td><td>Advances one frame, returns true when it finishes</td></tr>
+<tr><td><code>(*Timer).Done() bool</code></td><td>True when the timer has expired</td></tr>
+<tr><td><code>(*Timer).Progress() float32</code></td><td>Elapsed/duration ratio (0-1)</td></tr>
+<tr><td><code>(*Timer).Elapsed() int</code></td><td>Frames elapsed</td></tr>
+<tr><td><code>(*Timer).Remaining() int</code></td><td>Frames left</td></tr>
+<tr><td><code>(*Timer).Duration() int</code></td><td>Total frame count</td></tr>
+<tr><td><code>(*Timer).Reset()</code></td><td>Restarts with the same duration</td></tr>
+<tr><td><code>(*Timer).ResetWith(durationFrames int)</code></td><td>Restarts with a new duration</td></tr>
+<tr><td><code>RepeatingTimer</code> (struct)</td><td>Triggers at a fixed interval, counts triggers</td></tr>
+<tr><td><code>NewRepeatingTimer(intervalFrames int) *RepeatingTimer</code></td><td>Creates a repeating timer</td></tr>
+<tr><td><code>(*RepeatingTimer).Tick() bool</code></td><td>Advances one frame, returns true on trigger</td></tr>
+<tr><td><code>(*RepeatingTimer).Count() int</code></td><td>Number of times triggered</td></tr>
+<tr><td><code>(*RepeatingTimer).Reset()</code></td><td>Clears elapsed time and count</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="parallax"><a class="header" href="#parallax">Parallax</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>ParallaxLayer</code> (struct)</td><td>SpeedX, SpeedY scroll multipliers</td></tr>
+<tr><td><code>(ParallaxLayer).Offset(cameraX, cameraY int) (int, int)</code></td><td>Computes the layer offset for a camera position</td></tr>
+<tr><td><code>ParallaxConfig</code> (struct)</td><td>Holds a slice of <code>ParallaxLayer</code></td></tr>
+<tr><td><code>NewParallaxConfig(speeds ...ParallaxLayer) ParallaxConfig</code></td><td>Creates a parallax config from layer speeds</td></tr>
+<tr><td><code>(ParallaxConfig).LayerOffset(layer, cameraX, cameraY int) (int, int)</code></td><td>Returns the scroll offset for a specific layer</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="transitions"><a class="header" href="#transitions">Transitions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>TransitionStyle</code> (int)</td><td>Enum for transition types</td></tr>
+<tr><td><code>FadeToBlack</code></td><td>Screen fades to black</td></tr>
+<tr><td><code>FadeFromBlack</code></td><td>Screen fades in from black</td></tr>
+<tr><td><code>Transition</code> (struct)</td><td>Style, Duration, active state</td></tr>
+<tr><td><code>StartTransition(style TransitionStyle, durationFrames int) *Transition</code></td><td>Begins a screen transition</td></tr>
+<tr><td><code>(*Transition).Advance()</code></td><td>Advances the transition by one frame</td></tr>
+<tr><td><code>(*Transition).Done() bool</code></td><td>True when the transition has completed</td></tr>
+<tr><td><code>(*Transition).Active() bool</code></td><td>True while the transition is running</td></tr>
+<tr><td><code>(*Transition).Stop()</code></td><td>Cancels the transition</td></tr>
+<tr><td><code>(*Transition).Draw()</code></td><td>Renders the transition overlay</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="draw-regions"><a class="header" href="#draw-regions">Draw Regions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>DrawRegion</code> (struct)</td><td>X, Y, W, H defining a sub-rectangle of the screen</td></tr>
+<tr><td><code>(DrawRegion).Active() bool</code></td><td>True if the region restricts drawing</td></tr>
+<tr><td><code>(DrawRegion).Offset(x, y int) (int, int)</code></td><td>Translates local coordinates to screen space</td></tr>
+<tr><td><code>(DrawRegion).Clip(x1, y1, x2, y2 int) (int, int, int, int, bool)</code></td><td>Clips a rectangle to the region, returns false if outside</td></tr>
+<tr><td><code>(DrawRegion).ContainsPoint(x, y int) bool</code></td><td>True if a local point is inside the region</td></tr>
+<tr><td><code>SetDrawRegion(x, y, w, h int)</code></td><td>Restricts drawing to a screen sub-rectangle (nestable)</td></tr>
+<tr><td><code>ResetDrawRegion()</code></td><td>Removes the most recent draw region</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="camera"><a class="header" href="#camera">Camera</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Camera</code> (struct)</td><td>X, Y, Width, Height, Zoom, FollowTarget, FollowSpeed, Bounds</td></tr>
+<tr><td><code>(*Camera).EffectiveZoom() float32</code></td><td>Returns Zoom, defaulting to 1.0 if unset</td></tr>
+<tr><td><code>(*Camera).WorldToScreen(worldX, worldY float32) (float32, float32)</code></td><td>Converts world coordinates to screen coordinates</td></tr>
+<tr><td><code>(*Camera).UpdateFollow()</code></td><td>Moves the camera toward <code>FollowTarget</code> with smooth lerp</td></tr>
+<tr><td><code>(*Camera).ClampToBounds()</code></td><td>Restricts camera position to stay within <code>Bounds</code></td></tr>
+<tr><td><code>(*Camera).AddTrauma(amount float32)</code></td><td>Adds screen shake intensity (0-1)</td></tr>
+<tr><td><code>(*Camera).UpdateShake()</code></td><td>Decays trauma each frame</td></tr>
+<tr><td><code>(*Camera).ShakeOffset() (int, int)</code></td><td>Returns the current frame’s shake displacement</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="sub-packages"><a class="header" href="#sub-packages">Sub-Packages</a></h2>
+<p>GoSprite64 also provides these sub-packages for specialized functionality:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Package</th><th>Import Path</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td><code>math2d</code></td><td><code>gosprite64/math2d</code></td><td>2D vectors, rectangles, collision, easing, grid utilities, random numbers</td></tr>
+<tr><td><code>math3d</code></td><td><code>gosprite64/math3d</code></td><td>3D vectors, 4x4 matrices, viewport projection</td></tr>
+<tr><td><code>save</code></td><td><code>gosprite64/save</code></td><td>EEPROM, SRAM, and FlashRAM save data</td></tr>
+<tr><td><code>gfx</code></td><td><code>gosprite64/gfx</code></td><td>Low-level display list construction and execution</td></tr>
+<tr><td><code>dma</code></td><td><code>gosprite64/dma</code></td><td>DMA transfer helpers, MIO0 decompression, memory pool</td></tr>
+<tr><td><code>rspq</code></td><td><code>gosprite64/rspq</code></td><td>RSP task queue, microcode loading, OS task submission</td></tr>
+<tr><td><code>n64os</code></td><td><code>gosprite64/n64os</code></td><td>N64 OS primitives: scheduler, timers, events, messages</td></tr>
+<tr><td><code>scene3d</code></td><td><code>gosprite64/scene3d</code></td><td>3D scene graph, camera, mesh, LOD, triangle rendering</td></tr>
+<tr><td><code>audio/sfx</code></td><td><code>gosprite64/audio/sfx</code></td><td>Sound effect ID type</td></tr>
+<tr><td><code>audio/music</code></td><td><code>gosprite64/audio/music</code></td><td>Music track ID type</td></tr>
+<tr><td><code>audio/bank</code></td><td><code>gosprite64/audio/bank</code></td><td>Instrument bank loading</td></tr>
+<tr><td><code>audio/sequence</code></td><td><code>gosprite64/audio/sequence</code></td><td>Sequence player for MIDI-style playback</td></tr>
+</tbody>
+</table>
+</div>
 
                     </main>
 

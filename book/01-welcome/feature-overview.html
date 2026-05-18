@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,436 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="feature-overview"><a class="header" href="#feature-overview">Feature Overview</a></h1>
-<p>A summary of every feature GoSprite64 provides, from graphics and input to audio, tile scenes, and low-level N64 access.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>A complete reference of every feature GoSprite64 provides, organized by section.</p>
+<h2 id="core-gosprite64"><a class="header" href="#core-gosprite64">Core (<code>gosprite64</code>)</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Game</code> interface</td><td><code>Init()</code>, <code>Update()</code>, <code>Draw()</code> lifecycle for your game</td><td><a href="../04-core-concepts/game-loop.html">Game Loop</a></td></tr>
+<tr><td><code>Run(g Game)</code></td><td>Starts the 60 FPS game loop with fixed timestep</td><td><a href="../04-core-concepts/game-loop.html">Game Loop</a></td></tr>
+<tr><td>288x216 canvas</td><td>Fixed logical resolution for all drawing APIs</td><td><a href="../04-core-concepts/fixed-canvas.html">Fixed Canvas</a></td></tr>
+<tr><td>16-color palette</td><td>Built-in named colors: <code>Black</code>, <code>White</code>, <code>Red</code>, etc.</td><td><a href="../04-core-concepts/colors.html">Colors</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="drawing-functions"><a class="header" href="#drawing-functions">Drawing Functions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>ClearScreen()</code></td><td>Fills the screen with black</td><td><a href="../05-graphics/drawing-primitives.html">Drawing Primitives</a></td></tr>
+<tr><td><code>ClearScreenWith(c)</code></td><td>Fills the screen with any color</td><td><a href="../05-graphics/drawing-primitives.html">Drawing Primitives</a></td></tr>
+<tr><td><code>FillRect(x1,y1,x2,y2,c)</code></td><td>Draws a filled rectangle</td><td><a href="../05-graphics/drawing-primitives.html">Drawing Primitives</a></td></tr>
+<tr><td><code>DrawRect(x1,y1,x2,y2,c)</code></td><td>Draws a rectangle outline</td><td><a href="../05-graphics/drawing-primitives.html">Drawing Primitives</a></td></tr>
+<tr><td><code>DrawLine(x1,y1,x2,y2,c)</code></td><td>Draws a 1px line (Bresenham for diagonals)</td><td><a href="../05-graphics/drawing-primitives.html">Drawing Primitives</a></td></tr>
+<tr><td><code>DrawText(str,x,y,c)</code></td><td>Draws text using the built-in 8x8 font</td><td><a href="../05-graphics/drawing-primitives.html">Drawing Primitives</a></td></tr>
+<tr><td><code>DrawImage(src,x,y)</code></td><td>Draws a Go <code>image.Image</code> at logical coordinates</td><td><a href="../05-graphics/drawing-primitives.html">Drawing Primitives</a></td></tr>
+<tr><td><code>DrawWorldImage(src,x,y,cam)</code></td><td>Draws an image offset by camera position</td><td><a href="../05-graphics/drawing-primitives.html">Drawing Primitives</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="sprites"><a class="header" href="#sprites">Sprites</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>LoadSpriteSheet(path)</code></td><td>Loads a <code>.sheet</code> file from the cartridge filesystem</td><td><a href="../05-graphics/sprite-sheets.html">Sprite Sheets</a></td></tr>
+<tr><td><code>SpriteSheet.FrameCount()</code></td><td>Returns the number of frames in the sheet</td><td><a href="../05-graphics/sprite-sheets.html">Sprite Sheets</a></td></tr>
+<tr><td><code>SpriteSheet.FrameWidth()</code></td><td>Returns the pixel width of a single frame</td><td><a href="../05-graphics/sprite-sheets.html">Sprite Sheets</a></td></tr>
+<tr><td><code>SpriteSheet.FrameHeight()</code></td><td>Returns the pixel height of a single frame</td><td><a href="../05-graphics/sprite-sheets.html">Sprite Sheets</a></td></tr>
+<tr><td><code>DrawSprite(sheet,frame,x,y)</code></td><td>Draws a sprite frame at logical coordinates</td><td><a href="../05-graphics/sprites.html">Sprites</a></td></tr>
+<tr><td><code>DrawSpriteWithOptions(...)</code></td><td>Draws with flip, scale, rotation, blend, and alpha</td><td><a href="../05-graphics/sprites.html">Sprites</a></td></tr>
+<tr><td><code>DrawWorldSprite(...)</code></td><td>Draws a sprite offset by camera position</td><td><a href="../05-graphics/sprites.html">Sprites</a></td></tr>
+<tr><td><code>DrawWorldSpriteWithOptions(...)</code></td><td>World-space sprite with full draw options</td><td><a href="../05-graphics/sprites.html">Sprites</a></td></tr>
+<tr><td><code>DrawSpriteOptions</code></td><td>Struct: <code>FlipH</code>, <code>FlipV</code>, <code>ScaleX/Y</code>, <code>Rotation</code>, <code>Origin</code>, <code>Blend</code>, <code>Alpha</code></td><td><a href="../05-graphics/sprites.html">Sprites</a></td></tr>
+<tr><td><code>BlendNone</code>, <code>BlendMasked</code>, <code>BlendAlpha</code></td><td>Blend mode constants for sprite drawing</td><td><a href="../05-graphics/sprites.html">Sprites</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="animation"><a class="header" href="#animation">Animation</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>AnimationSet</code></td><td>Collection of named animation clips loaded from <code>.anim</code> files</td><td><a href="../05-graphics/animation-player.html">Animation Player</a></td></tr>
+<tr><td><code>AnimationClip</code></td><td>A single animation: name, FPS, and frame indices</td><td><a href="../05-graphics/animation-player.html">Animation Player</a></td></tr>
+<tr><td><code>NewAnimationPlayer()</code></td><td>Creates a player that drives sprite frame changes</td><td><a href="../05-graphics/animation-player.html">Animation Player</a></td></tr>
+<tr><td><code>AnimationPlayer.Play(clip)</code></td><td>Starts playing a clip from the beginning</td><td><a href="../05-graphics/animation-player.html">Animation Player</a></td></tr>
+<tr><td><code>AnimationPlayer.Advance(ticks)</code></td><td>Advances the animation by N ticks (call each frame with 1)</td><td><a href="../05-graphics/animation-player.html">Animation Player</a></td></tr>
+<tr><td><code>AnimationPlayer.Frame()</code></td><td>Returns the current sprite sheet frame index</td><td><a href="../05-graphics/animation-player.html">Animation Player</a></td></tr>
+<tr><td><code>AnimationPlayer.SetLoop(bool)</code></td><td>Enables or disables looping</td><td><a href="../05-graphics/animation-player.html">Animation Player</a></td></tr>
+<tr><td><code>AnimationPlayer.Pause/Resume/Stop/Restart</code></td><td>Playback control</td><td><a href="../05-graphics/animation-player.html">Animation Player</a></td></tr>
+<tr><td><code>AnimationPlayer.Playing()</code> / <code>Done()</code></td><td>Status queries</td><td><a href="../05-graphics/animation-player.html">Animation Player</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="custom-fonts"><a class="header" href="#custom-fonts">Custom Fonts</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>NewFont(sheet, glyphs, lineHeight)</code></td><td>Creates a font from a sprite sheet and glyph map</td><td><a href="../05-graphics/custom-fonts.html">Custom Fonts</a></td></tr>
+<tr><td><code>Font.DrawTextEx(text, x, y, align)</code></td><td>Draws text with left/center/right alignment</td><td><a href="../05-graphics/text-alignment.html">Text Alignment</a></td></tr>
+<tr><td><code>Font.MeasureText(text)</code></td><td>Returns pixel width and height of rendered text</td><td><a href="../05-graphics/custom-fonts.html">Custom Fonts</a></td></tr>
+<tr><td><code>Font.WrapText(text, maxWidth)</code></td><td>Inserts newlines to fit text within a pixel width</td><td><a href="../05-graphics/text-alignment.html">Text Alignment</a></td></tr>
+<tr><td><code>FormatScore(score, width)</code></td><td>Formats an integer with leading zeros</td><td><a href="../05-graphics/custom-fonts.html">Custom Fonts</a></td></tr>
+<tr><td><code>AlignLeft</code>, <code>AlignCenter</code>, <code>AlignRight</code></td><td>Text alignment constants</td><td><a href="../05-graphics/text-alignment.html">Text Alignment</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="parallax-scrolling"><a class="header" href="#parallax-scrolling">Parallax Scrolling</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>NewParallaxConfig(speeds...)</code></td><td>Configures multi-layer parallax with speed factors</td><td><a href="../05-graphics/parallax.html">Parallax Scrolling</a></td></tr>
+<tr><td><code>ParallaxConfig.LayerOffset(layer, camX, camY)</code></td><td>Returns the scroll offset for a given layer and camera</td><td><a href="../05-graphics/parallax.html">Parallax Scrolling</a></td></tr>
+<tr><td><code>ParallaxLayer</code></td><td>Defines <code>SpeedX</code> and <code>SpeedY</code> multipliers (0.0 = static, 1.0 = full speed)</td><td><a href="../05-graphics/parallax.html">Parallax Scrolling</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="screen-transitions"><a class="header" href="#screen-transitions">Screen Transitions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>StartTransition(style, frames)</code></td><td>Begins a fade transition over N frames</td><td><a href="../05-graphics/transitions.html">Transitions</a></td></tr>
+<tr><td><code>FadeToBlack</code>, <code>FadeFromBlack</code></td><td>Transition style constants</td><td><a href="../05-graphics/transitions.html">Transitions</a></td></tr>
+<tr><td><code>Transition.Advance()</code></td><td>Steps the transition forward one frame</td><td><a href="../05-graphics/transitions.html">Transitions</a></td></tr>
+<tr><td><code>Transition.Draw()</code></td><td>Renders the transition overlay</td><td><a href="../05-graphics/transitions.html">Transitions</a></td></tr>
+<tr><td><code>Transition.Done()</code> / <code>Active()</code> / <code>Stop()</code></td><td>Status and control</td><td><a href="../05-graphics/transitions.html">Transitions</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="draw-regions"><a class="header" href="#draw-regions">Draw Regions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>SetDrawRegion(x, y, w, h)</code></td><td>Restricts drawing to a sub-rectangle (for split-screen)</td><td><a href="../05-graphics/draw-regions.html">Draw Regions</a></td></tr>
+<tr><td><code>ResetDrawRegion()</code></td><td>Pops the most recent draw region</td><td><a href="../05-graphics/draw-regions.html">Draw Regions</a></td></tr>
+<tr><td><code>DrawRegion.Clip(...)</code></td><td>Offsets and clips coordinates to region bounds</td><td><a href="../05-graphics/draw-regions.html">Draw Regions</a></td></tr>
+<tr><td><code>DrawRegion.ContainsPoint(x, y)</code></td><td>Hit-tests a local coordinate against the region</td><td><a href="../05-graphics/draw-regions.html">Draw Regions</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="input"><a class="header" href="#input">Input</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>IsButtonDown(button)</code></td><td>Returns true while a button is held (port 0)</td><td><a href="../06-input/buttons-and-dpad.html">D-Pad and Buttons</a></td></tr>
+<tr><td><code>IsButtonJustPressed(button)</code></td><td>Returns true on the frame a button is first pressed (port 0)</td><td><a href="../06-input/buttons-and-dpad.html">D-Pad and Buttons</a></td></tr>
+<tr><td><code>StickPosition(deadzone)</code></td><td>Returns analog stick X/Y in [-1.0, 1.0] (port 0)</td><td><a href="../06-input/analog-stick.html">Analog Stick</a></td></tr>
+<tr><td><code>PlayerButtonDown(port, button)</code></td><td>Per-port button check for multiplayer</td><td><a href="../06-input/multi-controller.html">Multi-Controller</a></td></tr>
+<tr><td><code>PlayerButtonJustPressed(port, button)</code></td><td>Per-port just-pressed check</td><td><a href="../06-input/multi-controller.html">Multi-Controller</a></td></tr>
+<tr><td><code>PlayerStickPosition(port, deadzone)</code></td><td>Per-port analog stick</td><td><a href="../06-input/multi-controller.html">Multi-Controller</a></td></tr>
+<tr><td><code>IsControllerConnected(port)</code></td><td>Checks if a controller is plugged in</td><td><a href="../06-input/multi-controller.html">Multi-Controller</a></td></tr>
+<tr><td><code>ConnectedControllers()</code></td><td>Returns the number of connected controllers</td><td><a href="../06-input/multi-controller.html">Multi-Controller</a></td></tr>
+<tr><td><code>SetRumble(port, enabled)</code></td><td>Turns the Rumble Pak on or off</td><td><a href="../06-input/rumble.html">Rumble</a></td></tr>
+<tr><td>Button constants</td><td><code>ButtonA</code>, <code>ButtonB</code>, <code>ButtonZ</code>, <code>ButtonStart</code>, <code>ButtonDPadUp/Down/Left/Right</code>, <code>ButtonL</code>, <code>ButtonR</code>, <code>ButtonCUp/Down/Left/Right</code></td><td><a href="../06-input/buttons-and-dpad.html">D-Pad and Buttons</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="input-recording-and-replay"><a class="header" href="#input-recording-and-replay">Input Recording and Replay</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>NewInputRecorder(playerCount)</code></td><td>Creates a recorder that captures per-frame controller state</td><td><a href="../06-input/input-replay.html">Input Replay</a></td></tr>
+<tr><td><code>InputRecorder.CaptureFrame(player, input)</code></td><td>Records one frame of input</td><td><a href="../06-input/input-replay.html">Input Replay</a></td></tr>
+<tr><td><code>InputRecorder.Finish()</code></td><td>Finalizes recording into <code>ReplayData</code></td><td><a href="../06-input/input-replay.html">Input Replay</a></td></tr>
+<tr><td><code>NewInputPlayer(data)</code></td><td>Creates a player that replays recorded input</td><td><a href="../06-input/input-replay.html">Input Replay</a></td></tr>
+<tr><td><code>InputPlayer.NextFrame(player)</code></td><td>Returns the next frame of recorded input</td><td><a href="../06-input/input-replay.html">Input Replay</a></td></tr>
+<tr><td><code>InputPlayer.Done()</code> / <code>Reset()</code></td><td>Playback status and restart</td><td><a href="../06-input/input-replay.html">Input Replay</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="audio"><a class="header" href="#audio">Audio</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>RegisterAudioBundle(bundle)</code></td><td>Registers VADPCM audio assets before the game loop starts</td><td><a href="../07-audio/sfx-and-music.html">SFX and Music</a></td></tr>
+<tr><td><code>PlaySoundEffect(id)</code></td><td>Triggers a one-shot sound effect</td><td><a href="../07-audio/sfx-and-music.html">SFX and Music</a></td></tr>
+<tr><td><code>PlayMusic(id)</code></td><td>Starts background music playback</td><td><a href="../07-audio/sfx-and-music.html">SFX and Music</a></td></tr>
+<tr><td><code>StopMusic()</code></td><td>Stops the current music track</td><td><a href="../07-audio/sfx-and-music.html">SFX and Music</a></td></tr>
+<tr><td><code>SetSoundEffectVolume(v)</code></td><td>Sets SFX volume (0.0 to 1.0)</td><td><a href="../07-audio/sfx-and-music.html">SFX and Music</a></td></tr>
+<tr><td><code>SetMusicVolume(v)</code></td><td>Sets music volume (0.0 to 1.0)</td><td><a href="../07-audio/sfx-and-music.html">SFX and Music</a></td></tr>
+<tr><td><code>sequence.NewPlayer()</code></td><td>Creates a MIDI-like sequence player</td><td><a href="../07-audio/sequence-player.html">Sequence Player</a></td></tr>
+<tr><td><code>sequence.Player.Play/Stop/Pause/Resume</code></td><td>Sequence playback control</td><td><a href="../07-audio/sequence-player.html">Sequence Player</a></td></tr>
+<tr><td><code>sequence.Player.SetTempo(bpm)</code></td><td>Sets playback tempo</td><td><a href="../07-audio/sequence-player.html">Sequence Player</a></td></tr>
+<tr><td><code>sequence.Player.SetLoop(start, count)</code></td><td>Configures loop points</td><td><a href="../07-audio/sequence-player.html">Sequence Player</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="tile-scene-pipeline"><a class="header" href="#tile-scene-pipeline">Tile Scene Pipeline</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>OpenBundle(path)</code></td><td>Opens a <code>.bundle</code> file containing sheets, maps, and animations</td><td><a href="../08-tile-scenes/bundles-and-loading.html">Bundles and Loading</a></td></tr>
+<tr><td><code>LoadScene(bundle)</code></td><td>Loads all assets from a bundle into a renderable scene</td><td><a href="../08-tile-scenes/pipeline-overview.html">Pipeline Overview</a></td></tr>
+<tr><td><code>Scene.Draw(cam)</code></td><td>Renders visible tiles to the screen through the camera</td><td><a href="../08-tile-scenes/camera-and-scrolling.html">Camera and Scrolling</a></td></tr>
+<tr><td><code>Scene.Map()</code></td><td>Returns the scene’s <code>Map</code> for tile queries</td><td><a href="../08-tile-scenes/tile-sheets-and-maps.html">Tile Sheets and Maps</a></td></tr>
+<tr><td><code>Map.Width()</code> / <code>Height()</code></td><td>Map dimensions in tiles</td><td><a href="../08-tile-scenes/tile-sheets-and-maps.html">Tile Sheets and Maps</a></td></tr>
+<tr><td><code>Map.TileWidth()</code> / <code>TileHeight()</code></td><td>Tile dimensions in pixels</td><td><a href="../08-tile-scenes/tile-sheets-and-maps.html">Tile Sheets and Maps</a></td></tr>
+<tr><td><code>Map.PixelWidth()</code> / <code>PixelHeight()</code></td><td>Total map size in pixels</td><td><a href="../08-tile-scenes/tile-sheets-and-maps.html">Tile Sheets and Maps</a></td></tr>
+<tr><td><code>Map.TileAt(layer, col, row)</code></td><td>Returns the tile ID at a grid cell</td><td><a href="../08-tile-scenes/tile-sheets-and-maps.html">Tile Sheets and Maps</a></td></tr>
+<tr><td><code>Scene.Stats()</code></td><td>Returns <code>RuntimeStats</code> with visible tile count and upload count</td><td><a href="../08-tile-scenes/pipeline-overview.html">Pipeline Overview</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="camera"><a class="header" href="#camera">Camera</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Camera</code> struct</td><td>Position, size, zoom, follow target, bounds, and screen shake</td><td><a href="../08-tile-scenes/camera-and-scrolling.html">Camera and Scrolling</a></td></tr>
+<tr><td><code>Camera.WorldToScreen(x, y)</code></td><td>Converts world coordinates to screen space</td><td><a href="../08-tile-scenes/camera-and-scrolling.html">Camera and Scrolling</a></td></tr>
+<tr><td><code>Camera.UpdateFollow()</code></td><td>Smoothly moves camera toward the follow target</td><td><a href="../08-tile-scenes/camera-and-scrolling.html">Camera and Scrolling</a></td></tr>
+<tr><td><code>Camera.ClampToBounds()</code></td><td>Prevents the camera from leaving the world bounds</td><td><a href="../08-tile-scenes/camera-and-scrolling.html">Camera and Scrolling</a></td></tr>
+<tr><td><code>Camera.AddTrauma(amount)</code></td><td>Adds screen shake intensity (0 to 1)</td><td><a href="../08-tile-scenes/camera-and-scrolling.html">Camera and Scrolling</a></td></tr>
+<tr><td><code>Camera.ShakeOffset()</code></td><td>Returns the current shake displacement for drawing</td><td><a href="../08-tile-scenes/camera-and-scrolling.html">Camera and Scrolling</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="game-systems"><a class="header" href="#game-systems">Game Systems</a></h2>
+<h3 id="state-machine"><a class="header" href="#state-machine">State Machine</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>GameState</code> interface</td><td><code>Enter()</code>, <code>Update()</code>, <code>Draw()</code>, <code>Exit()</code> for each screen</td><td><a href="../09-game-systems/state-machine.html">State Machine</a></td></tr>
+<tr><td><code>NewStateMachine(initial)</code></td><td>Creates a state machine with an initial state</td><td><a href="../09-game-systems/state-machine.html">State Machine</a></td></tr>
+<tr><td><code>StateMachine.Switch(state)</code></td><td>Replaces the top state (calls Exit then Enter)</td><td><a href="../09-game-systems/state-machine.html">State Machine</a></td></tr>
+<tr><td><code>StateMachine.Push(state)</code></td><td>Overlays a new state (for pause menus, dialogs)</td><td><a href="../09-game-systems/state-machine.html">State Machine</a></td></tr>
+<tr><td><code>StateMachine.Pop()</code></td><td>Removes the top state and returns to the one below</td><td><a href="../09-game-systems/state-machine.html">State Machine</a></td></tr>
+<tr><td><code>StateMachine.Update()</code> / <code>Draw()</code></td><td>Delegates to the top state</td><td><a href="../09-game-systems/state-machine.html">State Machine</a></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="timers"><a class="header" href="#timers">Timers</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>NewTimer(frames)</code></td><td>Creates a countdown timer</td><td><a href="../09-game-systems/timers.html">Timers</a></td></tr>
+<tr><td><code>Timer.Tick()</code></td><td>Advances by one frame; returns true on the finishing frame</td><td><a href="../09-game-systems/timers.html">Timers</a></td></tr>
+<tr><td><code>Timer.Done()</code> / <code>Progress()</code> / <code>Remaining()</code></td><td>Status queries</td><td><a href="../09-game-systems/timers.html">Timers</a></td></tr>
+<tr><td><code>Timer.Reset()</code> / <code>ResetWith(frames)</code></td><td>Restart the timer</td><td><a href="../09-game-systems/timers.html">Timers</a></td></tr>
+<tr><td><code>NewRepeatingTimer(interval)</code></td><td>Creates a timer that fires every N frames</td><td><a href="../09-game-systems/timers.html">Timers</a></td></tr>
+<tr><td><code>RepeatingTimer.Tick()</code></td><td>Returns true on trigger frames</td><td><a href="../09-game-systems/timers.html">Timers</a></td></tr>
+<tr><td><code>RepeatingTimer.Count()</code></td><td>Returns how many times it has triggered</td><td><a href="../09-game-systems/timers.html">Timers</a></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="menus"><a class="header" href="#menus">Menus</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>NewMenu(items)</code></td><td>Creates a D-pad-navigated menu from <code>MenuItem</code> entries</td><td><a href="../09-game-systems/menus.html">Menus</a></td></tr>
+<tr><td><code>Menu.HandleInput()</code></td><td>Reads the controller and moves the cursor; returns true on confirm</td><td><a href="../09-game-systems/menus.html">Menus</a></td></tr>
+<tr><td><code>Menu.Draw()</code></td><td>Renders the menu with cursor indicator</td><td><a href="../09-game-systems/menus.html">Menus</a></td></tr>
+<tr><td><code>Menu.MoveUp()</code> / <code>MoveDown()</code></td><td>Manual cursor movement (skips disabled items)</td><td><a href="../09-game-systems/menus.html">Menus</a></td></tr>
+<tr><td><code>MenuItem</code></td><td>Struct: <code>Label</code>, <code>Disabled</code>, <code>OnConfirm</code> callback</td><td><a href="../09-game-systems/menus.html">Menus</a></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="save-data"><a class="header" href="#save-data">Save Data</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>save.Storage</code> interface</td><td>Uniform API for EEPROM, SRAM, and FlashRAM</td><td><a href="../09-game-systems/save-data.html">Save Data</a></td></tr>
+<tr><td><code>save.ReadAll(s)</code> / <code>WriteAll(s, data)</code></td><td>Read or write the entire save storage</td><td><a href="../09-game-systems/save-data.html">Save Data</a></td></tr>
+<tr><td><code>save.Checksum(data)</code></td><td>Additive checksum for save integrity</td><td><a href="../09-game-systems/save-data.html">Save Data</a></td></tr>
+<tr><td>Storage types</td><td><code>StorageEEPROM4K</code> (512B), <code>StorageEEPROM16K</code> (2KB), <code>StorageSRAM</code> (32KB), <code>StorageFlashRAM</code> (128KB)</td><td><a href="../09-game-systems/save-data.html">Save Data</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="2d-math-math2d"><a class="header" href="#2d-math-math2d">2D Math (<code>math2d</code>)</a></h2>
+<h3 id="vectors"><a class="header" href="#vectors">Vectors</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Vec2</code></td><td>2D vector with <code>X</code>, <code>Y</code> float32 fields</td><td><a href="../10-math/vectors.html">Vectors</a></td></tr>
+<tr><td><code>Add</code>, <code>Sub</code>, <code>Scale</code>, <code>Negate</code>, <code>Abs</code></td><td>Arithmetic operations</td><td><a href="../10-math/vectors.html">Vectors</a></td></tr>
+<tr><td><code>Length</code>, <code>LengthSq</code>, <code>Normalize</code></td><td>Magnitude and normalization</td><td><a href="../10-math/vectors.html">Vectors</a></td></tr>
+<tr><td><code>Dot</code>, <code>Distance</code>, <code>DistanceSq</code></td><td>Products and distances</td><td><a href="../10-math/vectors.html">Vectors</a></td></tr>
+<tr><td><code>Lerp</code>, <code>Rotate</code>, <code>Angle</code></td><td>Interpolation and rotation</td><td><a href="../10-math/vectors.html">Vectors</a></td></tr>
+<tr><td><code>Min</code>, <code>Max</code></td><td>Component-wise min/max</td><td><a href="../10-math/vectors.html">Vectors</a></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="rectangles"><a class="header" href="#rectangles">Rectangles</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Rect</code></td><td>Axis-aligned rectangle: <code>X</code>, <code>Y</code>, <code>W</code>, <code>H</code></td><td><a href="../10-math/rectangles.html">Rectangles</a></td></tr>
+<tr><td><code>RectFromCenter(center, w, h)</code></td><td>Creates a rect centered on a point</td><td><a href="../10-math/rectangles.html">Rectangles</a></td></tr>
+<tr><td><code>ContainsPoint</code>, <code>ContainsRect</code>, <code>Overlaps</code></td><td>Spatial queries</td><td><a href="../10-math/rectangles.html">Rectangles</a></td></tr>
+<tr><td><code>Intersection</code>, <code>Expand</code>, <code>Center</code></td><td>Rect operations</td><td><a href="../10-math/rectangles.html">Rectangles</a></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="collision-detection"><a class="header" href="#collision-detection">Collision Detection</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>AABBOverlap(a, b)</code></td><td>Returns true if two rects overlap</td><td><a href="../10-math/collision-detection.html">Collision Detection</a></td></tr>
+<tr><td><code>AABBPenetration(a, b)</code></td><td>Returns the minimum penetration vector</td><td><a href="../10-math/collision-detection.html">Collision Detection</a></td></tr>
+<tr><td><code>AABBResolve(a, b)</code></td><td>Pushes rect <code>a</code> out of rect <code>b</code></td><td><a href="../10-math/collision-detection.html">Collision Detection</a></td></tr>
+<tr><td><code>AABBSweep(a, vel, b)</code></td><td>Swept AABB test: returns hit time and normal</td><td><a href="../10-math/collision-detection.html">Collision Detection</a></td></tr>
+<tr><td><code>Layer</code>, <code>Collider</code>, <code>ColliderOverlap</code></td><td>Layer-masked collision filtering</td><td><a href="../10-math/collision-detection.html">Collision Detection</a></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="easing-functions"><a class="header" href="#easing-functions">Easing Functions</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Clamp(v, lo, hi)</code></td><td>Restricts a value to a range</td><td><a href="../10-math/easing-functions.html">Easing Functions</a></td></tr>
+<tr><td><code>Lerp(a, b, t)</code></td><td>Linear interpolation</td><td><a href="../10-math/easing-functions.html">Easing Functions</a></td></tr>
+<tr><td><code>InvLerp(a, b, v)</code></td><td>Inverse lerp (returns 0-1 ratio)</td><td><a href="../10-math/easing-functions.html">Easing Functions</a></td></tr>
+<tr><td><code>Remap(v, inMin, inMax, outMin, outMax)</code></td><td>Maps a value from one range to another</td><td><a href="../10-math/easing-functions.html">Easing Functions</a></td></tr>
+<tr><td><code>MoveToward(current, target, maxDelta)</code></td><td>Moves toward target by at most maxDelta</td><td><a href="../10-math/easing-functions.html">Easing Functions</a></td></tr>
+<tr><td><code>EaseInQuad</code>, <code>EaseOutQuad</code>, <code>EaseInOutQuad</code></td><td>Quadratic easing</td><td><a href="../10-math/easing-functions.html">Easing Functions</a></td></tr>
+<tr><td><code>EaseInCubic</code>, <code>EaseOutCubic</code>, <code>EaseInOutCubic</code></td><td>Cubic easing</td><td><a href="../10-math/easing-functions.html">Easing Functions</a></td></tr>
+<tr><td><code>SmoothStep(edge0, edge1, x)</code></td><td>Hermite interpolation</td><td><a href="../10-math/easing-functions.html">Easing Functions</a></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="grid-utilities"><a class="header" href="#grid-utilities">Grid Utilities</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>NewGrid[T](cols, rows)</code></td><td>Creates a generic 2D grid</td><td><a href="../10-math/grid-utilities.html">Grid Utilities</a></td></tr>
+<tr><td><code>Get</code>, <code>Set</code>, <code>Clear</code>, <code>Fill</code></td><td>Cell access and bulk operations</td><td><a href="../10-math/grid-utilities.html">Grid Utilities</a></td></tr>
+<tr><td><code>ScanRow</code>, <code>ScanCol</code></td><td>Run-length scanning for matching groups</td><td><a href="../10-math/grid-utilities.html">Grid Utilities</a></td></tr>
+<tr><td><code>CountValue</code>, <code>FindAll</code>, <code>Neighbors4</code></td><td>Queries and spatial helpers</td><td><a href="../10-math/grid-utilities.html">Grid Utilities</a></td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="random-numbers"><a class="header" href="#random-numbers">Random Numbers</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>NewRand(seed)</code></td><td>Creates a deterministic xoshiro128** PRNG</td><td><a href="../10-math/random-numbers.html">Random Numbers</a></td></tr>
+<tr><td><code>Uint32</code>, <code>Intn(n)</code>, <code>Float32</code></td><td>Raw random values</td><td><a href="../10-math/random-numbers.html">Random Numbers</a></td></tr>
+<tr><td><code>RangeInt(min, max)</code>, <code>RangeFloat32(min, max)</code></td><td>Range-bounded random values</td><td><a href="../10-math/random-numbers.html">Random Numbers</a></td></tr>
+<tr><td><code>Bool()</code></td><td>Random boolean</td><td><a href="../10-math/random-numbers.html">Random Numbers</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="3d-graphics"><a class="header" href="#3d-graphics">3D Graphics</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>math3d.Mat4</code></td><td>4x4 matrix with multiply, perspective, ortho, lookAt, translate, rotate, scale</td><td><a href="../11-3d-graphics/3d-math.html">3D Math</a></td></tr>
+<tr><td><code>math3d.Vec3</code> / <code>Vec4</code></td><td>3D and 4D vectors with arithmetic, dot, cross, normalize</td><td><a href="../11-3d-graphics/3d-math.html">3D Math</a></td></tr>
+<tr><td><code>math3d.Viewport</code></td><td>Maps clip-space to screen coordinates</td><td><a href="../11-3d-graphics/3d-math.html">3D Math</a></td></tr>
+<tr><td><code>scene3d.NewScene()</code></td><td>Creates a 3D scene graph</td><td><a href="../11-3d-graphics/scene-graph.html">Scene Graph</a></td></tr>
+<tr><td><code>scene3d.Node</code></td><td>Scene graph node with transform, children, and render function</td><td><a href="../11-3d-graphics/scene-graph.html">Scene Graph</a></td></tr>
+<tr><td><code>scene3d.NewMeshNode(name, dl)</code></td><td>Creates a node that renders a display list</td><td><a href="../11-3d-graphics/scene-graph.html">Scene Graph</a></td></tr>
+<tr><td><code>scene3d.NewPerspectiveCamera(...)</code></td><td>Creates a perspective camera node</td><td><a href="../11-3d-graphics/scene-graph.html">Scene Graph</a></td></tr>
+<tr><td><code>scene3d.NewOrthoCamera(...)</code></td><td>Creates an orthographic camera node</td><td><a href="../11-3d-graphics/scene-graph.html">Scene Graph</a></td></tr>
+<tr><td><code>scene3d.DrawScene(scene)</code></td><td>Traverses the scene graph and renders</td><td><a href="../11-3d-graphics/triangle-rendering.html">Triangle Rendering</a></td></tr>
+<tr><td><code>gfx.DisplayList</code></td><td>GPU command buffer for triangle rendering</td><td><a href="../11-3d-graphics/display-lists.html">Display Lists</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="low-level"><a class="header" href="#low-level">Low-Level</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th>Description</th><th>Docs</th></tr>
+</thead>
+<tbody>
+<tr><td><code>dma.CartToRDRAM(offset, dst)</code></td><td>DMA transfer from cartridge ROM to RDRAM</td><td><a href="../12-low-level/dma-transfers.html">DMA Transfers</a></td></tr>
+<tr><td><code>dma.SRAMRead</code> / <code>SRAMWrite</code></td><td>Direct SRAM access via DMA</td><td><a href="../12-low-level/dma-transfers.html">DMA Transfers</a></td></tr>
+<tr><td><code>dma.NewPool(base, size)</code></td><td>Memory pool with head/tail allocation</td><td><a href="../12-low-level/memory-pools.html">Memory Pools</a></td></tr>
+<tr><td><code>dma.NewSegmentTable()</code></td><td>Segment address translation table</td><td><a href="../12-low-level/dma-transfers.html">DMA Transfers</a></td></tr>
+<tr><td><code>rspq.NewQueue()</code></td><td>RSP task queue for submitting microcode tasks</td><td><a href="../12-low-level/rsp-task-queue.html">RSP Task Queue</a></td></tr>
+<tr><td><code>rspq.Load(microcode)</code></td><td>Loads RSP microcode</td><td><a href="../12-low-level/rsp-task-queue.html">RSP Task Queue</a></td></tr>
+<tr><td><code>n64os.NewMessageQueue(size)</code></td><td>OS-level message queue for event handling</td><td><a href="../12-low-level/n64-os-primitives.html">N64 OS Primitives</a></td></tr>
+<tr><td><code>n64os.NewScheduler(events, fn)</code></td><td>Task scheduler for graphics and audio</td><td><a href="../12-low-level/n64-os-primitives.html">N64 OS Primitives</a></td></tr>
+<tr><td><code>n64os.NewEventRouter()</code></td><td>Routes hardware events to message queues</td><td><a href="../12-low-level/n64-os-primitives.html">N64 OS Primitives</a></td></tr>
+<tr><td><code>n64os.NewTimer(queue, msg, interval)</code></td><td>OS-level timer with message delivery</td><td><a href="../12-low-level/n64-os-primitives.html">N64 OS Primitives</a></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="complete-game-examples"><a class="header" href="#complete-game-examples">Complete Game Examples</a></h2>
+<p>These examples in the repository demonstrate full games built with GoSprite64:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Example</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>examples/pong</code></td><td>Classic Pong with AI, scoring, collision, and audio</td></tr>
+<tr><td><code>examples/space_invaders</code></td><td>Space Invaders with enemies, bullets, waves, and game-over state</td></tr>
+<tr><td><code>examples/platformer</code></td><td>Side-scrolling platformer from the tutorial (tiles, sprites, animation, state machine, transitions)</td></tr>
+</tbody>
+</table>
+</div>
 
                     </main>
 

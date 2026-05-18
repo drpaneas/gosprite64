@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -176,9 +176,136 @@
                     <main>
                         <h1 id="instrument-banks"><a class="header" href="#instrument-banks">Instrument Banks</a></h1>
 <p>Define and load custom instrument samples for the sequence player.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<pre><code class="language-go">import "github.com/drpaneas/gosprite64/audio/bank"
+</code></pre>
+<h2 id="what-is-an-instrument-bank"><a class="header" href="#what-is-an-instrument-bank">What is an instrument bank?</a></h2>
+<p>An instrument bank is a collection of instrument definitions paired with raw audio sample data. When the <a href="sequence-player.html">sequence player</a> triggers a note event, it looks up the instrument assigned to that channel, selects the appropriate sample based on the note’s pitch, and plays it through the audio hardware.</p>
+<p>This is the same approach used by classic N64 games: a compact bank of instrument definitions stored alongside compressed sample data in the ROM. One bank might contain a piano, strings, drums, and bass - everything needed for a song.</p>
+<h2 id="types"><a class="header" href="#types">Types</a></h2>
+<h3 id="instrument"><a class="header" href="#instrument">Instrument</a></h3>
+<p>Each instrument has metadata and one or more sounds that cover different key ranges:</p>
+<pre><code class="language-go">type Instrument struct {
+    ID         uint8
+    Volume     uint8    // default volume (0-127)
+    Pan        uint8    // stereo panning (0=left, 64=center, 127=right)
+    Priority   uint8    // voice allocation priority
+    SampleRate uint16   // native sample rate in Hz
+    KeyLow     uint8    // lowest MIDI note this instrument responds to
+    KeyHigh    uint8    // highest MIDI note this instrument responds to
+    Sounds     []Sound  // sample entries for different key ranges
+}
+</code></pre>
+<h3 id="sound"><a class="header" href="#sound">Sound</a></h3>
+<p>A sound is a single audio sample within an instrument. Instruments with multiple sounds use key-splitting to play different samples depending on the note pitch:</p>
+<pre><code class="language-go">type Sound struct {
+    SampleAddr uint32   // offset into sample data
+    SampleLen  uint32   // sample length in bytes
+    LoopStart  uint32   // loop region start
+    LoopEnd    uint32   // loop region end
+    LoopCount  int32    // -1 for infinite, 0 for no loop
+    KeyBase    uint8    // the note at which this sample plays at native pitch
+    Tuning     float32  // fine-tuning adjustment
+}
+</code></pre>
+<h2 id="creating-a-bank"><a class="header" href="#creating-a-bank">Creating a bank</a></h2>
+<h3 id="empty-bank"><a class="header" href="#empty-bank">Empty bank</a></h3>
+<pre><code class="language-go">b := bank.NewBank()
+</code></pre>
+<p>Creates a bank with no instruments. You can populate it manually by appending to <code>b.Instruments</code> and setting <code>b.SampleData</code>.</p>
+<h3 id="loading-from-binary-data"><a class="header" href="#loading-from-binary-data">Loading from binary data</a></h3>
+<pre><code class="language-go">b, err := bank.LoadBank(bankData)
+if err != nil {
+    // handle invalid bank data
+}
+</code></pre>
+<p><code>LoadBank</code> parses a binary bank file and returns a fully populated <code>Bank</code>. The binary format stores instrument definitions followed by per-instrument sound entries, all in big-endian byte order (matching N64 hardware).</p>
+<p>The <code>bank.ErrInvalidBank</code> error is returned if the data is truncated or malformed.</p>
+<h2 id="querying-a-bank"><a class="header" href="#querying-a-bank">Querying a bank</a></h2>
+<h3 id="getinstrument"><a class="header" href="#getinstrument">GetInstrument</a></h3>
+<p>Retrieve an instrument by its zero-based index:</p>
+<pre><code class="language-go">inst := b.GetInstrument(0)
+if inst == nil {
+    // index out of range
+}
+fmt.Printf("Instrument: rate=%d, sounds=%d\n", inst.SampleRate, len(inst.Sounds))
+</code></pre>
+<h3 id="instrumentcount"><a class="header" href="#instrumentcount">InstrumentCount</a></h3>
+<p>Returns the total number of instruments in the bank:</p>
+<pre><code class="language-go">count := b.InstrumentCount()
+for i := 0; i &lt; count; i++ {
+    inst := b.GetInstrument(uint8(i))
+    fmt.Printf("[%d] keys %d-%d\n", inst.ID, inst.KeyLow, inst.KeyHigh)
+}
+</code></pre>
+<h2 id="complete-example"><a class="header" href="#complete-example">Complete example</a></h2>
+<pre><code class="language-go">func NewGame() *Game {
+    g := &amp;Game{}
+
+    // Load the instrument bank from ROM
+    bankData := loadAsset("instruments.bnk")
+    b, err := bank.LoadBank(bankData)
+    if err != nil {
+        panic("failed to load instrument bank: " + err.Error())
+    }
+    g.bank = b
+
+    // Set up the sequence player
+    g.music = sequence.NewPlayer()
+    g.music.Data = loadAsset("overworld.seq")
+    g.music.SetLoop(0, -1)
+    g.music.Play()
+
+    return g
+}
+</code></pre>
+<h2 id="bank-binary-format-reference"><a class="header" href="#bank-binary-format-reference">Bank binary format reference</a></h2>
+<p>The binary format parsed by <code>LoadBank</code>:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td>instrumentCount</td><td>u8</td><td>Number of instruments</td></tr>
+</tbody>
+</table>
+</div>
+<p>Per instrument:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td>id</td><td>u8</td><td>Instrument ID</td></tr>
+<tr><td>volume</td><td>u8</td><td>Default volume</td></tr>
+<tr><td>pan</td><td>u8</td><td>Stereo panning</td></tr>
+<tr><td>priority</td><td>u8</td><td>Voice priority</td></tr>
+<tr><td>sampleRate</td><td>u16 BE</td><td>Native sample rate</td></tr>
+<tr><td>keyLow</td><td>u8</td><td>Lowest responding key</td></tr>
+<tr><td>keyHigh</td><td>u8</td><td>Highest responding key</td></tr>
+<tr><td>soundCount</td><td>u8</td><td>Number of sounds</td></tr>
+</tbody>
+</table>
+</div>
+<p>Per sound (28 bytes):</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td>sampleAddr</td><td>u32 BE</td><td>Offset into sample data</td></tr>
+<tr><td>sampleLen</td><td>u32 BE</td><td>Sample length in bytes</td></tr>
+<tr><td>loopStart</td><td>u32 BE</td><td>Loop start offset</td></tr>
+<tr><td>loopEnd</td><td>u32 BE</td><td>Loop end offset</td></tr>
+<tr><td>loopCount</td><td>s32 BE</td><td>Loop count (-1 = infinite)</td></tr>
+<tr><td>keyBase</td><td>u8</td><td>Note at native pitch</td></tr>
+<tr><td>(padding)</td><td>3 bytes</td><td>Alignment padding</td></tr>
+<tr><td>tuning</td><td>f32 BE</td><td>Fine-tuning factor</td></tr>
+</tbody>
+</table>
+</div>
 
                     </main>
 

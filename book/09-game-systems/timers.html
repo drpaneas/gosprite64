@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -287,10 +287,15 @@ if !hitFlash.Done() {
     drawPlayer()
 }
 </code></pre>
+<h2 id="try-it"><a class="header" href="#try-it">Try It</a></h2>
+<iframe src="../emulator/play.html?rom=timer_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
+<blockquote>
+<p><strong>Controls:</strong> Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger</p>
+</blockquote>
 <h2 id="complete-example"><a class="header" href="#complete-example">Complete example</a></h2>
-<p>See <code>examples/splitscreen_demo</code> for timers used alongside draw regions and menus. Build with:</p>
-<pre><code class="language-bash">GOENV=n64.env go1.24.5-embedded build -o splitscreen.elf ./examples/splitscreen_demo
-n64go rom splitscreen.elf
+<p>See <code>examples/timer_demo</code> for a focused timer demonstration, or <code>examples/splitscreen_demo</code> for timers used alongside other systems. Build with:</p>
+<pre><code class="language-bash">GOENV=n64.env go1.24.5-embedded build -o timer.elf ./examples/timer_demo
+n64go rom timer.elf
 </code></pre>
 
                     </main>

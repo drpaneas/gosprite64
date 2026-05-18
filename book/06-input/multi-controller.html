@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,117 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="multi-controller-support"><a class="header" href="#multi-controller-support">Multi-Controller Support</a></h1>
-<p>Read input from up to four controllers for multiplayer games.</p>
+<p>Read input from up to four controllers for multiplayer games. The N64 has four controller ports numbered 0 through 3.</p>
+<pre><code class="language-go">import gs "github.com/drpaneas/gosprite64"
+</code></pre>
+<h2 id="controller-ports"><a class="header" href="#controller-ports">Controller ports</a></h2>
+<p>Each port is identified by an integer from 0 to 3. Port 0 is the leftmost port on the console. The single-player convenience functions (<code>IsButtonDown</code>, <code>IsButtonJustPressed</code>, <code>StickPosition</code>) always read from port 0.</p>
+<p>The <code>MaxControllers</code> constant is <code>4</code>.</p>
+<h2 id="detecting-connected-controllers"><a class="header" href="#detecting-connected-controllers">Detecting connected controllers</a></h2>
+<h3 id="connectedcontrollers"><a class="header" href="#connectedcontrollers">ConnectedControllers</a></h3>
+<p>Returns the total number of controllers currently plugged in:</p>
+<pre><code class="language-go">count := gs.ConnectedControllers()
+if count &lt; 2 {
+    showMessage("Please connect a second controller")
+}
+</code></pre>
+<h3 id="iscontrollerconnected"><a class="header" href="#iscontrollerconnected">IsControllerConnected</a></h3>
+<p>Checks whether a specific port has a controller plugged in:</p>
+<pre><code class="language-go">for port := 0; port &lt; gs.MaxControllers; port++ {
+    if gs.IsControllerConnected(port) {
+        fmt.Printf("Port %d: connected\n", port)
+    }
+}
+</code></pre>
+<p>If a controller is disconnected mid-game, <code>IsControllerConnected</code> will return <code>false</code> on the next frame and all button/stick queries for that port will return zero values.</p>
+<h2 id="reading-buttons-per-port"><a class="header" href="#reading-buttons-per-port">Reading buttons per port</a></h2>
+<h3 id="playerbuttondown"><a class="header" href="#playerbuttondown">PlayerButtonDown</a></h3>
+<p>Returns <code>true</code> every frame the button is held on the given port:</p>
+<pre><code class="language-go">func PlayerButtonDown(port int, button ButtonMask) bool
+</code></pre>
+<h3 id="playerbuttonjustpressed"><a class="header" href="#playerbuttonjustpressed">PlayerButtonJustPressed</a></h3>
+<p>Returns <code>true</code> only on the frame the button transitions from released to pressed:</p>
+<pre><code class="language-go">func PlayerButtonJustPressed(port int, button ButtonMask) bool
+</code></pre>
+<h3 id="example-two-player-movement"><a class="header" href="#example-two-player-movement">Example: two-player movement</a></h3>
+<pre><code class="language-go">func (g *Game) Update() {
+    // Player 1 (port 0)
+    if gs.PlayerButtonDown(0, gs.ButtonDPadRight) {
+        g.players[0].X += speed
+    }
+    if gs.PlayerButtonDown(0, gs.ButtonDPadLeft) {
+        g.players[0].X -= speed
+    }
+    if gs.PlayerButtonJustPressed(0, gs.ButtonA) {
+        g.players[0].Jump()
+    }
+
+    // Player 2 (port 1)
+    if gs.PlayerButtonDown(1, gs.ButtonDPadRight) {
+        g.players[1].X += speed
+    }
+    if gs.PlayerButtonDown(1, gs.ButtonDPadLeft) {
+        g.players[1].X -= speed
+    }
+    if gs.PlayerButtonJustPressed(1, gs.ButtonA) {
+        g.players[1].Jump()
+    }
+}
+</code></pre>
+<h2 id="reading-the-analog-stick-per-port"><a class="header" href="#reading-the-analog-stick-per-port">Reading the analog stick per port</a></h2>
+<h3 id="playerstickposition"><a class="header" href="#playerstickposition">PlayerStickPosition</a></h3>
+<p>Returns the stick X and Y in [-1.0, 1.0] for the given port, with deadzone filtering:</p>
+<pre><code class="language-go">func PlayerStickPosition(port int, deadzone float64) (float64, float64)
+</code></pre>
+<pre><code class="language-go">x, y := gs.PlayerStickPosition(1, 0.15)
+g.players[1].X += x * moveSpeed
+g.players[1].Y += y * moveSpeed
+</code></pre>
+<p>If the port is out of range (not 0-3) or no controller is connected, all functions return zero values (<code>false</code> for buttons, <code>0, 0</code> for the stick). You do not need to guard every call with <code>IsControllerConnected</code>, but checking connection status is useful for UI prompts.</p>
+<h2 id="full-multiplayer-loop"><a class="header" href="#full-multiplayer-loop">Full multiplayer loop</a></h2>
+<pre><code class="language-go">func (g *Game) Update() {
+    for port := 0; port &lt; gs.MaxControllers; port++ {
+        if !gs.IsControllerConnected(port) {
+            continue
+        }
+        p := &amp;g.players[port]
+
+        // Analog stick movement
+        x, y := gs.PlayerStickPosition(port, 0.15)
+        p.X += x * moveSpeed
+        p.Y += y * moveSpeed
+
+        // Action buttons
+        if gs.PlayerButtonJustPressed(port, gs.ButtonA) {
+            p.Jump()
+        }
+        if gs.PlayerButtonJustPressed(port, gs.ButtonB) {
+            p.Attack()
+        }
+    }
+}
+</code></pre>
+<h2 id="relationship-to-single-player-api"><a class="header" href="#relationship-to-single-player-api">Relationship to single-player API</a></h2>
+<p>The single-player functions are thin wrappers around the per-port API:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Single-player</th><th>Per-port equivalent</th></tr>
+</thead>
+<tbody>
+<tr><td><code>IsButtonDown(btn)</code></td><td><code>PlayerButtonDown(0, btn)</code></td></tr>
+<tr><td><code>IsButtonJustPressed(btn)</code></td><td><code>PlayerButtonJustPressed(0, btn)</code></td></tr>
+<tr><td><code>StickPosition(dz)</code></td><td><code>PlayerStickPosition(0, dz)</code></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="try-it"><a class="header" href="#try-it">Try It</a></h2>
+<iframe src="../emulator/play.html?rom=multi_input_demo.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
 <blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
+<p><strong>Controls:</strong> Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger</p>
 </blockquote>
+<h2 id="reference-example"><a class="header" href="#reference-example">Reference Example</a></h2>
+<p>See <code>examples/multi_input_demo</code> in the GoSprite64 repository for a 4-player controller demonstration with per-port colored squares.</p>
 
                     </main>
 

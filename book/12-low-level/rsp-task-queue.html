@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,162 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="rsp-task-queue"><a class="header" href="#rsp-task-queue">RSP Task Queue</a></h1>
-<p>Submit microcode tasks to the Reality Signal Processor for parallel computation.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>The <code>rspq</code> package manages submission and execution of tasks on the N64’s RSP (Reality Signal Processor). The RSP is a MIPS-based coprocessor that runs microcode for graphics (display list processing) and audio (sample mixing). This package provides task queuing, microcode management, and the submit/wait protocol.</p>
+<h2 id="microcode"><a class="header" href="#microcode">Microcode</a></h2>
+<p>The RSP has 4KB of instruction memory (IMEM) and 4KB of data memory (DMEM). Microcode is loaded into these memories before task execution.</p>
+<h3 id="microcodetype"><a class="header" href="#microcodetype">MicrocodeType</a></h3>
+<p>Identifies which RSP microcode to use:</p>
+<pre><code class="language-go">const (
+    Fast3D  MicrocodeType = iota // original SM64 microcode
+    F3DEX                        // extended vertex buffer (32 slots)
+    F3DEX2                       // most common N64 microcode
+    AspMain                      // standard audio microcode
+)
+</code></pre>
+<h3 id="microcode-struct"><a class="header" href="#microcode-struct">Microcode struct</a></h3>
+<p>Holds the IMEM and DMEM blobs:</p>
+<pre><code class="language-go">type Microcode struct {
+    Type MicrocodeType
+    Code []byte  // IMEM content (up to 4KB)
+    Data []byte  // DMEM content (up to 4KB)
+}
+</code></pre>
+<p>Maximum sizes:</p>
+<pre><code class="language-go">const MaxIMEMSize = 4096
+const MaxDMEMSize = 4096
+</code></pre>
+<h3 id="load"><a class="header" href="#load">Load</a></h3>
+<p>Loads microcode into the RSP:</p>
+<pre><code class="language-go">rspq.Load(ucode)
+</code></pre>
+<p>On N64, this wraps the <code>rsp.Load</code> function from the hardware driver. On other platforms, it is a no-op.</p>
+<h3 id="start"><a class="header" href="#start">Start</a></h3>
+<p>Resumes RSP execution after loading microcode:</p>
+<pre><code class="language-go">rspq.Start()
+</code></pre>
+<h2 id="task"><a class="header" href="#task">Task</a></h2>
+<p>A <code>Task</code> describes an RSP task to execute, matching the N64’s <code>OSTask</code> structure:</p>
+<pre><code class="language-go">type Task struct {
+    Type  TaskType
+    Flags TaskFlags
+
+    // Microcode pointers
+    UcodeBootAddr uint32
+    UcodeBootSize uint32
+    UcodeAddr     uint32
+    UcodeSize     uint32
+    UcodeDataAddr uint32
+    UcodeDataSize uint32
+
+    // Task data (display list or audio command list)
+    DataAddr uint32
+    DataSize uint32
+
+    // Yield buffer for task preemption
+    YieldAddr uint32
+    YieldSize uint32
+
+    // Output buffer (for audio tasks)
+    OutputAddr uint32
+    OutputSize uint32
+
+    // DRAM stack for RSP microcode
+    DRAMStackAddr uint32
+    DRAMStackSize uint32
+}
+</code></pre>
+<h3 id="tasktype"><a class="header" href="#tasktype">TaskType</a></h3>
+<pre><code class="language-go">const (
+    GfxTask TaskType = 1  // graphics (display list) task
+    AudTask TaskType = 2  // audio synthesis task
+)
+</code></pre>
+<h2 id="submittask"><a class="header" href="#submittask">SubmitTask</a></h2>
+<p>Loads a task onto the RSP and starts execution. This replicates the <code>osSpTaskLoad</code> + <code>osSpTaskStartGo</code> protocol:</p>
+<pre><code class="language-go">func SubmitTask(task *OSTask, bootCode []byte)
+</code></pre>
+<p>The submission sequence:</p>
+<ol>
+<li>Marshal the task struct to a 64-byte buffer</li>
+<li>Writeback the buffer to ensure cache coherency</li>
+<li>Clear RSP signal flags and enable interrupt-on-break</li>
+<li>DMA the task descriptor to DMEM at offset 0xFC0</li>
+<li>DMA the boot microcode to IMEM</li>
+<li>Resume RSP execution</li>
+</ol>
+<p>All address fields in the task must be physical RDRAM addresses.</p>
+<h2 id="waittaskdone"><a class="header" href="#waittaskdone">WaitTaskDone</a></h2>
+<p>Blocks until the RSP signals completion (break interrupt):</p>
+<pre><code class="language-go">func WaitTaskDone()
+</code></pre>
+<p>The RSP sets the break flag when it finishes executing a task. This function waits for that interrupt.</p>
+<h2 id="queue"><a class="header" href="#queue">Queue</a></h2>
+<p>The <code>Queue</code> manages task submission and interleaving. It handles the priority relationship between audio and graphics tasks.</p>
+<pre><code class="language-go">q := rspq.NewQueue()
+</code></pre>
+<h3 id="task-priority-and-preemption"><a class="header" href="#task-priority-and-preemption">Task priority and preemption</a></h3>
+<p>Audio tasks have higher priority than graphics tasks. If an audio task is submitted while a graphics task is running, the graphics task is yielded:</p>
+<pre><code class="language-go">q.Submit(gfxTask)  // starts running (RSP was idle)
+q.Submit(audTask)  // graphics task is yielded, audio runs next
+</code></pre>
+<p>The yielded graphics task resumes after the audio task completes.</p>
+<h3 id="queue-status"><a class="header" href="#queue-status">Queue status</a></h3>
+<pre><code class="language-go">status := q.Status()
+// StatusIdle     - RSP is idle
+// StatusRunning  - a task is executing
+// StatusYielded  - a graphics task was preempted
+// StatusDone     - last task completed
+</code></pre>
+<h3 id="submit"><a class="header" href="#submit">Submit</a></h3>
+<p>Adds a task to the queue:</p>
+<pre><code class="language-go">q.Submit(task)
+</code></pre>
+<p>If the RSP is idle, the task starts immediately. If a graphics task is running and an audio task is submitted, the current task is yielded and the audio task runs first. Otherwise, the task is queued.</p>
+<h3 id="complete"><a class="header" href="#complete">Complete</a></h3>
+<p>Marks the current task as done and dispatches the next pending task:</p>
+<pre><code class="language-go">q.Complete()
+</code></pre>
+<h3 id="completion-handler"><a class="header" href="#completion-handler">Completion handler</a></h3>
+<p>Register a callback for task completion:</p>
+<pre><code class="language-go">q.SetCompletionHandler(func(task *rspq.Task) {
+    if task.Type == rspq.GfxTask {
+        // frame rendering complete, swap buffers
+    }
+})
+</code></pre>
+<h3 id="current"><a class="header" href="#current">Current</a></h3>
+<p>Returns the currently executing task:</p>
+<pre><code class="language-go">task := q.Current()
+if task != nil {
+    fmt.Println(task.Type)
+}
+</code></pre>
+<h2 id="typical-graphics-frame"><a class="header" href="#typical-graphics-frame">Typical graphics frame</a></h2>
+<pre><code class="language-go">// Build display list
+dl := gfx.NewDisplayList(256)
+// ... add commands ...
+dl.SPEndDisplayList()
+
+// Create and submit task
+task := &amp;rspq.Task{
+    Type:          rspq.GfxTask,
+    UcodeAddr:     ucodeAddr,
+    UcodeSize:     ucodeSize,
+    UcodeDataAddr: ucodeDataAddr,
+    UcodeDataSize: ucodeDataSize,
+    DataAddr:      displayListAddr,
+    DataSize:      uint32(dl.Len() * 8),
+}
+
+rspq.SubmitTask(task, bootCode)
+rspq.WaitTaskDone()
+</code></pre>
+<h2 id="audiographics-interleaving"><a class="header" href="#audiographics-interleaving">Audio/graphics interleaving</a></h2>
+<p>The N64 runs audio and graphics on the same RSP. Audio tasks must complete within tight deadlines to avoid audio glitches, so they preempt graphics tasks:</p>
+<pre><code>Frame timeline:
+  [GFX running]──&gt;[yield]──&gt;[AUD runs]──&gt;[AUD done]──&gt;[GFX resumes]──&gt;[GFX done]
+</code></pre>
+<p>The <code>Queue</code> handles this automatically. When you submit an audio task while graphics is running, the queue sets <code>StatusYielded</code>, puts the audio task at the front of the pending list, and dispatches it when the current task checkpoint allows.</p>
 
                     </main>
 

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-a38ee8ab.js"></script>
@@ -174,43 +174,44 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+                        <h1 id="why-gosprite64"><a class="header" href="#why-gosprite64">Why GoSprite64?</a></h1>
 <p><img src="../images/logo.png" alt="Gopher"></p>
-<p><strong>GoSprite64</strong> is your portal to building retro-fueled 2D games for the <strong>Nintendo 64</strong>, using the modern power of <strong>Go</strong>. With clean APIs, minimal setup (Linux, Mac, Windows are all supported), and a rebellious retro soul, it lets you bring your pixel dreams to life—on real N64 hardware.</p>
-<blockquote>
-<p>The information here is targeted at homebrew development. This project just got born, expect heavy changes along the way…</p>
-</blockquote>
+<p><strong>GoSprite64</strong> is your portal to building retro-fueled 2D games for the <strong>Nintendo 64</strong>, using the modern power of <strong>Go</strong>. With clean APIs, minimal setup (Linux, Mac, Windows are all supported), and a rebellious retro soul, it lets you bring your pixel dreams to life - on real N64 hardware.</p>
 <h2 id="whats-gosprite64"><a class="header" href="#whats-gosprite64">What’s GoSprite64?</a></h2>
-<p><code>GoSprite64</code> is a Go library for making 2D games that run natively on the Nintendo 64. It wraps low-level N64 quirks in a modern API inspired by modern game engines, so you can focus on your game logic – not the hardware headaches.</p>
+<p>GoSprite64 is a Go library for making 2D games that run natively on the Nintendo 64. It wraps low-level N64 quirks in a modern API inspired by modern game engines, so you can focus on your game logic - not the hardware headaches.</p>
 <p>Designed for developers who love Go and grew up on cartridges, GoSprite64 makes retro dev surprisingly fun and productive.</p>
-<p>you can:</p>
+<h2 id="feature-highlights"><a class="header" href="#feature-highlights">Feature Highlights</a></h2>
+<p>GoSprite64 gives you a complete toolkit for N64 game development:</p>
 <ul>
-<li>🚀 A friendly API built on top of <code>clktmr/n64</code> and <code>embedded-go</code></li>
-<li>🗺️ Tile2D scene pipeline for authoring and rendering tile-based worlds</li>
-<li>🔊 VADPCM audio pipeline for compressed sound effects and music</li>
-<li>💾 Builds real N64 ROMs you can flash and play (yes, on real hardware!)</li>
+<li><strong>Graphics</strong> - <a href="../05-graphics/drawing-primitives.html">Drawing primitives</a>, <a href="../05-graphics/sprites.html">sprites</a> with flip/scale/rotate, <a href="../05-graphics/sprite-sheets.html">sprite sheets</a>, <a href="../05-graphics/animation-player.html">animation player</a>, <a href="../05-graphics/custom-fonts.html">custom bitmap fonts</a> with <a href="../05-graphics/text-alignment.html">alignment</a>, <a href="../05-graphics/parallax.html">parallax scrolling</a>, <a href="../05-graphics/transitions.html">screen transitions</a>, and <a href="../05-graphics/draw-regions.html">draw regions</a> for split-screen</li>
+<li><strong>Tile Scenes</strong> - Full <a href="../08-tile-scenes/pipeline-overview.html">Tile2D pipeline</a> for authoring and rendering tile-based worlds with <a href="../08-tile-scenes/tile-sheets-and-maps.html">tile sheets and maps</a>, <a href="../08-tile-scenes/bundles-and-loading.html">bundles</a>, and <a href="../08-tile-scenes/camera-and-scrolling.html">camera scrolling</a></li>
+<li><strong>Audio</strong> - VADPCM-compressed <a href="../07-audio/sfx-and-music.html">sound effects and music</a>, <a href="../07-audio/sequence-player.html">sequence player</a> for MIDI-like playback, and <a href="../07-audio/instrument-banks.html">instrument banks</a></li>
+<li><strong>Input</strong> - <a href="../06-input/buttons-and-dpad.html">D-pad and buttons</a>, <a href="../06-input/analog-stick.html">analog stick</a> with deadzone, <a href="../06-input/multi-controller.html">multi-controller</a> support for up to 4 players, <a href="../06-input/rumble.html">rumble pak</a> control, and <a href="../06-input/input-replay.html">input recording/replay</a></li>
+<li><strong>Game Systems</strong> - <a href="../09-game-systems/state-machine.html">State machine</a> with push/pop/switch, <a href="../09-game-systems/timers.html">timers</a> (one-shot and repeating), <a href="../09-game-systems/menus.html">menus</a> with D-pad navigation, and <a href="../09-game-systems/save-data.html">save data</a> (EEPROM, SRAM, FlashRAM)</li>
+<li><strong>2D Math</strong> - <a href="../10-math/vectors.html">Vectors</a>, <a href="../10-math/rectangles.html">rectangles</a>, <a href="../10-math/collision-detection.html">AABB collision detection</a> with sweep and resolution, <a href="../10-math/easing-functions.html">easing functions</a>, <a href="../10-math/grid-utilities.html">grid utilities</a>, and <a href="../10-math/random-numbers.html">deterministic random numbers</a></li>
+<li><strong>3D Graphics</strong> - <a href="../11-3d-graphics/3d-math.html">3D math</a> (Mat4, Vec3, perspective/ortho projections), <a href="../11-3d-graphics/scene-graph.html">scene graph</a>, <a href="../11-3d-graphics/display-lists.html">display lists</a>, and <a href="../11-3d-graphics/triangle-rendering.html">triangle rendering</a></li>
 </ul>
 <h2 id="fixed-resolution"><a class="header" href="#fixed-resolution">Fixed Resolution</a></h2>
-<p>GoSprite64 exposes one official fixed resolution and drawing space: <code>288x216</code> logical pixels.</p>
-<p>That is the public rendering contract for gameplay code. The runtime centers the canvas inside the framebuffer and presents it with square pixels, while public drawing APIs such as <code>gosprite64.FillRect</code>, <code>gosprite64.DrawRect</code>, <code>gosprite64.DrawLine</code>, and <code>gosprite64.DrawText</code> all operate in that same logical space.</p>
+<p>GoSprite64 exposes one official fixed resolution and drawing space: <strong>288x216</strong> logical pixels.</p>
+<p>That is the public rendering contract for gameplay code. The runtime centers the canvas inside the framebuffer and presents it with square pixels, while public drawing APIs such as <code>FillRect</code>, <code>DrawRect</code>, <code>DrawLine</code>, and <code>DrawText</code> all operate in that same logical space.</p>
 <p>If you build and run <code>examples/calibration</code>, you should see this reference frame:</p>
 <p><img src="../images/fixed-resolution-calibration.png" alt="Calibration scene showing the fixed 288x216 logical canvas"></p>
-<p>For a deep dive into why pixels on the N64 are not always square and how GoSprite64 solves this, read the <a href="square_pixels.html">Square Pixels and the Fixed Canvas</a> chapter.</p>
+<p>For a deep dive into why pixels on the N64 are not always square and how GoSprite64 solves this, read the <a href="../04-core-concepts/square-pixels.html">Square Pixels</a> chapter.</p>
 <h2 id="why-go"><a class="header" href="#why-go">Why Go?</a></h2>
-<p>Go is a clean, fast, pragmatic and efficient language.
-By using Go for Nintendo 64 development, <code>GoSprite64</code> opens the door for cloud developers to create retro-style games with confidence and speed.<br>The library bridges modern programming concepts with the raw power of a classic console.</p>
-<h2 id="whats-in-this-book"><a class="header" href="#whats-in-this-book">What’s in this book?</a></h2>
+<p>Go is a clean, fast, pragmatic and efficient language. By using Go for Nintendo 64 development, GoSprite64 opens the door for cloud developers to create retro-style games with confidence and speed. The library bridges modern programming concepts with the raw power of a classic console.</p>
+<h2 id="whats-in-this-book"><a class="header" href="#whats-in-this-book">What’s in This Book?</a></h2>
 <p>This book introduces you to GoSprite64, guiding you through everything from setup to building full 2D games.</p>
 <p>You’ll learn how to:</p>
 <ul>
 <li>Build and flash N64 ROMs</li>
 <li>Draw and move sprites</li>
 <li>Design and scroll tilemaps</li>
-<li>Handle input</li>
-<li>and more …</li>
+<li>Handle input from controllers</li>
+<li>Play sound effects and music</li>
+<li>Build game screens with state machines and menus</li>
 </ul>
 <p>Whether you’re nostalgic for the era or just curious about console programming, this book aims to get you productive with GoSprite64 as fast as possible.</p>
-<h2 id="who-is-this-book-for"><a class="header" href="#who-is-this-book-for">Who is this book for?</a></h2>
+<h2 id="who-is-this-book-for"><a class="header" href="#who-is-this-book-for">Who Is This Book For?</a></h2>
 <p>This book is for:</p>
 <ul>
 <li>Developers interested in retro console programming</li>
@@ -218,16 +219,15 @@ By using Go for Nintendo 64 development, <code>GoSprite64</code> opens the door 
 <li>Hobbyists or indie devs looking to make something fun for the Nintendo 64</li>
 </ul>
 <p>Some experience with Go is recommended. If you’re brand new to game development or Go, consider starting with a simpler platform or tutorial first.</p>
-<h2 id="helpful-links"><a class="header" href="#helpful-links">Helpful links</a></h2>
+<h2 id="helpful-links"><a class="header" href="#helpful-links">Helpful Links</a></h2>
 <ul>
-<li><a href="https://github.com/drpaneas/gosprite64">GoSprite64 GitHub</a> – main development repo</li>
-<li><a href="https://gosprite64.dev">GoSprite64 Website</a> – official docs and examples</li>
-<li><a href="https://github.com/drpaneas/gosprite64/discussions">GoSprite64 Discussions</a> – get help, share ideas, or show off your projects</li>
-<li><a href="https://github.com/clktmr/n64">clktmr/n64</a> – low-level Go SDK for N64</li>
-<li><a href="https://github.com/embeddedgo/go">Embedded-Go</a> – support for N64’s architecture</li>
-<li><a href="https://github.com/shiftclock/awesome-n64dev">Awesome N64 Dev</a> – great collection of tools, docs, and inspiration</li>
+<li><a href="https://github.com/drpaneas/gosprite64">GoSprite64 GitHub</a> - main development repo</li>
+<li><a href="https://gosprite64.dev">GoSprite64 Website</a> - official docs and examples</li>
+<li><a href="https://github.com/drpaneas/gosprite64/discussions">GoSprite64 Discussions</a> - get help, share ideas, or show off your projects</li>
+<li><a href="https://github.com/clktmr/n64">clktmr/n64</a> - low-level Go SDK for N64</li>
+<li><a href="https://github.com/embeddedgo/go">Embedded-Go</a> - support for N64’s architecture</li>
+<li><a href="https://github.com/shiftclock/awesome-n64dev">Awesome N64 Dev</a> - great collection of tools, docs, and inspiration</li>
 </ul>
-<p>This book also includes step-by-step guides and real-world examples to help you build your own Nintendo 64 games using Go.</p>
 
                     </main>
 

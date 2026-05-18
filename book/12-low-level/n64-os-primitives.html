@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-ee6d4e87.js";
+            window.path_to_searchindex_js = "../searchindex-9798f334.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-a38ee8ab.js"></script>
@@ -175,10 +175,193 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="n64-os-primitives"><a class="header" href="#n64-os-primitives">N64 OS Primitives</a></h1>
-<p>Low-level threading, message queues, and interrupt handling on the N64.</p>
-<blockquote>
-<p>This page is under construction. The feature is available in the codebase but documentation has not been written yet.</p>
-</blockquote>
+<p>The <code>n64os</code> package provides Go implementations of the N64’s core OS primitives: message queues, event routing, task scheduling, and timers. These map to the libultra/libdragon OS layer (OSMesgQueue, osSetEventMesg, osSetTimer) but use Go idioms like channels and goroutines.</p>
+<h2 id="messagequeue"><a class="header" href="#messagequeue">MessageQueue</a></h2>
+<p>A message queue is the fundamental communication primitive on the N64. Hardware interrupts, RSP completion signals, and game-logic events all flow through message queues.</p>
+<pre><code class="language-go">type MessageQueue struct {
+    ch   chan Message
+    size int
+}
+</code></pre>
+<h3 id="message-types"><a class="header" href="#message-types">Message types</a></h3>
+<pre><code class="language-go">type Message struct {
+    Type MessageType
+    Data uint32
+}
+
+const (
+    MsgNone    MessageType = iota
+    MsgVBlank              // VI vertical retrace
+    MsgSPDone              // RSP task complete
+    MsgDPDone              // RDP rendering complete
+    MsgSIDone              // Serial interface transfer complete
+    MsgPIDone              // Parallel interface DMA complete
+    MsgPreNMI              // Pre-reset signal
+    MsgTimer               // Timer expiration
+    MsgUser                // User-defined message
+)
+</code></pre>
+<h3 id="creating-a-queue"><a class="header" href="#creating-a-queue">Creating a queue</a></h3>
+<pre><code class="language-go">q := n64os.NewMessageQueue(8) // capacity of 8 messages
+</code></pre>
+<p>Matches <code>osCreateMesgQueue</code> with the given buffer size.</p>
+<h3 id="sending-messages"><a class="header" href="#sending-messages">Sending messages</a></h3>
+<pre><code class="language-go">ok := q.Send(n64os.Message{Type: n64os.MsgUser, Data: 42})
+// Returns false if the queue is full (non-blocking)
+</code></pre>
+<p><code>Jam</code> is a high-priority send. In the Go channel implementation, it behaves identically to <code>Send</code> since channels are FIFO. For true priority dispatch, use <code>select</code> on multiple queues.</p>
+<h3 id="receiving-messages"><a class="header" href="#receiving-messages">Receiving messages</a></h3>
+<p>Blocking receive:</p>
+<pre><code class="language-go">msg := q.Recv()
+fmt.Println(msg.Type, msg.Data)
+</code></pre>
+<p>Non-blocking receive:</p>
+<pre><code class="language-go">msg, ok := q.TryRecv()
+if ok {
+    // process msg
+}
+</code></pre>
+<h3 id="utility-methods"><a class="header" href="#utility-methods">Utility methods</a></h3>
+<pre><code class="language-go">q.Len()       // number of pending messages
+ch := q.Channel() // underlying channel, for use in select
+</code></pre>
+<p>Using the channel directly in a <code>select</code>:</p>
+<pre><code class="language-go">select {
+case msg := &lt;-vblankQueue.Channel():
+    // VBlank received
+case msg := &lt;-timerQueue.Channel():
+    // Timer fired
+}
+</code></pre>
+<h2 id="eventrouter"><a class="header" href="#eventrouter">EventRouter</a></h2>
+<p>The <code>EventRouter</code> routes hardware interrupts to message queues, matching the <code>osSetEventMesg</code> pattern. When a hardware event fires, the router sends a pre-registered message to the associated queue.</p>
+<pre><code class="language-go">router := n64os.NewEventRouter()
+</code></pre>
+<h3 id="registering-events"><a class="header" href="#registering-events">Registering events</a></h3>
+<pre><code class="language-go">vblankQ := n64os.NewMessageQueue(1)
+router.SetEventMsg(
+    n64os.MsgVBlank,
+    vblankQ,
+    n64os.Message{Type: n64os.MsgVBlank},
+)
+</code></pre>
+<p>This says: “When a VBlank interrupt occurs, send this message to this queue.” Matches <code>osSetEventMesg(OS_EVENT_SP, queue, msg)</code> in libultra.</p>
+<h3 id="signaling-events"><a class="header" href="#signaling-events">Signaling events</a></h3>
+<p>When a hardware interrupt handler fires, it signals the router:</p>
+<pre><code class="language-go">router.Signal(n64os.MsgVBlank)
+</code></pre>
+<p>The router looks up the registered binding and sends the message to the queue. If no handler is registered for the event, the signal is silently dropped.</p>
+<h3 id="clearing-events"><a class="header" href="#clearing-events">Clearing events</a></h3>
+<pre><code class="language-go">router.Clear(n64os.MsgVBlank)
+</code></pre>
+<p>Removes the handler for the given event type.</p>
+<h2 id="scheduler"><a class="header" href="#scheduler">Scheduler</a></h2>
+<p>The <code>Scheduler</code> manages RSP task execution, handling the priority relationship between audio and graphics tasks. Audio tasks preempt graphics tasks to meet real-time deadlines.</p>
+<pre><code class="language-go">sched := n64os.NewScheduler(eventRouter, func(task *n64os.Task) {
+    // Called when a task starts executing on the RSP
+})
+</code></pre>
+<h3 id="task-structure"><a class="header" href="#task-structure">Task structure</a></h3>
+<pre><code class="language-go">type Task struct {
+    Type     TaskType    // TaskGraphics or TaskAudio
+    Priority int
+    Data     interface{} // task-specific payload
+    Done     *MessageQueue // receives MsgSPDone when task completes
+}
+</code></pre>
+<h3 id="submitting-tasks"><a class="header" href="#submitting-tasks">Submitting tasks</a></h3>
+<pre><code class="language-go">gfxDone := n64os.NewMessageQueue(1)
+sched.SubmitGraphics(&amp;n64os.Task{
+    Data: displayList,
+    Done: gfxDone,
+})
+
+audDone := n64os.NewMessageQueue(1)
+sched.SubmitAudio(&amp;n64os.Task{
+    Data: audioCommandList,
+    Done: audDone,
+})
+</code></pre>
+<h3 id="running-the-scheduler"><a class="header" href="#running-the-scheduler">Running the scheduler</a></h3>
+<p>The scheduler runs in its own goroutine:</p>
+<pre><code class="language-go">go sched.Run()
+</code></pre>
+<p><code>Run</code> reads from the submit channel and dispatches tasks with this priority order:</p>
+<ol>
+<li><strong>Audio tasks</strong> always run first. If a graphics task is currently running when an audio task arrives, the graphics task is yielded.</li>
+<li><strong>Yielded graphics tasks</strong> resume after all audio tasks complete.</li>
+<li><strong>Queued graphics tasks</strong> run when nothing else is pending.</li>
+</ol>
+<h3 id="task-completion"><a class="header" href="#task-completion">Task completion</a></h3>
+<p>When the RSP finishes a task, call <code>CompleteTask</code>:</p>
+<pre><code class="language-go">sched.CompleteTask()
+</code></pre>
+<p>This sends <code>MsgSPDone</code> to the completed task’s <code>Done</code> queue and dispatches the next pending task.</p>
+<h2 id="timer"><a class="header" href="#timer">Timer</a></h2>
+<p>The <code>Timer</code> provides periodic or one-shot timer events, matching <code>osSetTimer</code>.</p>
+<h3 id="periodic-timer"><a class="header" href="#periodic-timer">Periodic timer</a></h3>
+<pre><code class="language-go">timerQ := n64os.NewMessageQueue(4)
+t := n64os.NewTimer(
+    timerQ,
+    n64os.Message{Type: n64os.MsgTimer, Data: 1},
+    time.Second / 60, // fire every frame at 60 FPS
+)
+t.Start()
+</code></pre>
+<p>The timer sends the configured message to the queue at every interval. It runs in a goroutine using <code>time.Ticker</code>.</p>
+<h3 id="one-shot-timer"><a class="header" href="#one-shot-timer">One-shot timer</a></h3>
+<pre><code class="language-go">t := n64os.NewOneShotTimer(
+    timerQ,
+    n64os.Message{Type: n64os.MsgTimer, Data: 99},
+    3 * time.Second, // fire once after 3 seconds
+)
+t.Start()
+</code></pre>
+<h3 id="stopping-a-timer"><a class="header" href="#stopping-a-timer">Stopping a timer</a></h3>
+<pre><code class="language-go">t.Stop()
+</code></pre>
+<p>Cancels the timer. A stopped timer cannot be restarted (the stop channel is closed).</p>
+<h2 id="complete-example-game-loop"><a class="header" href="#complete-example-game-loop">Complete example: game loop</a></h2>
+<p>A typical N64 game loop uses message queues to synchronize with VBlank and task completion:</p>
+<pre><code class="language-go">// Set up event routing
+router := n64os.NewEventRouter()
+vblankQ := n64os.NewMessageQueue(1)
+router.SetEventMsg(n64os.MsgVBlank, vblankQ, n64os.Message{Type: n64os.MsgVBlank})
+
+spDoneQ := n64os.NewMessageQueue(1)
+router.SetEventMsg(n64os.MsgSPDone, spDoneQ, n64os.Message{Type: n64os.MsgSPDone})
+
+// Set up scheduler
+sched := n64os.NewScheduler(router, func(task *n64os.Task) {
+    // Load microcode and start RSP
+})
+go sched.Run()
+
+// Game loop
+for {
+    // Wait for VBlank
+    vblankQ.Recv()
+
+    // Update game logic
+    update()
+
+    // Build display list
+    dl := buildDisplayList()
+
+    // Submit graphics task
+    taskDone := n64os.NewMessageQueue(1)
+    sched.SubmitGraphics(&amp;n64os.Task{
+        Data: dl,
+        Done: taskDone,
+    })
+
+    // Wait for RSP to finish
+    taskDone.Recv()
+
+    // Swap framebuffers
+    swapBuffers()
+}
+</code></pre>
 
                     </main>
 

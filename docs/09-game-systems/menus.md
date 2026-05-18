@@ -164,4 +164,4 @@ func (s *OptionsState) Update() {
 
 ## Complete example
 
-See `examples/splitscreen_demo` which uses `Menu` for the title and result screens, combined with `Timer` for countdowns and `SetDrawRegion` for split-screen viewports.
+See `examples/menu_demo` for a focused menu demonstration, or `examples/splitscreen_demo` for menus used alongside other systems.

@@ -238,3 +238,7 @@ func (g *Game) Draw() {
     g.font.DrawTextEx("PRESS START\nTO BEGIN", 144, 100, gosprite64.AlignCenter)
 }
 ```
+
+## Reference Example
+
+See `examples/font_demo` in the GoSprite64 repository for a minimal working example of custom font rendering.

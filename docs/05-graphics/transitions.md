@@ -175,3 +175,7 @@ func (g *Game) Draw() {
   transition and manage the alpha curve yourself.
 - All methods are nil-safe. Calling `Advance`, `Draw`, `Done`, `Active`, or
   `Stop` on a `nil` `Transition` is a no-op (or returns a safe default).
+
+## Reference Example
+
+See `examples/fade_demo` in the GoSprite64 repository for a working fade transition example.

@@ -173,3 +173,7 @@ func (g *Game) Draw() {
   first and the fastest (closest) layers last.
 - You can change layer speeds at runtime by modifying the `Layers` slice
   directly, for example to speed up scrolling during a boost effect.
+
+## Reference Example
+
+See `examples/parallax_demo` in the GoSprite64 repository for a working multi-layer parallax scrolling example.

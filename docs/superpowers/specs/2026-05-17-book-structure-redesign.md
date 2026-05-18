@@ -74,7 +74,7 @@ The new SUMMARY.md will have this hierarchy:
 - Tile Sheets and Maps (new)
 - Bundles and Loading (new)
 - Camera and Scrolling (new)
-
+titl
 ### Part 9: Game Systems
 - State Machine (from existing state_machine.md)
 - Timers (from existing timers.md)

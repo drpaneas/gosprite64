@@ -138,3 +138,7 @@ The single-player functions are thin wrappers around the per-port API:
 | `IsButtonDown(btn)` | `PlayerButtonDown(0, btn)` |
 | `IsButtonJustPressed(btn)` | `PlayerButtonJustPressed(0, btn)` |
 | `StickPosition(dz)` | `PlayerStickPosition(0, dz)` |
+
+## Reference Example
+
+See `examples/multi_input_demo` in the GoSprite64 repository for a 4-player controller demonstration with per-port colored squares.

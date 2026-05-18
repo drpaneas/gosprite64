@@ -85,3 +85,7 @@ func (g *Game) Update() {
 ## Port-zero convenience
 
 `StickPosition` reads from controller port 0. For multiplayer input, use `PlayerStickPosition(port, deadzone)` - see [Multi-Controller Support](multi-controller.md).
+
+## Reference Example
+
+See `examples/analog_demo` in the GoSprite64 repository for a visual demonstration of analog stick input with a crosshair following the stick position.

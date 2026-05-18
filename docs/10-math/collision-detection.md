@@ -225,3 +225,7 @@ func (g *Game) Update() {
     }
 }
 ```
+
+## Reference Example
+
+See `examples/math2d_demo` in the GoSprite64 repository for a visual demonstration of 2D math including collision detection. The example shows bouncing objects with overlap detection using `Rect.Overlaps`.

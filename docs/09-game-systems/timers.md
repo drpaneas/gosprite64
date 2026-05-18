@@ -151,9 +151,9 @@ if !hitFlash.Done() {
 
 ## Complete example
 
-See `examples/splitscreen_demo` for timers used alongside draw regions and menus. Build with:
+See `examples/timer_demo` for a focused timer demonstration, or `examples/splitscreen_demo` for timers used alongside other systems. Build with:
 
 ```bash
-GOENV=n64.env go1.24.5-embedded build -o splitscreen.elf ./examples/splitscreen_demo
-n64go rom splitscreen.elf
+GOENV=n64.env go1.24.5-embedded build -o timer.elf ./examples/timer_demo
+n64go rom timer.elf
 ```

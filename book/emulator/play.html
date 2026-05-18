@@ -2,73 +2,24 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GoSprite64 Demo</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #1a1a2e; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: sans-serif; color: #eee; }
-        #canvas { border: 2px solid #333; background: #000; image-rendering: pixelated; max-width: 100%; }
-        .controls { margin-top: 8px; font-size: 11px; color: #888; text-align: center; }
-        .controls kbd { background: #333; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
-        #start-btn { margin-top: 12px; padding: 8px 20px; font-size: 14px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        #start-btn:hover { background: #45a049; }
-        #status { margin-top: 8px; font-size: 12px; color: #aaa; }
-    </style>
+    <title>GoSprite64 Demo - EmulatorJS Test</title>
 </head>
-<body>
-    <canvas id="canvas" width="640" height="480"></canvas>
-    <button id="start-btn">Click to Play</button>
-    <div id="status">Loading emulator...</div>
-    <div class="controls">
-        <kbd>Arrows</kbd> D-Pad &nbsp; <kbd>X</kbd> A &nbsp; <kbd>C</kbd> B &nbsp; <kbd>Enter</kbd> Start &nbsp; <kbd>Z</kbd> Z
+<body style="background:#1a1a2e;display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif;color:#eee;">
+    <h3>GoSprite64 Demo</h3>
+    <div style="width:640px;height:480px;max-width:100%;">
+        <div id="game"></div>
     </div>
+    <p style="font-size:12px;color:#888;margin-top:10px;">Arrow keys = D-Pad, X = A, C = B, Enter = Start</p>
 
-    <script>
+    <script type="text/javascript">
         var romName = new URLSearchParams(window.location.search).get('rom') || 'platformer.z64';
-        var startBtn = document.getElementById('start-btn');
-        var statusEl = document.getElementById('status');
-
-        var Module = {
-            canvas: document.getElementById('canvas'),
-            noInitialRun: true,
-            onRuntimeInitialized: function() {
-                statusEl.textContent = 'Ready. Click to play!';
-                startBtn.disabled = false;
-            }
-        };
-
-        startBtn.disabled = true;
-
-        startBtn.addEventListener('click', function() {
-            startBtn.style.display = 'none';
-            statusEl.textContent = 'Loading assets...';
-            startEmulator();
-        });
-
-        async function downloadBinary(url) {
-            var resp = await fetch(url);
-            if (!resp.ok) throw new Error(url + ' returned ' + resp.status);
-            return new Uint8Array(await resp.arrayBuffer());
-        }
-
-        async function startEmulator() {
-            try {
-                var assets = await downloadBinary('assets.zip');
-                statusEl.textContent = 'Loading ROM...';
-                FS.writeFile('assets.zip', assets);
-
-                var rom = await downloadBinary('roms/' + romName);
-                FS.writeFile('game.z64', rom);
-
-                statusEl.textContent = 'Starting...';
-                Module.callMain(['game.z64']);
-                statusEl.textContent = '';
-            } catch(e) {
-                statusEl.textContent = 'Error: ' + e.message;
-                console.error(e);
-            }
-        }
+        EJS_player = '#game';
+        EJS_core = 'n64';
+        EJS_gameUrl = 'roms/' + romName;
+        EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+        EJS_color = '#1a1a2e';
+        EJS_startOnLoaded = true;
     </script>
-    <script async src="n64wasm.js"></script>
+    <script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
 </body>
 </html>

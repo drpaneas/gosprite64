@@ -12,13 +12,13 @@
         .controls kbd { background: #333; padding: 1px 5px; border-radius: 3px; font-size: 10px; }
         #start-btn { margin-top: 12px; padding: 8px 20px; font-size: 14px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
         #start-btn:hover { background: #45a049; }
-        #status { margin-top: 8px; font-size: 12px; color: #666; }
+        #status { margin-top: 8px; font-size: 12px; color: #aaa; }
     </style>
 </head>
 <body>
     <canvas id="canvas" width="640" height="480"></canvas>
     <button id="start-btn">Click to Play</button>
-    <div id="status"></div>
+    <div id="status">Loading emulator...</div>
     <div class="controls">
         <kbd>Arrows</kbd> D-Pad &nbsp; <kbd>X</kbd> A &nbsp; <kbd>C</kbd> B &nbsp; <kbd>Enter</kbd> Start &nbsp; <kbd>Z</kbd> Z
     </div>
@@ -27,46 +27,46 @@
         var romName = new URLSearchParams(window.location.search).get('rom') || 'platformer.z64';
         var startBtn = document.getElementById('start-btn');
         var statusEl = document.getElementById('status');
-        var canvas = document.getElementById('canvas');
 
         var Module = {
-            canvas: canvas,
+            canvas: document.getElementById('canvas'),
             noInitialRun: true,
             onRuntimeInitialized: function() {
-                statusEl.textContent = 'Emulator ready. Click to play.';
+                statusEl.textContent = 'Ready. Click to play!';
+                startBtn.disabled = false;
             }
         };
 
+        startBtn.disabled = true;
+
         startBtn.addEventListener('click', function() {
             startBtn.style.display = 'none';
-            statusEl.textContent = 'Loading ROM...';
-            loadROM('roms/' + romName);
+            statusEl.textContent = 'Loading assets...';
+            startEmulator();
         });
 
-        function loadROM(url) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.responseType = 'arraybuffer';
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    statusEl.textContent = 'Starting...';
-                    var data = new Uint8Array(xhr.response);
-                    try {
-                        FS.writeFile('/game.z64', data);
-                        Module.ccall('loadRom', 'number', ['string'], ['/game.z64']);
-                        Module.ccall('runEmulator', null, [], []);
-                        statusEl.textContent = '';
-                    } catch(e) {
-                        statusEl.textContent = 'Error: ' + e.message;
-                    }
-                } else {
-                    statusEl.textContent = 'ROM not found (' + xhr.status + ')';
-                }
-            };
-            xhr.onerror = function() {
-                statusEl.textContent = 'Network error loading ROM';
-            };
-            xhr.send();
+        async function downloadBinary(url) {
+            var resp = await fetch(url);
+            if (!resp.ok) throw new Error(url + ' returned ' + resp.status);
+            return new Uint8Array(await resp.arrayBuffer());
+        }
+
+        async function startEmulator() {
+            try {
+                var assets = await downloadBinary('assets.zip');
+                statusEl.textContent = 'Loading ROM...';
+                FS.writeFile('assets.zip', assets);
+
+                var rom = await downloadBinary('roms/' + romName);
+                FS.writeFile('game.z64', rom);
+
+                statusEl.textContent = 'Starting...';
+                Module.callMain(['game.z64']);
+                statusEl.textContent = '';
+            } catch(e) {
+                statusEl.textContent = 'Error: ' + e.message;
+                console.error(e);
+            }
         }
     </script>
     <script async src="n64wasm.js"></script>

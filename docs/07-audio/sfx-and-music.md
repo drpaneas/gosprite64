@@ -316,6 +316,6 @@ If you hear distortion or clicking, verify that `go generate` ran successfully a
 
 ## Try It
 
-<iframe src="../emulator/play.html?rom=pong.z64" width="640" height="480" frameborder="0" allow="autoplay" style="display:block;margin:0 auto;max-width:100%;"></iframe>
-
-> **Controls:** Arrow keys = D-Pad, X = A button, C = B button, Enter = Start, Z = Z trigger
+> **Download the ROM:** [`pong.z64`](../emulator/roms/pong.z64) - Open in [ares](https://ares-emu.net/) with the Expansion Pak enabled.
+>
+> **Controls:** D-Pad = movement, A = action, B = back, Start = pause, Z = trigger

@@ -32,6 +32,7 @@
   - [Drawing Primitives](05-graphics/drawing-primitives.md)
   - [Sprites](05-graphics/sprites.md)
   - [Sprite Sheets](05-graphics/sprite-sheets.md)
+  - [Working With PixelLab](05-graphics/pixellab.md)
   - [Animation Player](05-graphics/animation-player.md)
   - [Custom Fonts](05-graphics/custom-fonts.md)
   - [Text Alignment](05-graphics/text-alignment.md)

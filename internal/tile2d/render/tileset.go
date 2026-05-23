@@ -39,7 +39,11 @@ func NewTilesetFromAtlas(atlas image.Image, tileWidth, tileHeight int) (*Tileset
 			if !ok {
 				return nil, fmt.Errorf("render: atlas does not support subimages")
 			}
-			tiles = append(tiles, texture.NewTextureFromImage(subImager.SubImage(rect)))
+			tex := texture.NewTextureFromImage(subImager.SubImage(rect))
+			// Reset subimage origins so later texture loads use local tile coordinates
+			// instead of atlas-space offsets.
+			tex.SetOrigin(image.Point{})
+			tiles = append(tiles, tex)
 		}
 	}
 

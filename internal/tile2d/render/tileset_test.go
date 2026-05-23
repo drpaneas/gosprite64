@@ -49,3 +49,47 @@ func TestTilesetReturnsSameTextureInstance(t *testing.T) {
 		t.Fatal("expected cached tile texture instance")
 	}
 }
+
+func TestTilesetExtractsDistinctTilesFromMultipleRows(t *testing.T) {
+	atlas := image.NewRGBA(image.Rect(0, 0, 64, 64))
+
+	fill := func(x0, y0, x1, y1 int, c color.RGBA) {
+		for y := y0; y < y1; y++ {
+			for x := x0; x < x1; x++ {
+				atlas.Set(x, y, c)
+			}
+		}
+	}
+
+	fill(0, 0, 32, 32, color.RGBA{R: 0xFF, A: 0xFF})
+	fill(32, 0, 64, 32, color.RGBA{G: 0xFF, A: 0xFF})
+	fill(0, 32, 32, 64, color.RGBA{B: 0xFF, A: 0xFF})
+	fill(32, 32, 64, 64, color.RGBA{R: 0xFF, G: 0xFF, A: 0xFF})
+
+	tileset, err := NewTilesetFromAtlas(atlas, 32, 32)
+	if err != nil {
+		t.Fatalf("NewTilesetFromAtlas() error = %v", err)
+	}
+
+	wantDominant := []struct {
+		tileID uint16
+		check  func(r, g, b uint32) bool
+		label  string
+	}{
+		{tileID: 1, check: func(r, g, b uint32) bool { return r > g && r > b }, label: "red"},
+		{tileID: 2, check: func(r, g, b uint32) bool { return g > r && g > b }, label: "green"},
+		{tileID: 3, check: func(r, g, b uint32) bool { return b > r && b > g }, label: "blue"},
+		{tileID: 4, check: func(r, g, b uint32) bool { return r > 0 && g > 0 && b == 0 }, label: "yellow"},
+	}
+
+	for _, tc := range wantDominant {
+		tile := tileset.Tile(tc.tileID)
+		if tile == nil {
+			t.Fatalf("tile %d missing", tc.tileID)
+		}
+		r, g, b, _ := tile.At(tile.Bounds().Min.X, tile.Bounds().Min.Y).RGBA()
+		if !tc.check(r, g, b) {
+			t.Fatalf("tile %d pixel = (%d,%d,%d), want %s-dominant", tc.tileID, r, g, b, tc.label)
+		}
+	}
+}

@@ -8,7 +8,7 @@
 
         <!-- Custom HTML head -->
 
-        <meta name="description" content="Technical reference for the GoSprite64 library to help you make 2D games for Nintendo64.">
+        <meta name="description" content="Beginner-first documentation for building 2D Nintendo 64 games with GoSprite64.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-93be131b.js";
+            window.path_to_searchindex_js = "../searchindex-4be1cf00.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-a38ee8ab.js"></script>
+        <script src="../toc-a9422952.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -175,9 +175,17 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="hello-world"><a class="header" href="#hello-world">Hello World</a></h1>
-<p>This guide walks you through creating a standalone N64 game project from scratch using GoSprite64. By the end you will have a blue screen ROM that proves your toolchain is set up correctly.</p>
+<p>This page explains the small GoSprite64 program behind the beginner journey.</p>
+<p>If you want the shortest route to visible progress, start with <a href="../02-first-journey/01-run-your-first-rom.html">Run Your First ROM</a> instead.</p>
+<h2 id="what-this-page-is-for"><a class="header" href="#what-this-page-is-for">What this page is for</a></h2>
+<p>Use this page when you want to understand:</p>
+<ul>
+<li>the smallest standalone GoSprite64 program</li>
+<li>what <code>Init</code>, <code>Update</code>, and <code>Draw</code> each do</li>
+<li>how <code>n64.env</code> and ROM generation fit together</li>
+</ul>
 <h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
-<p>Complete the <a href="./getting_started.html">Getting Started</a> guide first. You need:</p>
+<p>Complete the <a href="./installation.html">Installation</a> guide first. You need:</p>
 <ul>
 <li><code>go</code> (standard Go, for dependency resolution)</li>
 <li><code>go1.24.5-embedded</code> (EmbeddedGo toolchain, for building)</li>
@@ -217,7 +225,7 @@ func main() { gosprite64.Run(&amp;Game{}) }
 <pre><code>GOTOOLCHAIN=go1.24.5-embedded
 GOOS=noos
 GOARCH=mips64
-GOFLAGS='-tags=n64' '-trimpath' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
+GOFLAGS='-tags=n64' '-trimpath' '-toolexec=n64go toolexec' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
 </code></pre>
 <p>This tells the Go toolchain to cross-compile for the N64 (MIPS64, no OS).</p>
 <h2 id="resolve-dependencies"><a class="header" href="#resolve-dependencies">Resolve dependencies</a></h2>
@@ -234,7 +242,7 @@ GOENV=n64.env n64go rom game.elf
 <h2 id="run"><a class="header" href="#run">Run</a></h2>
 <p>Load <code>game.z64</code> in an emulator like <a href="https://ares-emu.net/">ares</a> to see a blue screen. When you want to inspect the canvas boundaries and square-pixel presentation, compare it with the repository’s <code>examples/calibration</code> ROM.</p>
 <h2 id="editor-support"><a class="header" href="#editor-support">Editor support</a></h2>
-<p>If <code>gopls</code> reports <code>embedded/*</code> packages as missing or does not recognize files guarded by <code>//go:build n64</code>, see the editor setup section in <a href="./getting_started.html">Getting Started</a>.</p>
+<p>If <code>gopls</code> reports <code>embedded/*</code> packages as missing or does not recognize files guarded by <code>//go:build n64</code>, see <a href="./editor-setup.html">Editor Setup</a>.</p>
 <h2 id="project-structure"><a class="header" href="#project-structure">Project structure</a></h2>
 <p>Your project should now look like this:</p>
 <pre><code>mygame/

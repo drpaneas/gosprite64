@@ -1,8 +1,19 @@
-# Getting Started
+# Installation
+
+This page is the toolchain setup reference for the beginner journey.
+
+If you want the fastest visible win, start with [Run Your First ROM](../02-first-journey/01-run-your-first-rom.md) and come back here only if setup blocks you.
+
+## What this page is for
+
+Use this page when you need to:
+
+- install the EmbeddedGo toolchain
+- install `n64go`
+- understand `n64.env`
+- recover from build setup failures
 
 This repository supports one setup path: build natively with `go1.24.5-embedded` and `n64go@v0.1.2`. If that native bootstrap is unavailable on your host, use the Linux fallback below.
-
-## Installation
 
 1. Clone the repository:
 
@@ -43,7 +54,7 @@ chmod +x ./build_examples.sh
 GOTOOLCHAIN=go1.24.5-embedded
 GOOS=noos
 GOARCH=mips64
-GOFLAGS='-tags=n64' '-trimpath' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
+GOFLAGS='-tags=n64' '-trimpath' '-toolexec=n64go toolexec' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
 ```
 
 GoSprite64 exposes one official fixed resolution and drawing canvas: `288x216` logical pixels. The runtime centers that canvas and handles presentation scaling for you, so gameplay code should not manage borders, safe areas, or video-mode presets directly.

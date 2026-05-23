@@ -2,6 +2,8 @@
 
 This chapter covers how to load sprite sheets, draw individual sprites with transforms, animate them, and render them in world space alongside a tile scene.
 
+> New to GoSprite64? Start with [Put a Sprite on Screen](../02-first-journey/04-put-a-sprite-on-screen.md) for the short guided version, then come back here for the deeper sprite guide.
+
 ## Preparing a sprite sheet PNG
 
 A sprite sheet is a single PNG image that contains all frames of a character or object arranged in a grid. Each cell in the grid is one frame. The same `mk2dsheet` tool used for tile sheets handles sprite sheets - you just specify different frame dimensions.

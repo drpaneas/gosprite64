@@ -1,5 +1,15 @@
 # Step 1: Start the Engine
 
+This longer tutorial starts after the beginner journey.
+
+If you are brand new, complete these pages first:
+
+1. [Run Your First ROM](../02-first-journey/01-run-your-first-rom.md)
+2. [Change One Thing](../02-first-journey/02-change-one-thing.md)
+3. [Make Something Move](../02-first-journey/03-make-something-move.md)
+
+Unlike `Hello World`, this tutorial continues inside the GoSprite64 repository and uses the `examples/platformer/` layout throughout.
+
 Set up a minimal GoSprite64 project that compiles, runs, and draws a solid blue screen.
 
 ## What you will learn
@@ -72,11 +82,11 @@ func init() {
 }
 ```
 
-For now, create a placeholder assets directory so the embed does not fail:
+For now, create a placeholder asset file so `//go:embed assets/*` has a real match:
 
 ```bash
 mkdir -p examples/platformer/assets
-touch examples/platformer/assets/.gitkeep
+printf "placeholder\n" > examples/platformer/assets/placeholder.txt
 ```
 
 Build and run:
@@ -86,7 +96,7 @@ GOENV=n64.env go1.24.5-embedded build -o examples/platformer/game.elf ./examples
 n64go rom examples/platformer/game.elf
 ```
 
-Open `game.z64` in the ares emulator. You should see a solid blue screen filling the display. That is your game running on N64 hardware - the simplest possible starting point.
+Open `examples/platformer/game.z64` in the ares emulator. You should see a solid blue screen filling the display. That is your game running on N64 hardware - the simplest possible starting point.
 
 ## What comes next
 

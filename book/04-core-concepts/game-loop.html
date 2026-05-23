@@ -8,7 +8,7 @@
 
         <!-- Custom HTML head -->
 
-        <meta name="description" content="Technical reference for the GoSprite64 library to help you make 2D games for Nintendo64.">
+        <meta name="description" content="Beginner-first documentation for building 2D Nintendo 64 games with GoSprite64.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-93be131b.js";
+            window.path_to_searchindex_js = "../searchindex-4be1cf00.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-a38ee8ab.js"></script>
+        <script src="../toc-a9422952.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -175,6 +175,9 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="the-game-loop"><a class="header" href="#the-game-loop">The Game Loop</a></h1>
+<blockquote>
+<p>If you just finished the beginner journey, this page explains the concept behind the behavior you already saw on screen.</p>
+</blockquote>
 <p>GoSprite64 runs your game with a fixed-timestep loop at 60 FPS. You provide the logic; the engine handles timing, input polling, and frame presentation.</p>
 <h2 id="the-game-interface"><a class="header" href="#the-game-interface">The Game Interface</a></h2>
 <p>Every GoSprite64 game implements the <code>Game</code> interface:</p>
@@ -196,7 +199,7 @@
     gosprite64.Run(&amp;Game{})
 }
 </code></pre>
-<p><code>Run</code> never returns. It initializes the N64 video and audio hardware, calls your <code>Init()</code> once, then enters the main loop.</p>
+<p><code>Run</code> never returns. It initializes the N64 video hardware, calls your <code>Init()</code> once, initializes audio, and then enters the main loop.</p>
 <h2 id="how-the-loop-works"><a class="header" href="#how-the-loop-works">How the Loop Works</a></h2>
 <p>The game loop uses a fixed-timestep accumulator pattern:</p>
 <ol>

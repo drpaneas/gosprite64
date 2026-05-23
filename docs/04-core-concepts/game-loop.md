@@ -1,5 +1,7 @@
 # The Game Loop
 
+> If you just finished the beginner journey, this page explains the concept behind the behavior you already saw on screen.
+
 GoSprite64 runs your game with a fixed-timestep loop at 60 FPS. You provide the logic; the engine handles timing, input polling, and frame presentation.
 
 ## The Game Interface
@@ -30,7 +32,7 @@ func main() {
 }
 ```
 
-`Run` never returns. It initializes the N64 video and audio hardware, calls your `Init()` once, then enters the main loop.
+`Run` never returns. It initializes the N64 video hardware, calls your `Init()` once, initializes audio, and then enters the main loop.
 
 ## How the Loop Works
 

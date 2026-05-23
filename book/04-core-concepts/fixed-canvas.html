@@ -8,7 +8,7 @@
 
         <!-- Custom HTML head -->
 
-        <meta name="description" content="Technical reference for the GoSprite64 library to help you make 2D games for Nintendo64.">
+        <meta name="description" content="Beginner-first documentation for building 2D Nintendo 64 games with GoSprite64.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-93be131b.js";
+            window.path_to_searchindex_js = "../searchindex-4be1cf00.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-a38ee8ab.js"></script>
+        <script src="../toc-a9422952.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -175,6 +175,9 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="the-fixed-canvas"><a class="header" href="#the-fixed-canvas">The Fixed Canvas</a></h1>
+<blockquote>
+<p>If you just finished the beginner journey, this page explains the concept behind the behavior you already saw on screen.</p>
+</blockquote>
 <p>GoSprite64 gives you a single, fixed drawing surface: <strong>288 x 216 logical pixels</strong>. Every drawing function in the library operates in this coordinate space, and the runtime handles everything else.</p>
 <h2 id="the-logical-canvas"><a class="header" href="#the-logical-canvas">The Logical Canvas</a></h2>
 <p>All public drawing APIs use the same coordinate system:</p>
@@ -202,7 +205,7 @@
 +-------------------------------+
 </code></pre>
 <p>The origin offset is <code>(16, 12)</code> - every logical coordinate you pass is translated by this amount before being drawn to the framebuffer. The margin area is not accessible to your game code.</p>
-<p>After rendering, the 320x240 framebuffer is scaled up to the TV’s output resolution (640x480 for NTSC, 640x576 for PAL) and centered on screen, ensuring that pixels appear square regardless of the video standard.</p>
+<p>After rendering, the 320x240 framebuffer is scaled up to a 640x480 output image and then centered appropriately for the active TV mode, ensuring that pixels appear square regardless of whether the console is running in NTSC or PAL timing.</p>
 <h2 id="why-288x216"><a class="header" href="#why-288x216">Why 288x216?</a></h2>
 <p>The N64 outputs video in formats where pixels are not naturally square. NTSC displays 640x480 with a 4:3 aspect ratio, but the pixel aspect ratio is not 1:1 at 320x240. By using 288x216 as the logical canvas, GoSprite64 ensures that:</p>
 <ul>

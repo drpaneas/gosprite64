@@ -2,6 +2,14 @@
 
 Common build errors, runtime issues, and emulator quirks with solutions.
 
+## Beginner setup and first-run problems
+
+If you are blocked before the first ROM works:
+
+- go back to [Installation](../02-getting-started/installation.md)
+- confirm you followed [Run Your First ROM](../02-first-journey/01-run-your-first-rom.md)
+- rebuild before reopening the ROM in your emulator
+
 ## Build Errors
 
 ### "ambiguous import" or multiple module errors
@@ -23,53 +31,54 @@ Then run `go mod tidy` from the repository root.
 
 **Symptom:** The compiler reports that packages like `embedded/rtos` or `embedded/arch/r4000/systim` are not in the standard library.
 
-**Cause:** You are using the standard `go build` command instead of the N64 cross-compilation toolchain. GoSprite64 targets the N64 via a custom Go fork and requires the `n64.env` environment file.
+**Cause:** You are using the standard `go build` path instead of the supported N64 cross-compilation workflow. GoSprite64 targets the N64 via the EmbeddedGo toolchain and the settings loaded from `n64.env`.
 
-**Fix:** Source the N64 environment and use the correct build command:
+**Fix:** Build with `GOENV=n64.env` and the EmbeddedGo binary:
 
 ```bash
-source n64.env
-go build -tags n64 -o game.elf ./examples/mygame
+GOENV=n64.env go1.24.5-embedded build -o examples/mygame/game.elf ./examples/mygame
+GOENV=n64.env n64go rom examples/mygame/game.elf
 ```
 
-The `n64.env` file sets `GOOS`, `GOARCH`, `GOROOT`, and other variables needed for the embedded Go toolchain. Without it, Go tries to resolve N64-specific packages against your host's standard library.
+`GOENV=n64.env` tells the Go toolchain to load the tracked N64 settings from `n64.env`, including `GOTOOLCHAIN`, `GOOS`, `GOARCH`, and `GOFLAGS`. Without that configuration, Go tries to resolve N64-specific packages against your host toolchain.
 
 ### Build fails with embedded/* errors
 
 **Symptom:** Compilation fails with errors referencing `embedded/rtos`, `embedded/arch/...`, or other packages under the `embedded/` prefix.
 
-**Cause:** You need the `go1.24.5-embedded` toolchain (or later) and the `n64.env` environment file. The standard Go toolchain does not include the embedded runtime packages.
+**Cause:** You need the `go1.24.5-embedded` toolchain and the `n64.env` workflow. The standard Go toolchain does not include the embedded runtime packages.
 
 **Fix:**
 
-1. Install the N64-capable Go toolchain. Follow the installation guide in [Getting Started](../02-getting-started/installation.md).
-2. Make sure `n64.env` exists in your project root and is sourced before building:
+1. Install the N64-capable Go toolchain. Follow the installation guide in [Installation](../02-getting-started/installation.md).
+2. Make sure `n64.env` exists in your project root, then build with it explicitly:
 
 ```bash
-source n64.env
+GOENV=n64.env go1.24.5-embedded build -o examples/mygame/game.elf ./examples/mygame
+GOENV=n64.env n64go rom examples/mygame/game.elf
 ```
 
 3. Verify your Go version:
 
 ```bash
-go version
+go1.24.5-embedded version
 ```
 
-It should report `go1.24.5-embedded` or similar. If it shows a standard Go version like `go1.24.5`, your `GOROOT` is not pointing to the embedded fork.
+It should report `go1.24.5-embedded`. If that command is missing or fails, reinstall the EmbeddedGo toolchain before trying the build again.
 
 ### `go mod tidy` fails with network or version errors
 
 **Symptom:** Running `go mod tidy` produces errors about missing versions or fails to fetch dependencies.
 
-**Cause:** The N64 environment variables (`GOOS`, `GOARCH`, etc.) from `n64.env` can confuse `go mod tidy` because it tries to resolve dependencies for the embedded target platform.
+**Cause:** The N64 environment loaded through `n64.env` can confuse `go mod tidy` because it tries to resolve dependencies for the embedded target platform instead of your host environment.
 
-**Fix:** Run `go mod tidy` with the N64-specific environment variables unset:
+**Fix:** Run `go mod tidy` with the same N64-specific environment cleared:
 
 ```bash
-env -u GOOS -u GOARCH -u GOARM -u CGO_ENABLED go mod tidy
+env -u GOENV -u GOOS -u GOARCH -u GOFLAGS -u GOTOOLCHAIN go mod tidy
 ```
 
-This tells Go to use your host platform for dependency resolution while keeping the rest of your environment intact. After tidy completes, you can source `n64.env` again for building.
+This tells Go to use your host platform for dependency resolution while keeping the rest of your environment intact. After tidy completes, return to the normal build flow with `GOENV=n64.env`.
 
 ## Runtime Issues
 
@@ -82,11 +91,22 @@ This tells Go to use your host platform for dependency resolution while keeping 
 **Fix:** In your `main.go`, register the embedded filesystem before starting the game loop:
 
 ```go
+package main
+
+import (
+    "embed"
+
+    "github.com/clktmr/n64/drivers/cartfs"
+    "github.com/drpaneas/gosprite64"
+)
+
 //go:embed assets/*
-var assets embed.FS
+var embeddedAssets embed.FS
+
+var assetFS = cartfs.Embed(embeddedAssets)
 
 func main() {
-    gosprite64.RegisterAssetFS(assets)
+    gosprite64.RegisterAssetFS(assetFS)
     gosprite64.Run(&MyGame{})
 }
 ```
@@ -174,6 +194,10 @@ Project64 and Mupen64Plus may also work but are not regularly tested.
 
 If the emulator shows an error or the ROM does not start:
 
-1. Make sure you built a `.z64` ROM file (big-endian format), not a `.elf` file. The ELF is an intermediate output; you need to convert it with `n64tool` or similar.
+1. Make sure you built a `.z64` ROM file (big-endian format), not just a `.elf` file. The ELF is an intermediate output; the supported conversion step is:
+
+```bash
+GOENV=n64.env n64go rom examples/mygame/game.elf
+```
 2. Check that the ROM header is correct. Some emulators are strict about the header format.
 3. Try a different emulator to narrow down whether it is a ROM issue or an emulator compatibility issue.

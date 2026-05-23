@@ -36,7 +36,7 @@ A complete reference of every feature GoSprite64 provides, organized by section.
 | `DrawSpriteWithOptions(...)` | Draws with flip, scale, rotation, blend, and alpha | [Sprites](../05-graphics/sprites.md) |
 | `DrawWorldSprite(...)` | Draws a sprite offset by camera position | [Sprites](../05-graphics/sprites.md) |
 | `DrawWorldSpriteWithOptions(...)` | World-space sprite with full draw options | [Sprites](../05-graphics/sprites.md) |
-| `DrawSpriteOptions` | Struct: `FlipH`, `FlipV`, `ScaleX/Y`, `Rotation`, `Origin`, `Blend`, `Alpha` | [Sprites](../05-graphics/sprites.md) |
+| `DrawSpriteOptions` | Struct: `FlipH`, `FlipV`, `ScaleX/Y`, `Rotation`, `OriginX`, `OriginY`, `Blend`, `Alpha` | [Sprites](../05-graphics/sprites.md) |
 | `BlendNone`, `BlendMasked`, `BlendAlpha` | Blend mode constants for sprite drawing | [Sprites](../05-graphics/sprites.md) |
 
 ## Animation

@@ -30,7 +30,7 @@ func TestExamplesUseQualifiedImports(t *testing.T) {
 }
 
 func TestHelloWorldGuideUsesQualifiedImports(t *testing.T) {
-	guide := mustReadRepoFile(t, "docs/hello_world.md")
+	guide := mustReadRepoFile(t, "docs/02-getting-started/hello-world.md")
 	requireContains(t, guide, `import "github.com/drpaneas/gosprite64"`)
 	requireContains(t, guide, "gosprite64.Run(&Game{})")
 	requireNotContains(t, guide, `import . "github.com/drpaneas/gosprite64"`)
@@ -38,7 +38,7 @@ func TestHelloWorldGuideUsesQualifiedImports(t *testing.T) {
 }
 
 func TestAudioGuideUsesQualifiedImports(t *testing.T) {
-	guide := mustReadRepoFile(t, "docs/audio.md")
+	guide := mustReadRepoFile(t, "docs/07-audio/sfx-and-music.md")
 	requireNotContains(t, guide, `. "github.com/drpaneas/gosprite64"`)
 	requireContains(t, guide, "gosprite64.PlaySoundEffect(")
 }
@@ -100,9 +100,9 @@ func TestDrawHelperNaming(t *testing.T) {
 func TestDocsTeachOnlyCanonicalDrawNames(t *testing.T) {
 	for _, path := range []string{
 		"README.md",
-		"docs/introduction.md",
-		"docs/hello_world.md",
-		"docs/square_pixels.md",
+		"docs/01-welcome/feature-overview.md",
+		"docs/02-getting-started/hello-world.md",
+		"docs/04-core-concepts/fixed-canvas.md",
 	} {
 		content := mustReadRepoFile(t, path)
 		requireNotContains(t, content, "`Rectfill`")
@@ -287,10 +287,11 @@ func TestLegacyNamesAreGoneFromDocsAndExamples(t *testing.T) {
 
 	for _, path := range []string{
 		"README.md",
-		"docs/introduction.md",
-		"docs/hello_world.md",
-		"docs/square_pixels.md",
-		"docs/audio.md",
+		"docs/01-welcome/start-here.md",
+		"docs/01-welcome/feature-overview.md",
+		"docs/02-getting-started/hello-world.md",
+		"docs/04-core-concepts/fixed-canvas.md",
+		"docs/07-audio/sfx-and-music.md",
 		"examples/clearscreen/main.go",
 		"examples/calibration/main.go",
 		"examples/pong/main.go",

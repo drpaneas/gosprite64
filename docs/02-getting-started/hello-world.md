@@ -1,10 +1,20 @@
 # Hello World
 
-This guide walks you through creating a standalone N64 game project from scratch using GoSprite64. By the end you will have a blue screen ROM that proves your toolchain is set up correctly.
+This page explains the small GoSprite64 program behind the beginner journey.
+
+If you want the shortest route to visible progress, start with [Run Your First ROM](../02-first-journey/01-run-your-first-rom.md) instead.
+
+## What this page is for
+
+Use this page when you want to understand:
+
+- the smallest standalone GoSprite64 program
+- what `Init`, `Update`, and `Draw` each do
+- how `n64.env` and ROM generation fit together
 
 ## Prerequisites
 
-Complete the [Getting Started](./getting_started.md) guide first. You need:
+Complete the [Installation](./installation.md) guide first. You need:
 
 - `go` (standard Go, for dependency resolution)
 - `go1.24.5-embedded` (EmbeddedGo toolchain, for building)
@@ -59,7 +69,7 @@ Create `n64.env` in the project root:
 GOTOOLCHAIN=go1.24.5-embedded
 GOOS=noos
 GOARCH=mips64
-GOFLAGS='-tags=n64' '-trimpath' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
+GOFLAGS='-tags=n64' '-trimpath' '-toolexec=n64go toolexec' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
 ```
 
 This tells the Go toolchain to cross-compile for the N64 (MIPS64, no OS).
@@ -91,7 +101,7 @@ Load `game.z64` in an emulator like [ares](https://ares-emu.net/) to see a blue 
 
 ## Editor support
 
-If `gopls` reports `embedded/*` packages as missing or does not recognize files guarded by `//go:build n64`, see the editor setup section in [Getting Started](./getting_started.md).
+If `gopls` reports `embedded/*` packages as missing or does not recognize files guarded by `//go:build n64`, see [Editor Setup](./editor-setup.md).
 
 ## Project structure
 

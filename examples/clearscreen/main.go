@@ -13,9 +13,9 @@ func (g *Game) Init() {}
 // Update game logic here
 func (g *Game) Update() {}
 
-// Draw renders a solid red screen.
+// Draw renders a solid blue screen.
 func (g *Game) Draw() {
-	gosprite64.ClearScreenWith(gosprite64.Red)
+	gosprite64.ClearScreenWith(gosprite64.Blue)
 }
 
 func main() {

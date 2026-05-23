@@ -9,7 +9,7 @@
 
         <!-- Custom HTML head -->
 
-        <meta name="description" content="Technical reference for the GoSprite64 library to help you make 2D games for Nintendo64.">
+        <meta name="description" content="Beginner-first documentation for building 2D Nintendo 64 games with GoSprite64.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-93be131b.js";
+            window.path_to_searchindex_js = "searchindex-4be1cf00.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-a38ee8ab.js"></script>
+        <script src="toc-a9422952.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -175,7 +175,29 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="why-gosprite64"><a class="header" href="#why-gosprite64">Why GoSprite64?</a></h1>
+                        <h1 id="start-here"><a class="header" href="#start-here">Start Here</a></h1>
+<p>If you are new to both Go and N64 development, start with the <strong>First Journey</strong> below.</p>
+<p><img src="images/beginner/journey-map.png" alt="What you will build in the beginner journey"></p>
+<h2 id="what-you-will-do"><a class="header" href="#what-you-will-do">What you will do</a></h2>
+<p>In the next few pages you will:</p>
+<ul>
+<li>run your first ROM</li>
+<li>change something and rebuild it</li>
+<li>make something move</li>
+<li>put a sprite on screen</li>
+<li>turn that into a tiny playable scene</li>
+</ul>
+<h2 id="best-first-click"><a class="header" href="#best-first-click">Best first click</a></h2>
+<p>Go to <a href="#run-your-first-rom">Run Your First ROM</a>.</p>
+<h2 id="already-comfortable-with-go-or-emulators"><a class="header" href="#already-comfortable-with-go-or-emulators">Already comfortable with Go or emulators?</a></h2>
+<p>If you want details instead of the guided path, jump to:</p>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#hello-world">Hello World</a></li>
+<li><a href="#api-quick-reference">API Quick Reference</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="why-gosprite64"><a class="header" href="#why-gosprite64">Why GoSprite64?</a></h1>
 <p><img src="images/logo.png" alt="Gopher"></p>
 <p><strong>GoSprite64</strong> is your portal to building retro-fueled 2D games for the <strong>Nintendo 64</strong>, using the modern power of <strong>Go</strong>. With clean APIs, minimal setup (Linux, Mac, Windows are all supported), and a rebellious retro soul, it lets you bring your pixel dreams to life - on real N64 hardware.</p>
 <h2 id="whats-gosprite64"><a class="header" href="#whats-gosprite64">What’s GoSprite64?</a></h2>
@@ -279,7 +301,7 @@
 <tr><td><code>DrawSpriteWithOptions(...)</code></td><td>Draws with flip, scale, rotation, blend, and alpha</td><td><a href="#sprites-1">Sprites</a></td></tr>
 <tr><td><code>DrawWorldSprite(...)</code></td><td>Draws a sprite offset by camera position</td><td><a href="#sprites-1">Sprites</a></td></tr>
 <tr><td><code>DrawWorldSpriteWithOptions(...)</code></td><td>World-space sprite with full draw options</td><td><a href="#sprites-1">Sprites</a></td></tr>
-<tr><td><code>DrawSpriteOptions</code></td><td>Struct: <code>FlipH</code>, <code>FlipV</code>, <code>ScaleX/Y</code>, <code>Rotation</code>, <code>Origin</code>, <code>Blend</code>, <code>Alpha</code></td><td><a href="#sprites-1">Sprites</a></td></tr>
+<tr><td><code>DrawSpriteOptions</code></td><td>Struct: <code>FlipH</code>, <code>FlipV</code>, <code>ScaleX/Y</code>, <code>Rotation</code>, <code>OriginX</code>, <code>OriginY</code>, <code>Blend</code>, <code>Alpha</code></td><td><a href="#sprites-1">Sprites</a></td></tr>
 <tr><td><code>BlendNone</code>, <code>BlendMasked</code>, <code>BlendAlpha</code></td><td>Blend mode constants for sprite drawing</td><td><a href="#sprites-1">Sprites</a></td></tr>
 </tbody>
 </table>
@@ -662,9 +684,308 @@
 </table>
 </div>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
+<h1 id="run-your-first-rom"><a class="header" href="#run-your-first-rom">Run Your First ROM</a></h1>
+<h2 id="what-you-are-about-to-achieve"><a class="header" href="#what-you-are-about-to-achieve">What you are about to achieve</a></h2>
+<p>Build <code>examples/clearscreen/game.z64</code> and see a solid blue screen in your emulator.</p>
+<h2 id="expected-result"><a class="header" href="#expected-result">Expected result</a></h2>
+<p><img src="images/beginner/first-rom-blue-screen.png" alt="A solid blue screen rendered by the first ROM"></p>
+<h2 id="minimal-commands"><a class="header" href="#minimal-commands">Minimal commands</a></h2>
+<pre><code class="language-bash">chmod +x ./build_examples.sh
+./build_examples.sh
+</code></pre>
+<p>Open <code>examples/clearscreen/game.z64</code> after the build.</p>
+<h2 id="what-changed"><a class="header" href="#what-changed">What changed</a></h2>
+<p>You did not write game code yet. You proved that your toolchain can build the repository examples into ROMs, starting from <code>examples/clearscreen/main.go</code>.</p>
+<h2 id="why-it-matters"><a class="header" href="#why-it-matters">Why it matters</a></h2>
+<p>This is the fastest confirmation that your machine can produce working N64 output before you start editing code.</p>
+<h2 id="if-this-failed"><a class="header" href="#if-this-failed">If this failed</a></h2>
+<p>Go to <a href="#installation">Installation</a> and work through the toolchain setup notes first.</p>
+<h2 id="next-step"><a class="header" href="#next-step">Next step</a></h2>
+<p>Go to <a href="#change-one-thing">Change One Thing</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="change-one-thing"><a class="header" href="#change-one-thing">Change One Thing</a></h1>
+<h2 id="what-you-are-about-to-achieve-1"><a class="header" href="#what-you-are-about-to-achieve-1">What you are about to achieve</a></h2>
+<p>Change one visible detail in <code>examples/clearscreen/main.go</code> and rebuild <code>examples/clearscreen/game.z64</code> so you know the code you edit affects the ROM you run.</p>
+<h2 id="expected-result-1"><a class="header" href="#expected-result-1">Expected result</a></h2>
+<p><img src="images/beginner/change-one-thing.png" alt="The updated screen after changing one line"></p>
+<h2 id="minimal-change"><a class="header" href="#minimal-change">Minimal change</a></h2>
+<p>In <code>examples/clearscreen/main.go</code>, change:</p>
+<pre><code class="language-go">gosprite64.ClearScreenWith(gosprite64.Blue)
+</code></pre>
+<p>To:</p>
+<pre><code class="language-go">gosprite64.ClearScreenWith(gosprite64.Red)
+</code></pre>
+<p>From the repository root, rebuild the ROM:</p>
+<pre><code class="language-bash">./build_examples.sh
+</code></pre>
+<p>Then reopen <code>examples/clearscreen/game.z64</code>.</p>
+<h2 id="what-changed-1"><a class="header" href="#what-changed-1">What changed</a></h2>
+<p>You changed one rendering line in <code>examples/clearscreen/main.go</code> and rebuilt the ROM.</p>
+<h2 id="why-it-matters-1"><a class="header" href="#why-it-matters-1">Why it matters</a></h2>
+<p>Beginners gain confidence faster when they can make one tiny edit and immediately see the result.</p>
+<h2 id="if-this-failed-1"><a class="header" href="#if-this-failed-1">If this failed</a></h2>
+<p>Make sure you saved <code>examples/clearscreen/main.go</code>, ran <code>./build_examples.sh</code> from the repository root, and reopened <code>examples/clearscreen/game.z64</code>.</p>
+<h2 id="next-step-1"><a class="header" href="#next-step-1">Next step</a></h2>
+<p>Go to <a href="#make-something-move">Make Something Move</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="make-something-move"><a class="header" href="#make-something-move">Make Something Move</a></h1>
+<h2 id="what-you-are-about-to-achieve-2"><a class="header" href="#what-you-are-about-to-achieve-2">What you are about to achieve</a></h2>
+<p>Make a shape move across the screen so <code>Update()</code> becomes visible, not theoretical.</p>
+<h2 id="expected-result-2"><a class="header" href="#expected-result-2">Expected result</a></h2>
+<p><img src="images/beginner/make-something-move.png" alt="A simple moving object on screen"></p>
+<h2 id="minimal-code"><a class="header" href="#minimal-code">Minimal code</a></h2>
+<p>You are still working in <code>examples/clearscreen/</code>. Keep editing <code>examples/clearscreen/main.go</code> and keep rebuilding the same ROM from the previous steps.</p>
+<p>This step replaces the full red screen from the previous page with a blue background and one moving yellow box.</p>
+<pre><code class="language-go">type Game struct {
+	x int
+}
+
+func (g *Game) Init() {}
+
+func (g *Game) Update() {
+	g.x++
+	if g.x &gt; 287 {
+		g.x = -24
+	}
+}
+
+func (g *Game) Draw() {
+	gosprite64.ClearScreenWith(gosprite64.Blue)
+	gosprite64.FillRect(g.x, 80, g.x+23, 103, gosprite64.Yellow)
+}
+</code></pre>
+<p>Replace the <code>Game</code> type and methods in <code>examples/clearscreen/main.go</code> with the version above.</p>
+<p>From the repository root, rebuild the ROM:</p>
+<pre><code class="language-bash">./build_examples.sh
+</code></pre>
+<p>Then reopen <code>examples/clearscreen/game.z64</code>.</p>
+<h2 id="what-changed-2"><a class="header" href="#what-changed-2">What changed</a></h2>
+<p>The <code>Update()</code> method now changes state every frame, wraps the box back to the left after it crosses the screen, and <code>Draw()</code> uses those values as the rectangle corners for one 24x24 box.</p>
+<h2 id="why-it-matters-2"><a class="header" href="#why-it-matters-2">Why it matters</a></h2>
+<p>This is the first time the learner sees the game loop as behavior, not vocabulary.</p>
+<h2 id="if-this-failed-2"><a class="header" href="#if-this-failed-2">If this failed</a></h2>
+<p>If the shape never moves, confirm that the <code>g.x++</code> and wrap check are both inside <code>Update()</code>, that <code>FillRect</code> uses the bottom-right corner instead of width and height values, and that you saved <code>examples/clearscreen/main.go</code>, ran <code>./build_examples.sh</code> from the repository root, and reopened <code>examples/clearscreen/game.z64</code>.</p>
+<h2 id="next-step-2"><a class="header" href="#next-step-2">Next step</a></h2>
+<p>Go to <a href="#put-a-sprite-on-screen">Put a Sprite on Screen</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="put-a-sprite-on-screen"><a class="header" href="#put-a-sprite-on-screen">Put a Sprite on Screen</a></h1>
+<h2 id="what-you-are-about-to-achieve-3"><a class="header" href="#what-you-are-about-to-achieve-3">What you are about to achieve</a></h2>
+<p>Replace the moving box with a real sprite and understand the smallest useful version of the asset pipeline.</p>
+<h2 id="expected-result-3"><a class="header" href="#expected-result-3">Expected result</a></h2>
+<p><img src="images/beginner/sprite-on-screen.png" alt="A sprite visible on screen"></p>
+<h2 id="how-the-asset-flows"><a class="header" href="#how-the-asset-flows">How the asset flows</a></h2>
+<p><img src="images/beginner/asset-flow.png" alt="Source PNG becomes a runtime sprite asset"></p>
+<p>Stay in <code>examples/clearscreen/</code>. In this step you will keep editing <code>examples/clearscreen/main.go</code>, add <code>examples/clearscreen/assets_embed.go</code>, and run the asset-generation command from inside <code>examples/clearscreen/</code>.</p>
+<h2 id="minimal-files"><a class="header" href="#minimal-files">Minimal files</a></h2>
+<p>In <code>examples/clearscreen/main.go</code>, replace the moving box version with:</p>
+<pre><code class="language-go">type Game struct {
+	x    float32
+	hero *gosprite64.SpriteSheet
+}
+
+func (g *Game) Init() {
+	g.x = 144
+
+	hero, err := gosprite64.LoadSpriteSheet("assets/hero.sheet")
+	if err != nil {
+		panic(err)
+	}
+	g.hero = hero
+}
+
+func (g *Game) Update() {
+	g.x += 1
+	if g.x &gt; 287 {
+		g.x = -16
+	}
+}
+
+func (g *Game) Draw() {
+	gosprite64.ClearScreenWith(gosprite64.Blue)
+	gosprite64.DrawSprite(g.hero, 0, g.x, 80)
+}
+</code></pre>
+<p>Add <code>examples/clearscreen/assets_embed.go</code> so the ROM can load files from <code>examples/clearscreen/assets/</code>:</p>
+<pre><code class="language-go">package main
+
+import (
+	"embed"
+
+	"github.com/clktmr/n64/drivers/cartfs"
+	"github.com/drpaneas/gosprite64"
+)
+
+//go:embed assets/*
+var assetsFS embed.FS
+
+var assetFS = cartfs.Embed(assetsFS)
+
+func init() {
+	gosprite64.RegisterAssetFS(assetFS)
+}
+</code></pre>
+<p>Then put a 64x16 PNG strip at <code>examples/clearscreen/assets-src/character.png</code>. If you are following along inside this repository, a good checked-in example is <code>examples/platformer/assets-src/character.png</code>.</p>
+<p>From inside <code>examples/clearscreen/</code>, run:</p>
+<pre><code class="language-bash">mkdir -p assets assets-src
+go run ../../cmd/mk2dsheet \
+  -in assets-src/character.png \
+  -out assets/hero.sheet \
+  -tile-width 16 -tile-height 16
+</code></pre>
+<p>That command writes <code>examples/clearscreen/assets/hero.sheet</code>, which <code>assets_embed.go</code> registers and <code>main.go</code> loads once in <code>Init()</code>.</p>
+<p>If you are currently in the repository root, run <code>cd examples/clearscreen</code> first, then use the command above.</p>
+<p>When the asset file is ready, go back to the repository root and rebuild the ROM:</p>
+<pre><code class="language-bash">cd ../..
+./build_examples.sh
+</code></pre>
+<p>Then reopen <code>examples/clearscreen/game.z64</code>.</p>
+<h2 id="what-changed-3"><a class="header" href="#what-changed-3">What changed</a></h2>
+<p>You stopped drawing a placeholder rectangle and started drawing image-based content loaded once during setup, with a clean screen each frame before the sprite is drawn. The sprite also wraps back to the left so it stays visible instead of drifting away forever.</p>
+<h2 id="why-it-matters-3"><a class="header" href="#why-it-matters-3">Why it matters</a></h2>
+<p>This is the point where the project starts to feel like a game instead of a rendering demo.</p>
+<h2 id="if-this-failed-3"><a class="header" href="#if-this-failed-3">If this failed</a></h2>
+<p>Double-check that <code>assets-src/character.png</code> exists before you run <code>mk2dsheet</code>, make sure <code>assets/hero.sheet</code> was created inside <code>examples/clearscreen/assets/</code>, confirm that <code>assets_embed.go</code> uses <code>cartfs.Embed(...)</code> before <code>gosprite64.RegisterAssetFS(...)</code>, and make sure the wrap check stays inside <code>Update()</code> so the sprite remains visible.</p>
+<p>Need the full sprite-sheet pipeline and more examples? Go to <a href="#sprites-1">Sprites</a>.</p>
+<h2 id="next-step-3"><a class="header" href="#next-step-3">Next step</a></h2>
+<p>Go to <a href="#build-a-tiny-playable-scene">Build a Tiny Playable Scene</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="build-a-tiny-playable-scene"><a class="header" href="#build-a-tiny-playable-scene">Build a Tiny Playable Scene</a></h1>
+<h2 id="what-you-are-about-to-achieve-4"><a class="header" href="#what-you-are-about-to-achieve-4">What you are about to achieve</a></h2>
+<p>Turn the moving sprite into a tiny scene the player can control. Instead of drifting on its own, your character can move left and right and reach a simple goal.</p>
+<h2 id="expected-result-4"><a class="header" href="#expected-result-4">Expected result</a></h2>
+<p><img src="images/beginner/tiny-playable-scene.png" alt="A tiny playable scene with a character and goal"></p>
+<h2 id="minimal-code-1"><a class="header" href="#minimal-code-1">Minimal code</a></h2>
+<p>Stay in <code>examples/clearscreen/</code>. Keep <code>examples/clearscreen/assets_embed.go</code> from the previous step unchanged, and continue editing <code>examples/clearscreen/main.go</code>.</p>
+<p>Keep the <code>Init()</code> from the previous step that loads <code>assets/hero.sheet</code>, but start farther left so the player has somewhere to move from:</p>
+<pre><code class="language-go">func (g *Game) Init() {
+	g.x = 40
+
+	hero, err := gosprite64.LoadSpriteSheet("assets/hero.sheet")
+	if err != nil {
+		panic(err)
+	}
+	g.hero = hero
+}
+</code></pre>
+<p>Then replace the automatic movement with player input and draw a visible goal:</p>
+<pre><code class="language-go">func (g *Game) Update() {
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadLeft) {
+		g.x -= 2
+	}
+	if gosprite64.IsButtonDown(gosprite64.ButtonDPadRight) {
+		g.x += 2
+	}
+}
+
+func (g *Game) Draw() {
+	gosprite64.ClearScreenWith(gosprite64.Blue)
+	gosprite64.FillRect(220, 72, 244, 104, gosprite64.Yellow)
+	gosprite64.DrawText("GOAL", 210, 60, gosprite64.White)
+	gosprite64.DrawSprite(g.hero, 0, g.x, 80)
+
+	if g.x &gt;= 220 {
+		gosprite64.DrawText("YOU MADE IT", 88, 20, gosprite64.White)
+	}
+}
+</code></pre>
+<p>After saving <code>examples/clearscreen/main.go</code>, switch back to the repository root and run the rebuild command there:</p>
+<pre><code class="language-bash">./build_examples.sh
+</code></pre>
+<p>Then reopen <code>examples/clearscreen/game.z64</code>.</p>
+<h2 id="what-changed-4"><a class="header" href="#what-changed-4">What changed</a></h2>
+<p><code>Update()</code> no longer moves the sprite on a fixed automatic loop. Instead, it reads single-player controller input each frame and changes <code>g.x</code> only when the player presses left or right.</p>
+<h2 id="why-it-matters-4"><a class="header" href="#why-it-matters-4">Why it matters</a></h2>
+<p>This is the first moment the project feels playable. The game is no longer just animating by itself - it is reacting to what the player does.</p>
+<h2 id="if-this-failed-4"><a class="header" href="#if-this-failed-4">If this failed</a></h2>
+<p>If the sprite does not move, make sure the input checks are inside <code>Update()</code>, confirm you rebuilt after saving, and verify that your controller is connected on port 0. If the sprite vanished, double-check that <code>Draw()</code> still clears the screen and draws <code>g.hero</code>.</p>
+<h2 id="next-step-4"><a class="header" href="#next-step-4">Next step</a></h2>
+<p>Go to <a href="#understand-what-just-happened">Understand What Just Happened</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="understand-what-just-happened"><a class="header" href="#understand-what-just-happened">Understand What Just Happened</a></h1>
+<h2 id="what-you-are-about-to-achieve-5"><a class="header" href="#what-you-are-about-to-achieve-5">What you are about to achieve</a></h2>
+<p>Connect the visible beginner steps you just finished to the core ideas you will keep using in GoSprite64.</p>
+<h2 id="expected-result-5"><a class="header" href="#expected-result-5">Expected result</a></h2>
+<p><img src="images/beginner/journey-map.png" alt="The full beginner journey map"></p>
+<p>By the end of this page, you should be able to point at your tiny playable scene and explain which part came from setup, game logic, drawing, coordinates, and assets.</p>
+<h2 id="what-changed-5"><a class="header" href="#what-changed-5">What changed</a></h2>
+<p>The beginner journey introduced one concept at a time, but all six steps were building the same game structure:</p>
+<ul>
+<li><code>Init()</code> handles setup before the main loop starts. That is where you load assets and set starting values.</li>
+<li><code>Update()</code> handles game logic and input. That is where your sprite moved automatically first, then reacted to button presses.</li>
+<li><code>Draw()</code> handles rendering. That is where the background, sprite, goal, and text appear every frame.</li>
+<li>The fixed canvas gives you stable logical coordinates, so positions like <code>x = 40</code> and <code>y = 80</code> stay meaningful.</li>
+<li>Embedded assets give your ROM runtime data to load, which is why your sprite could replace the placeholder rectangle.</li>
+</ul>
+<h2 id="why-it-matters-5"><a class="header" href="#why-it-matters-5">Why it matters</a></h2>
+<p>You now have a working mental model for how GoSprite64 projects are organized. That makes the next concept pages easier to absorb because they expand ideas you have already seen on screen.</p>
+<h2 id="if-this-failed-5"><a class="header" href="#if-this-failed-5">If this failed</a></h2>
+<p>If the recap still feels abstract, reopen the tiny playable scene and map each visible result back to one function:</p>
+<ul>
+<li>starting values and asset loading -&gt; <code>Init()</code></li>
+<li>movement and button handling -&gt; <code>Update()</code></li>
+<li>background, goal, text, and sprite rendering -&gt; <code>Draw()</code></li>
+</ul>
+<p>Then read the deeper guides below one at a time instead of all at once.</p>
+<h2 id="next-step-5"><a class="header" href="#next-step-5">Next step</a></h2>
+<p>Read <a href="#the-game-loop">The Game Loop</a> first, then continue with:</p>
+<ul>
+<li><a href="#the-fixed-canvas">The Fixed Canvas</a></li>
+<li><a href="#d-pad-and-buttons">D-Pad and Buttons</a></li>
+<li><a href="#sprites-1">Sprites</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="clear-the-screen"><a class="header" href="#clear-the-screen">Clear the Screen</a></h1>
+<p>Use this when you want to fill the whole screen with a solid color at the start of each frame.</p>
+<pre><code class="language-go">func (g *Game) Draw() {
+	gosprite64.ClearScreenWith(gosprite64.DarkBlue)
+}
+</code></pre>
+<p>This is the same pattern introduced in the beginner journey, but without the extra guided explanation.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="draw-text"><a class="header" href="#draw-text">Draw Text</a></h1>
+<p>Use this when you want to put quick built-in text on screen for a label, debug line, or title.</p>
+<pre><code class="language-go">func (g *Game) Draw() {
+	gosprite64.ClearScreenWith(gosprite64.Black)
+	gosprite64.DrawText("HELLO", 16, 24, gosprite64.White)
+}
+</code></pre>
+<p><code>DrawText</code> uses the built-in 8x8 font, so this is the fastest way to get readable text on screen.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="load-a-sprite"><a class="header" href="#load-a-sprite">Load a Sprite</a></h1>
+<p>Use this when you already have a compiled <code>.sheet</code> file and want to draw one frame from it.</p>
+<p>Load it once during setup:</p>
+<pre><code class="language-go">type Game struct {
+	hero *gosprite64.SpriteSheet
+}
+
+func (g *Game) Init() {
+	sheet, err := gosprite64.LoadSpriteSheet("assets/hero.sheet")
+	if err != nil {
+		panic(err)
+	}
+	g.hero = sheet
+}
+</code></pre>
+<p>Then draw it each frame:</p>
+<pre><code class="language-go">func (g *Game) Draw() {
+	gosprite64.ClearScreenWith(gosprite64.Black)
+	gosprite64.DrawSprite(g.hero, 0, 32, 48)
+}
+</code></pre>
+<p>If you still need to create <code>assets/hero.sheet</code>, follow the beginner journey sprite step first, then come back here for the quick reminder.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<p>This page is the toolchain setup reference for the beginner journey.</p>
+<p>If you want the fastest visible win, start with <a href="#run-your-first-rom">Run Your First ROM</a> and come back here only if setup blocks you.</p>
+<h2 id="what-this-page-is-for"><a class="header" href="#what-this-page-is-for">What this page is for</a></h2>
+<p>Use this page when you need to:</p>
+<ul>
+<li>install the EmbeddedGo toolchain</li>
+<li>install <code>n64go</code></li>
+<li>understand <code>n64.env</code></li>
+<li>recover from build setup failures</li>
+</ul>
 <p>This repository supports one setup path: build natively with <code>go1.24.5-embedded</code> and <code>n64go@v0.1.2</code>. If that native bootstrap is unavailable on your host, use the Linux fallback below.</p>
-<h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
 <ol>
 <li>Clone the repository:</li>
 </ol>
@@ -697,7 +1018,7 @@ go1.24.5-embedded download
 <pre><code class="language-bash">GOTOOLCHAIN=go1.24.5-embedded
 GOOS=noos
 GOARCH=mips64
-GOFLAGS='-tags=n64' '-trimpath' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
+GOFLAGS='-tags=n64' '-trimpath' '-toolexec=n64go toolexec' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
 </code></pre>
 <p>GoSprite64 exposes one official fixed resolution and drawing canvas: <code>288x216</code> logical pixels. The runtime centers that canvas and handles presentation scaling for you, so gameplay code should not manage borders, safe areas, or video-mode presets directly.</p>
 <p>If you want to verify the fixed-resolution presentation visually, run <code>examples/calibration/game.z64</code> in <code>ares</code> after the build. The expected calibration frame looks like this:</p>
@@ -718,9 +1039,17 @@ GOFLAGS='-tags=n64' '-trimpath' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -str
 <p>The generated <code>*.z64</code> ROMs are written under <code>examples/</code> and can be run with your emulator, for example <code>ares</code>. If you want to verify the square-pixel layout visually, start with <code>examples/calibration/game.z64</code>.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="hello-world"><a class="header" href="#hello-world">Hello World</a></h1>
-<p>This guide walks you through creating a standalone N64 game project from scratch using GoSprite64. By the end you will have a blue screen ROM that proves your toolchain is set up correctly.</p>
+<p>This page explains the small GoSprite64 program behind the beginner journey.</p>
+<p>If you want the shortest route to visible progress, start with <a href="#run-your-first-rom">Run Your First ROM</a> instead.</p>
+<h2 id="what-this-page-is-for-1"><a class="header" href="#what-this-page-is-for-1">What this page is for</a></h2>
+<p>Use this page when you want to understand:</p>
+<ul>
+<li>the smallest standalone GoSprite64 program</li>
+<li>what <code>Init</code>, <code>Update</code>, and <code>Draw</code> each do</li>
+<li>how <code>n64.env</code> and ROM generation fit together</li>
+</ul>
 <h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
-<p>Complete the <a href="02-getting-started/getting_started.html">Getting Started</a> guide first. You need:</p>
+<p>Complete the <a href="#installation">Installation</a> guide first. You need:</p>
 <ul>
 <li><code>go</code> (standard Go, for dependency resolution)</li>
 <li><code>go1.24.5-embedded</code> (EmbeddedGo toolchain, for building)</li>
@@ -760,7 +1089,7 @@ func main() { gosprite64.Run(&amp;Game{}) }
 <pre><code>GOTOOLCHAIN=go1.24.5-embedded
 GOOS=noos
 GOARCH=mips64
-GOFLAGS='-tags=n64' '-trimpath' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
+GOFLAGS='-tags=n64' '-trimpath' '-toolexec=n64go toolexec' '-ldflags=-M=0x00000000:8M -F=0x00000400:8M -stripfn=1'
 </code></pre>
 <p>This tells the Go toolchain to cross-compile for the N64 (MIPS64, no OS).</p>
 <h2 id="resolve-dependencies"><a class="header" href="#resolve-dependencies">Resolve dependencies</a></h2>
@@ -777,7 +1106,7 @@ GOENV=n64.env n64go rom game.elf
 <h2 id="run"><a class="header" href="#run">Run</a></h2>
 <p>Load <code>game.z64</code> in an emulator like <a href="https://ares-emu.net/">ares</a> to see a blue screen. When you want to inspect the canvas boundaries and square-pixel presentation, compare it with the repository’s <code>examples/calibration</code> ROM.</p>
 <h2 id="editor-support"><a class="header" href="#editor-support">Editor support</a></h2>
-<p>If <code>gopls</code> reports <code>embedded/*</code> packages as missing or does not recognize files guarded by <code>//go:build n64</code>, see the editor setup section in <a href="02-getting-started/getting_started.html">Getting Started</a>.</p>
+<p>If <code>gopls</code> reports <code>embedded/*</code> packages as missing or does not recognize files guarded by <code>//go:build n64</code>, see <a href="#editor-setup">Editor Setup</a>.</p>
 <h2 id="project-structure"><a class="header" href="#project-structure">Project structure</a></h2>
 <p>Your project should now look like this:</p>
 <pre><code>mygame/
@@ -816,6 +1145,14 @@ GOENV=n64.env n64go rom game.elf
 <p>After changing the settings, run <code>Go: Restart Language Server</code> or <code>Developer: Reload Window</code>.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="step-1-start-the-engine"><a class="header" href="#step-1-start-the-engine">Step 1: Start the Engine</a></h1>
+<p>This longer tutorial starts after the beginner journey.</p>
+<p>If you are brand new, complete these pages first:</p>
+<ol>
+<li><a href="#run-your-first-rom">Run Your First ROM</a></li>
+<li><a href="#change-one-thing">Change One Thing</a></li>
+<li><a href="#make-something-move">Make Something Move</a></li>
+</ol>
+<p>Unlike <code>Hello World</code>, this tutorial continues inside the GoSprite64 repository and uses the <code>examples/platformer/</code> layout throughout.</p>
 <p>Set up a minimal GoSprite64 project that compiles, runs, and draws a solid blue screen.</p>
 <h2 id="what-you-will-learn"><a class="header" href="#what-you-will-learn">What you will learn</a></h2>
 <ul>
@@ -881,15 +1218,15 @@ func init() {
 	gosprite64.RegisterAssetFS(assetFS)
 }
 </code></pre>
-<p>For now, create a placeholder assets directory so the embed does not fail:</p>
+<p>For now, create a placeholder asset file so <code>//go:embed assets/*</code> has a real match:</p>
 <pre><code class="language-bash">mkdir -p examples/platformer/assets
-touch examples/platformer/assets/.gitkeep
+printf "placeholder\n" &gt; examples/platformer/assets/placeholder.txt
 </code></pre>
 <p>Build and run:</p>
 <pre><code class="language-bash">GOENV=n64.env go1.24.5-embedded build -o examples/platformer/game.elf ./examples/platformer
 n64go rom examples/platformer/game.elf
 </code></pre>
-<p>Open <code>game.z64</code> in the ares emulator. You should see a solid blue screen filling the display. That is your game running on N64 hardware - the simplest possible starting point.</p>
+<p>Open <code>examples/platformer/game.z64</code> in the ares emulator. You should see a solid blue screen filling the display. That is your game running on N64 hardware - the simplest possible starting point.</p>
 <h2 id="what-comes-next"><a class="header" href="#what-comes-next">What comes next</a></h2>
 <p>In the next steps we will add a tile world, a player character, animation, and controls. But the structure will always be the same: load things in Init, update state in Update, draw everything in Draw.</p>
 <div style="break-before: page; page-break-before: always;"></div>
@@ -907,7 +1244,7 @@ n64go rom examples/platformer/game.elf
 </ul>
 <p>This is the simplest possible tile game, but it uses the same pipeline you would use for a real project: authored assets, offline compilation, bundle loading, scene rendering, and camera control.</p>
 <h2 id="prerequisites-1"><a class="header" href="#prerequisites-1">Prerequisites</a></h2>
-<p>Complete the <a href="03-tutorial/getting_started.html">Getting Started</a> guide first. You need these tools installed:</p>
+<p>Complete the <a href="#installation">Installation</a> guide first. If you want a smaller warm-up before this longer tutorial, run through <a href="#hello-world">Hello World</a> too. You need these tools installed:</p>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2308,6 +2645,9 @@ GOENV=n64.env go1.24.5-embedded build -o examples/platformer/game.elf ./examples
 <p>You now have a real N64 ROM with a title screen, smooth camera, animated character, score display, and fade transitions. From here, every new feature is just another struct, another state, and another call to the GoSprite64 API.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="the-game-loop"><a class="header" href="#the-game-loop">The Game Loop</a></h1>
+<blockquote>
+<p>If you just finished the beginner journey, this page explains the concept behind the behavior you already saw on screen.</p>
+</blockquote>
 <p>GoSprite64 runs your game with a fixed-timestep loop at 60 FPS. You provide the logic; the engine handles timing, input polling, and frame presentation.</p>
 <h2 id="the-game-interface"><a class="header" href="#the-game-interface">The Game Interface</a></h2>
 <p>Every GoSprite64 game implements the <code>Game</code> interface:</p>
@@ -2329,7 +2669,7 @@ GOENV=n64.env go1.24.5-embedded build -o examples/platformer/game.elf ./examples
     gosprite64.Run(&amp;Game{})
 }
 </code></pre>
-<p><code>Run</code> never returns. It initializes the N64 video and audio hardware, calls your <code>Init()</code> once, then enters the main loop.</p>
+<p><code>Run</code> never returns. It initializes the N64 video hardware, calls your <code>Init()</code> once, initializes audio, and then enters the main loop.</p>
 <h2 id="how-the-loop-works"><a class="header" href="#how-the-loop-works">How the Loop Works</a></h2>
 <p>The game loop uses a fixed-timestep accumulator pattern:</p>
 <ol>
@@ -2458,6 +2798,9 @@ func main() {
 <p>This separation matters because <code>Update()</code> and <code>Draw()</code> can run a different number of times per frame. If the game falls behind, <code>Update()</code> catches up with multiple calls while <code>Draw()</code> only runs once.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="the-fixed-canvas"><a class="header" href="#the-fixed-canvas">The Fixed Canvas</a></h1>
+<blockquote>
+<p>If you just finished the beginner journey, this page explains the concept behind the behavior you already saw on screen.</p>
+</blockquote>
 <p>GoSprite64 gives you a single, fixed drawing surface: <strong>288 x 216 logical pixels</strong>. Every drawing function in the library operates in this coordinate space, and the runtime handles everything else.</p>
 <h2 id="the-logical-canvas"><a class="header" href="#the-logical-canvas">The Logical Canvas</a></h2>
 <p>All public drawing APIs use the same coordinate system:</p>
@@ -2485,7 +2828,7 @@ func main() {
 +-------------------------------+
 </code></pre>
 <p>The origin offset is <code>(16, 12)</code> - every logical coordinate you pass is translated by this amount before being drawn to the framebuffer. The margin area is not accessible to your game code.</p>
-<p>After rendering, the 320x240 framebuffer is scaled up to the TV’s output resolution (640x480 for NTSC, 640x576 for PAL) and centered on screen, ensuring that pixels appear square regardless of the video standard.</p>
+<p>After rendering, the 320x240 framebuffer is scaled up to a 640x480 output image and then centered appropriately for the active TV mode, ensuring that pixels appear square regardless of whether the console is running in NTSC or PAL timing.</p>
 <h2 id="why-288x216"><a class="header" href="#why-288x216">Why 288x216?</a></h2>
 <p>The N64 outputs video in formats where pixels are not naturally square. NTSC displays 640x480 with a 4:3 aspect ratio, but the pixel aspect ratio is not 1:1 at 320x240. By using 288x216 as the logical canvas, GoSprite64 ensures that:</p>
 <ul>
@@ -2862,6 +3205,9 @@ handles scaling to the physical framebuffer and clipping to screen bounds.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="sprites-1"><a class="header" href="#sprites-1">Sprites</a></h1>
 <p>This chapter covers how to load sprite sheets, draw individual sprites with transforms, animate them, and render them in world space alongside a tile scene.</p>
+<blockquote>
+<p>New to GoSprite64? Start with <a href="#put-a-sprite-on-screen">Put a Sprite on Screen</a> for the short guided version, then come back here for the deeper sprite guide.</p>
+</blockquote>
 <h2 id="preparing-a-sprite-sheet-png"><a class="header" href="#preparing-a-sprite-sheet-png">Preparing a sprite sheet PNG</a></h2>
 <p>A sprite sheet is a single PNG image that contains all frames of a character or object arranged in a grid. Each cell in the grid is one frame. The same <code>mk2dsheet</code> tool used for tile sheets handles sprite sheets - you just specify different frame dimensions.</p>
 <p>For example, a character sprite sheet with 16x16 pixel frames:</p>
@@ -4115,7 +4461,10 @@ gosprite64.DrawRegion{}.Active()  // false
 <p>See <code>examples/splitscreen_demo</code> for a working 1P/2P split-screen game using draw regions, timers, and menus together.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="d-pad-and-buttons"><a class="header" href="#d-pad-and-buttons">D-Pad and Buttons</a></h1>
-<p>Read digital button presses from the player-one controller. GoSprite64 polls controller state once per frame automatically, so these functions always reflect the current frame’s input.</p>
+<blockquote>
+<p>If you just finished the beginner journey, this page explains the concept behind the behavior you already saw on screen.</p>
+</blockquote>
+<p>Read digital button presses from the player-one controller. GoSprite64 polls controller state automatically before each <code>Update()</code> tick, so these functions reflect the current update tick’s input.</p>
 <pre><code class="language-go">import gs "github.com/drpaneas/gosprite64"
 </code></pre>
 <h2 id="button-constants"><a class="header" href="#button-constants">Button constants</a></h2>
@@ -4144,7 +4493,7 @@ gosprite64.DrawRegion{}.Active()  // false
 </table>
 </div>
 <h2 id="checking-held-buttons"><a class="header" href="#checking-held-buttons">Checking held buttons</a></h2>
-<p><code>IsButtonDown</code> returns <code>true</code> for every frame the button is physically held down:</p>
+<p><code>IsButtonDown</code> returns <code>true</code> for every update tick the button is physically held down:</p>
 <pre><code class="language-go">func (g *Game) Update() {
     if gs.IsButtonDown(gs.ButtonDPadRight) {
         player.X += speed
@@ -4160,9 +4509,9 @@ gosprite64.DrawRegion{}.Active()  // false
     }
 }
 </code></pre>
-<p>Use <code>IsButtonDown</code> for continuous actions like movement - the callback fires every frame while the button is pressed.</p>
+<p>Use <code>IsButtonDown</code> for continuous actions like movement - the check stays true on each update tick while the button is pressed.</p>
 <h2 id="detecting-a-fresh-press"><a class="header" href="#detecting-a-fresh-press">Detecting a fresh press</a></h2>
-<p><code>IsButtonJustPressed</code> returns <code>true</code> only on the first frame the button transitions from released to pressed. It will not fire again until the player releases and re-presses the button.</p>
+<p><code>IsButtonJustPressed</code> returns <code>true</code> only on the first update tick where the button transitions from released to pressed. It will not fire again until the player releases and re-presses the button.</p>
 <pre><code class="language-go">func (g *Game) Update() {
     if gs.IsButtonJustPressed(gs.ButtonA) {
         player.Jump()
@@ -7531,6 +7880,616 @@ dl.DPRaw(words...)
 <p>The <code>triangle3d</code> example in the repository demonstrates CPU-side triangle rendering with perspective projection. See <code>examples/triangle3d/</code> for a working implementation.</p>
 <p>For a simpler 2D rotating triangle using software rasterization with <code>FillRect</code> scanlines, see <code>examples/triangle/</code>.</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="api-quick-reference"><a class="header" href="#api-quick-reference">API Quick Reference</a></h1>
+<p>A compact listing of every public function, type, and constant in the GoSprite64 API.</p>
+<h2 id="core"><a class="header" href="#core">Core</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Run(g Game)</code></td><td>Starts the game loop with fixed-step timing at 60 FPS</td></tr>
+<tr><td><code>Game</code> (interface)</td><td>Implement <code>Init()</code>, <code>Update()</code>, <code>Draw()</code> to define your game</td></tr>
+<tr><td><code>TargetFPS</code> (var, int)</td><td>Target frame rate, defaults to 60</td></tr>
+<tr><td><code>RegisterAssetFS(f cartfs.FS)</code></td><td>Registers the embedded cartridge filesystem for asset loading</td></tr>
+<tr><td><code>LoadFromCartridge(filename string) ([]byte, error)</code></td><td>Reads a raw file from the cartridge filesystem</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="drawing"><a class="header" href="#drawing">Drawing</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>ClearScreen()</code></td><td>Fills the screen with Black</td></tr>
+<tr><td><code>ClearScreenWith(c color.Color)</code></td><td>Fills the screen with the given color</td></tr>
+<tr><td><code>FillRect(x1, y1, x2, y2 int, c color.Color)</code></td><td>Draws a filled rectangle (inclusive coordinates)</td></tr>
+<tr><td><code>DrawRect(x1, y1, x2, y2 int, c color.Color)</code></td><td>Draws a rectangle outline</td></tr>
+<tr><td><code>DrawLine(x1, y1, x2, y2 int, c color.Color)</code></td><td>Draws a 1-pixel line (Bresenham for diagonals)</td></tr>
+<tr><td><code>DrawImage(src image.Image, x, y int)</code></td><td>Draws a Go <code>image.Image</code> at screen coordinates</td></tr>
+<tr><td><code>DrawWorldImage(src image.Image, worldX, worldY int, cam *Camera)</code></td><td>Draws an image in world space, offset by camera</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="colors-1"><a class="header" href="#colors-1">Colors</a></h2>
+<p>All 16 predefined palette colors are exported as <code>color.Color</code> variables:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Variable</th><th>RGB</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Black</code></td><td>(0, 0, 0)</td></tr>
+<tr><td><code>DarkBlue</code></td><td>(29, 43, 83)</td></tr>
+<tr><td><code>DarkPurple</code></td><td>(126, 37, 83)</td></tr>
+<tr><td><code>DarkGreen</code></td><td>(0, 135, 81)</td></tr>
+<tr><td><code>Brown</code></td><td>(171, 82, 54)</td></tr>
+<tr><td><code>DarkGray</code></td><td>(95, 87, 79)</td></tr>
+<tr><td><code>LightGray</code></td><td>(194, 195, 199)</td></tr>
+<tr><td><code>White</code></td><td>(255, 241, 232)</td></tr>
+<tr><td><code>Red</code></td><td>(255, 0, 77)</td></tr>
+<tr><td><code>Orange</code></td><td>(255, 163, 0)</td></tr>
+<tr><td><code>Yellow</code></td><td>(255, 236, 39)</td></tr>
+<tr><td><code>Green</code></td><td>(0, 228, 54)</td></tr>
+<tr><td><code>Blue</code></td><td>(41, 173, 255)</td></tr>
+<tr><td><code>Indigo</code></td><td>(131, 118, 156)</td></tr>
+<tr><td><code>Pink</code></td><td>(255, 119, 168)</td></tr>
+<tr><td><code>Peach</code></td><td>(255, 204, 170)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="sprites-2"><a class="header" href="#sprites-2">Sprites</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>SpriteSheet</code> (struct)</td><td>A loaded sprite sheet containing animation frames</td></tr>
+<tr><td><code>LoadSpriteSheet(path string) (*SpriteSheet, error)</code></td><td>Loads a sprite sheet from the cartridge filesystem</td></tr>
+<tr><td><code>(*SpriteSheet).FrameCount() int</code></td><td>Returns the total number of frames</td></tr>
+<tr><td><code>(*SpriteSheet).FrameWidth() int</code></td><td>Returns the width of each frame in pixels</td></tr>
+<tr><td><code>(*SpriteSheet).FrameHeight() int</code></td><td>Returns the height of each frame in pixels</td></tr>
+<tr><td><code>DrawSprite(sheet *SpriteSheet, frame int, x, y float32)</code></td><td>Draws a sprite frame at screen coordinates</td></tr>
+<tr><td><code>DrawSpriteWithOptions(sheet *SpriteSheet, frame int, x, y float32, opts DrawSpriteOptions)</code></td><td>Draws a sprite with flip, scale, rotation, blend</td></tr>
+<tr><td><code>DrawWorldSprite(sheet *SpriteSheet, frame int, worldX, worldY float32, cam *Camera)</code></td><td>Draws a sprite in world space</td></tr>
+<tr><td><code>DrawWorldSpriteWithOptions(sheet *SpriteSheet, frame int, worldX, worldY float32, cam *Camera, opts DrawSpriteOptions)</code></td><td>World-space sprite with options</td></tr>
+<tr><td><code>DrawSpriteOptions</code> (struct)</td><td>FlipH, FlipV, ScaleX, ScaleY, Rotation, OriginX, OriginY, Blend, Alpha</td></tr>
+<tr><td><code>BlendMode</code> (uint8)</td><td>Blend mode enum type</td></tr>
+<tr><td><code>BlendNone</code></td><td>No blending (fastest, opaque blit)</td></tr>
+<tr><td><code>BlendMasked</code></td><td>Binary alpha (pixels are fully opaque or fully transparent)</td></tr>
+<tr><td><code>BlendAlpha</code></td><td>Per-pixel alpha blending</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="sheet--tile"><a class="header" href="#sheet--tile">Sheet &amp; Tile</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Sheet</code> (struct)</td><td>A tile sheet loaded from a bundle</td></tr>
+<tr><td><code>SheetInfo</code> (struct)</td><td>TileWidth, TileHeight, TileCount, AtlasWidth, AtlasHeight</td></tr>
+<tr><td><code>(*Sheet).Info() SheetInfo</code></td><td>Returns tile dimensions and atlas size</td></tr>
+<tr><td><code>(*Sheet).Tile(tileID uint16) image.Image</code></td><td>Returns the image for a single tile</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="animation-2"><a class="header" href="#animation-2">Animation</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>AnimationSet</code> (struct)</td><td>A named collection of animation clips</td></tr>
+<tr><td><code>AnimationClip</code> (struct)</td><td>Name, FPS, and frame indices for one clip</td></tr>
+<tr><td><code>(*AnimationSet).Name() string</code></td><td>Returns the animation set’s name</td></tr>
+<tr><td><code>(*AnimationSet).Clips() []AnimationClip</code></td><td>Returns all clips in the set</td></tr>
+<tr><td><code>(*AnimationSet).Clip(name string) (AnimationClip, bool)</code></td><td>Looks up a clip by name</td></tr>
+<tr><td><code>AnimationPlayer</code> (struct)</td><td>Drives frame-by-frame playback of a clip</td></tr>
+<tr><td><code>NewAnimationPlayer() *AnimationPlayer</code></td><td>Creates a new player (stopped)</td></tr>
+<tr><td><code>(*AnimationPlayer).Play(clip AnimationClip)</code></td><td>Starts playing a clip from frame 0</td></tr>
+<tr><td><code>(*AnimationPlayer).Pause()</code></td><td>Pauses playback</td></tr>
+<tr><td><code>(*AnimationPlayer).Resume()</code></td><td>Resumes a paused player</td></tr>
+<tr><td><code>(*AnimationPlayer).Stop()</code></td><td>Stops playback and resets to frame 0</td></tr>
+<tr><td><code>(*AnimationPlayer).Restart()</code></td><td>Replays the current clip from the start</td></tr>
+<tr><td><code>(*AnimationPlayer).SetLoop(loop bool)</code></td><td>Enables or disables looping</td></tr>
+<tr><td><code>(*AnimationPlayer).Advance(ticks int)</code></td><td>Advances playback by the given number of ticks</td></tr>
+<tr><td><code>(*AnimationPlayer).Frame() int</code></td><td>Returns the current frame index</td></tr>
+<tr><td><code>(*AnimationPlayer).Playing() bool</code></td><td>True if the player is actively playing</td></tr>
+<tr><td><code>(*AnimationPlayer).Done() bool</code></td><td>True if playback has stopped</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="fonts--text"><a class="header" href="#fonts--text">Fonts &amp; Text</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>DrawText(str string, x, y int, c color.Color)</code></td><td>Draws text using the built-in 8x8 font</td></tr>
+<tr><td><code>Font</code> (struct)</td><td>Custom font with per-glyph metrics from a sprite sheet</td></tr>
+<tr><td><code>Glyph</code> (struct)</td><td>Frame, Width, Advance, OffsetX, OffsetY</td></tr>
+<tr><td><code>NewFont(sheet *SpriteSheet, glyphs map[rune]Glyph, lineHeight int) *Font</code></td><td>Creates a custom font</td></tr>
+<tr><td><code>(*Font).LineHeight() int</code></td><td>Vertical distance between baselines</td></tr>
+<tr><td><code>(*Font).GlyphFor(r rune) (Glyph, bool)</code></td><td>Looks up a glyph, falls back to <code>Font.Fallback</code></td></tr>
+<tr><td><code>(*Font).MeasureText(text string) (width, height int)</code></td><td>Measures pixel size of rendered text</td></tr>
+<tr><td><code>(*Font).DrawTextEx(text string, x, y int, align TextAlign)</code></td><td>Draws text with alignment</td></tr>
+<tr><td><code>(*Font).WrapText(text string, maxWidth int) string</code></td><td>Inserts newlines to wrap text at a pixel width</td></tr>
+<tr><td><code>FormatScore(score int, width int) string</code></td><td>Formats an integer with leading zeros</td></tr>
+<tr><td><code>TextAlign</code> (int)</td><td>Horizontal alignment enum</td></tr>
+<tr><td><code>AlignLeft</code></td><td>Left-aligned (default)</td></tr>
+<tr><td><code>AlignCenter</code></td><td>Center-aligned</td></tr>
+<tr><td><code>AlignRight</code></td><td>Right-aligned</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="input-1"><a class="header" href="#input-1">Input</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>IsButtonDown(button ButtonMask) bool</code></td><td>True if button is held (port 0)</td></tr>
+<tr><td><code>IsButtonJustPressed(button ButtonMask) bool</code></td><td>True on the frame a button transitions to pressed (port 0)</td></tr>
+<tr><td><code>StickPosition(deadzone float64) (float64, float64)</code></td><td>Analog stick X/Y in [-1, 1] (port 0)</td></tr>
+<tr><td><code>PlayerButtonDown(port int, button ButtonMask) bool</code></td><td>Per-port button held check</td></tr>
+<tr><td><code>PlayerButtonJustPressed(port int, button ButtonMask) bool</code></td><td>Per-port just-pressed check</td></tr>
+<tr><td><code>PlayerStickPosition(port int, deadzone float64) (float64, float64)</code></td><td>Per-port analog stick</td></tr>
+<tr><td><code>IsControllerConnected(port int) bool</code></td><td>True if a controller is plugged into the given port</td></tr>
+<tr><td><code>ConnectedControllers() int</code></td><td>Number of connected controllers</td></tr>
+<tr><td><code>SetRumble(port int, enabled bool)</code></td><td>Enables or disables the rumble pak</td></tr>
+<tr><td><code>ButtonMask</code> (type alias)</td><td>Bitmask type for button constants</td></tr>
+<tr><td><code>MaxControllers</code> (const, 4)</td><td>Number of controller ports</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Button constants:</strong> <code>ButtonA</code>, <code>ButtonB</code>, <code>ButtonZ</code>, <code>ButtonStart</code>, <code>ButtonDPadUp</code>, <code>ButtonDPadDown</code>, <code>ButtonDPadLeft</code>, <code>ButtonDPadRight</code>, <code>ButtonL</code>, <code>ButtonR</code>, <code>ButtonCUp</code>, <code>ButtonCDown</code>, <code>ButtonCLeft</code>, <code>ButtonCRight</code></p>
+<h2 id="input-replay"><a class="header" href="#input-replay">Input Replay</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>FrameInput</code> (struct)</td><td>Buttons, StickX, StickY for one player/frame</td></tr>
+<tr><td><code>ReplayData</code> (struct)</td><td>PlayerCount, FrameCount, and recorded frames</td></tr>
+<tr><td><code>InputRecorder</code> (struct)</td><td>Records per-frame input during gameplay</td></tr>
+<tr><td><code>NewInputRecorder(playerCount int) *InputRecorder</code></td><td>Creates a recorder</td></tr>
+<tr><td><code>(*InputRecorder).CaptureFrame(player int, input FrameInput)</code></td><td>Records one frame</td></tr>
+<tr><td><code>(*InputRecorder).Finish() *ReplayData</code></td><td>Finalizes recording</td></tr>
+<tr><td><code>InputPlayer</code> (struct)</td><td>Replays recorded input</td></tr>
+<tr><td><code>NewInputPlayer(data *ReplayData) *InputPlayer</code></td><td>Creates a replay player</td></tr>
+<tr><td><code>(*InputPlayer).NextFrame(player int) (FrameInput, bool)</code></td><td>Gets next frame for a player</td></tr>
+<tr><td><code>(*InputPlayer).Done() bool</code></td><td>True when all frames consumed</td></tr>
+<tr><td><code>(*InputPlayer).Reset()</code></td><td>Restarts playback from the beginning</td></tr>
+<tr><td><code>(*InputPlayer).CurrentFrame() int</code></td><td>Current playback position</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="audio-1"><a class="header" href="#audio-1">Audio</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>AudioAsset</code> (struct)</td><td>Describes a single audio asset (ID, rate, loop points, etc.)</td></tr>
+<tr><td><code>AudioBundle</code> (struct)</td><td>Collection of audio assets with data and name resolver</td></tr>
+<tr><td><code>RegisterAudioBundle(bundle AudioBundle)</code></td><td>Registers audio assets before <code>Run()</code></td></tr>
+<tr><td><code>PlaySoundEffect(id sfx.ID) bool</code></td><td>Plays a sound effect, returns true if queued</td></tr>
+<tr><td><code>PlayMusic(id music.ID) bool</code></td><td>Starts music playback</td></tr>
+<tr><td><code>StopMusic()</code></td><td>Stops the current music track</td></tr>
+<tr><td><code>SetSoundEffectVolume(v float32)</code></td><td>Sets SFX volume (0.0-1.0)</td></tr>
+<tr><td><code>SetMusicVolume(v float32)</code></td><td>Sets music volume (0.0-1.0)</td></tr>
+<tr><td><code>DefaultAudioOutputRate</code> (const, 48000)</td><td>DAC output rate in Hz</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="tile-scenes"><a class="header" href="#tile-scenes">Tile Scenes</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Bundle</code> (struct)</td><td>A loaded asset bundle containing sheets, maps, and animations</td></tr>
+<tr><td><code>OpenBundle(path string) (*Bundle, error)</code></td><td>Opens a bundle from the cartridge filesystem</td></tr>
+<tr><td><code>(*Bundle).LoadSheet(name string) (*Sheet, error)</code></td><td>Loads a named sheet from the bundle</td></tr>
+<tr><td><code>(*Bundle).LoadMap(name string) (*Map, error)</code></td><td>Loads a named map from the bundle</td></tr>
+<tr><td><code>(*Bundle).LoadAnimation(name string) (*AnimationSet, error)</code></td><td>Loads a named animation set</td></tr>
+<tr><td><code>Scene</code> (struct)</td><td>A fully loaded tile scene with map, sheets, and animations</td></tr>
+<tr><td><code>LoadScene(bundle *Bundle) (*Scene, error)</code></td><td>Loads all assets from a bundle into a renderable scene</td></tr>
+<tr><td><code>(*Scene).Draw(cam *Camera)</code></td><td>Renders all visible layers with the given camera</td></tr>
+<tr><td><code>(*Scene).Map() *Map</code></td><td>Returns the scene’s map</td></tr>
+<tr><td><code>(*Scene).Sheet(index int) *Sheet</code></td><td>Returns a sheet by index</td></tr>
+<tr><td><code>(*Scene).SheetByID(id uint16) *Sheet</code></td><td>Returns a sheet by 1-based ID</td></tr>
+<tr><td><code>(*Scene).SheetCount() int</code></td><td>Number of sheets in the scene</td></tr>
+<tr><td><code>(*Scene).Animation(index int) *AnimationSet</code></td><td>Returns an animation by index</td></tr>
+<tr><td><code>(*Scene).AnimationByName(name string) *AnimationSet</code></td><td>Looks up an animation set by name</td></tr>
+<tr><td><code>(*Scene).AnimationCount() int</code></td><td>Number of animation sets</td></tr>
+<tr><td><code>(*Scene).LayerSheet(layer int) (*Sheet, bool)</code></td><td>Returns the sheet assigned to a layer</td></tr>
+<tr><td><code>(*Scene).LayerAssets(layer int) (MapLayerInfo, *Sheet, bool)</code></td><td>Returns layer info and sheet together</td></tr>
+<tr><td><code>(*Scene).LayerSheetInfo(layer int) (SheetInfo, bool)</code></td><td>Returns the SheetInfo for a layer</td></tr>
+<tr><td><code>(*Scene).Stats() RuntimeStats</code></td><td>Returns rendering statistics (allocation-free)</td></tr>
+<tr><td><code>Map</code> (struct)</td><td>Tile map with layers of cell data</td></tr>
+<tr><td><code>MapLayerInfo</code> (struct)</td><td>SheetID, NonZeroTiles</td></tr>
+<tr><td><code>(*Map).Width() int</code></td><td>Map width in tiles</td></tr>
+<tr><td><code>(*Map).Height() int</code></td><td>Map height in tiles</td></tr>
+<tr><td><code>(*Map).TileWidth() int</code></td><td>Width of each tile in pixels</td></tr>
+<tr><td><code>(*Map).TileHeight() int</code></td><td>Height of each tile in pixels</td></tr>
+<tr><td><code>(*Map).PixelWidth() int</code></td><td>Total map width in pixels</td></tr>
+<tr><td><code>(*Map).PixelHeight() int</code></td><td>Total map height in pixels</td></tr>
+<tr><td><code>(*Map).LayerCount() int</code></td><td>Number of layers</td></tr>
+<tr><td><code>(*Map).LayerInfo(layer int) (MapLayerInfo, bool)</code></td><td>Returns cached info for a layer (O(1))</td></tr>
+<tr><td><code>(*Map).LayerSheetID(layer int) (uint16, bool)</code></td><td>Returns the sheet ID for a layer</td></tr>
+<tr><td><code>(*Map).TileAt(layer, x, y int) (uint16, bool)</code></td><td>Returns the tile ID at a grid position</td></tr>
+<tr><td><code>RuntimeStats</code> (struct)</td><td>SheetRAMBytes, MapRAMBytes, CachedChunks, VisibleTiles, SheetCount, LayerCount, UploadCount</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="game-systems-1"><a class="header" href="#game-systems-1">Game Systems</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>GameState</code> (interface)</td><td>Enter, Update, Draw, Exit for screen management</td></tr>
+<tr><td><code>StateMachine</code> (struct)</td><td>Stack-based game state manager</td></tr>
+<tr><td><code>NewStateMachine(initial GameState) *StateMachine</code></td><td>Creates a state machine</td></tr>
+<tr><td><code>(*StateMachine).Init()</code></td><td>Triggers <code>Enter()</code> on the initial state</td></tr>
+<tr><td><code>(*StateMachine).Update()</code></td><td>Delegates to the top state’s <code>Update()</code></td></tr>
+<tr><td><code>(*StateMachine).Draw()</code></td><td>Delegates to the top state’s <code>Draw()</code></td></tr>
+<tr><td><code>(*StateMachine).Switch(state GameState)</code></td><td>Replaces the top state</td></tr>
+<tr><td><code>(*StateMachine).Push(state GameState)</code></td><td>Overlays a new state (for pause menus, dialogs)</td></tr>
+<tr><td><code>(*StateMachine).Pop()</code></td><td>Removes the top state</td></tr>
+<tr><td><code>(*StateMachine).Current() GameState</code></td><td>Returns the active state</td></tr>
+<tr><td><code>(*StateMachine).Depth() int</code></td><td>Number of states on the stack</td></tr>
+<tr><td><code>MenuItem</code> (struct)</td><td>Label, Disabled, OnConfirm callback</td></tr>
+<tr><td><code>Menu</code> (struct)</td><td>D-pad-navigated list with cursor tracking</td></tr>
+<tr><td><code>NewMenu(items []MenuItem) *Menu</code></td><td>Creates a menu</td></tr>
+<tr><td><code>(*Menu).HandleInput() bool</code></td><td>Reads D-pad/A button, returns true on confirm</td></tr>
+<tr><td><code>(*Menu).Draw()</code></td><td>Renders the menu using <code>DrawText</code></td></tr>
+<tr><td><code>(*Menu).MoveUp()</code></td><td>Moves cursor up (skips disabled items)</td></tr>
+<tr><td><code>(*Menu).MoveDown()</code></td><td>Moves cursor down (skips disabled items)</td></tr>
+<tr><td><code>(*Menu).Confirm()</code></td><td>Triggers the selected item’s callback</td></tr>
+<tr><td><code>(*Menu).Cursor() int</code></td><td>Returns the cursor position</td></tr>
+<tr><td><code>(*Menu).SetCursor(index int)</code></td><td>Sets the cursor position</td></tr>
+<tr><td><code>(*Menu).Selected() MenuItem</code></td><td>Returns the highlighted item</td></tr>
+<tr><td><code>(*Menu).Count() int</code></td><td>Number of items</td></tr>
+<tr><td><code>Timer</code> (struct)</td><td>Counts down a fixed number of frames</td></tr>
+<tr><td><code>NewTimer(durationFrames int) *Timer</code></td><td>Creates a one-shot timer</td></tr>
+<tr><td><code>(*Timer).Tick() bool</code></td><td>Advances one frame, returns true when it finishes</td></tr>
+<tr><td><code>(*Timer).Done() bool</code></td><td>True when the timer has expired</td></tr>
+<tr><td><code>(*Timer).Progress() float32</code></td><td>Elapsed/duration ratio (0-1)</td></tr>
+<tr><td><code>(*Timer).Elapsed() int</code></td><td>Frames elapsed</td></tr>
+<tr><td><code>(*Timer).Remaining() int</code></td><td>Frames left</td></tr>
+<tr><td><code>(*Timer).Duration() int</code></td><td>Total frame count</td></tr>
+<tr><td><code>(*Timer).Reset()</code></td><td>Restarts with the same duration</td></tr>
+<tr><td><code>(*Timer).ResetWith(durationFrames int)</code></td><td>Restarts with a new duration</td></tr>
+<tr><td><code>RepeatingTimer</code> (struct)</td><td>Triggers at a fixed interval, counts triggers</td></tr>
+<tr><td><code>NewRepeatingTimer(intervalFrames int) *RepeatingTimer</code></td><td>Creates a repeating timer</td></tr>
+<tr><td><code>(*RepeatingTimer).Tick() bool</code></td><td>Advances one frame, returns true on trigger</td></tr>
+<tr><td><code>(*RepeatingTimer).Count() int</code></td><td>Number of times triggered</td></tr>
+<tr><td><code>(*RepeatingTimer).Reset()</code></td><td>Clears elapsed time and count</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="parallax"><a class="header" href="#parallax">Parallax</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>ParallaxLayer</code> (struct)</td><td>SpeedX, SpeedY scroll multipliers</td></tr>
+<tr><td><code>(ParallaxLayer).Offset(cameraX, cameraY int) (int, int)</code></td><td>Computes the layer offset for a camera position</td></tr>
+<tr><td><code>ParallaxConfig</code> (struct)</td><td>Holds a slice of <code>ParallaxLayer</code></td></tr>
+<tr><td><code>NewParallaxConfig(speeds ...ParallaxLayer) ParallaxConfig</code></td><td>Creates a parallax config from layer speeds</td></tr>
+<tr><td><code>(ParallaxConfig).LayerOffset(layer, cameraX, cameraY int) (int, int)</code></td><td>Returns the scroll offset for a specific layer</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="transitions"><a class="header" href="#transitions">Transitions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>TransitionStyle</code> (int)</td><td>Enum for transition types</td></tr>
+<tr><td><code>FadeToBlack</code></td><td>Screen fades to black</td></tr>
+<tr><td><code>FadeFromBlack</code></td><td>Screen fades in from black</td></tr>
+<tr><td><code>Transition</code> (struct)</td><td>Style, Duration, active state</td></tr>
+<tr><td><code>StartTransition(style TransitionStyle, durationFrames int) *Transition</code></td><td>Begins a screen transition</td></tr>
+<tr><td><code>(*Transition).Advance()</code></td><td>Advances the transition by one frame</td></tr>
+<tr><td><code>(*Transition).Done() bool</code></td><td>True when the transition has completed</td></tr>
+<tr><td><code>(*Transition).Active() bool</code></td><td>True while the transition is running</td></tr>
+<tr><td><code>(*Transition).Stop()</code></td><td>Cancels the transition</td></tr>
+<tr><td><code>(*Transition).Draw()</code></td><td>Renders the transition overlay</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="draw-regions-2"><a class="header" href="#draw-regions-2">Draw Regions</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>DrawRegion</code> (struct)</td><td>X, Y, W, H defining a sub-rectangle of the screen</td></tr>
+<tr><td><code>(DrawRegion).Active() bool</code></td><td>True if the region restricts drawing</td></tr>
+<tr><td><code>(DrawRegion).Offset(x, y int) (int, int)</code></td><td>Translates local coordinates to screen space</td></tr>
+<tr><td><code>(DrawRegion).Clip(x1, y1, x2, y2 int) (int, int, int, int, bool)</code></td><td>Clips a rectangle to the region, returns false if outside</td></tr>
+<tr><td><code>(DrawRegion).ContainsPoint(x, y int) bool</code></td><td>True if a local point is inside the region</td></tr>
+<tr><td><code>SetDrawRegion(x, y, w, h int)</code></td><td>Restricts drawing to a screen sub-rectangle (nestable)</td></tr>
+<tr><td><code>ResetDrawRegion()</code></td><td>Removes the most recent draw region</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="camera-1"><a class="header" href="#camera-1">Camera</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Symbol</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Camera</code> (struct)</td><td>X, Y, Width, Height, Zoom, FollowTarget, FollowSpeed, Bounds</td></tr>
+<tr><td><code>(*Camera).EffectiveZoom() float32</code></td><td>Returns Zoom, defaulting to 1.0 if unset</td></tr>
+<tr><td><code>(*Camera).WorldToScreen(worldX, worldY float32) (float32, float32)</code></td><td>Converts world coordinates to screen coordinates</td></tr>
+<tr><td><code>(*Camera).UpdateFollow()</code></td><td>Moves the camera toward <code>FollowTarget</code> with smooth lerp</td></tr>
+<tr><td><code>(*Camera).ClampToBounds()</code></td><td>Restricts camera position to stay within <code>Bounds</code></td></tr>
+<tr><td><code>(*Camera).AddTrauma(amount float32)</code></td><td>Adds screen shake intensity (0-1)</td></tr>
+<tr><td><code>(*Camera).UpdateShake()</code></td><td>Decays trauma each frame</td></tr>
+<tr><td><code>(*Camera).ShakeOffset() (int, int)</code></td><td>Returns the current frame’s shake displacement</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="sub-packages"><a class="header" href="#sub-packages">Sub-Packages</a></h2>
+<p>GoSprite64 also provides these sub-packages for specialized functionality:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Package</th><th>Import Path</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td><code>math2d</code></td><td><code>gosprite64/math2d</code></td><td>2D vectors, rectangles, collision, easing, grid utilities, random numbers</td></tr>
+<tr><td><code>math3d</code></td><td><code>gosprite64/math3d</code></td><td>3D vectors, 4x4 matrices, viewport projection</td></tr>
+<tr><td><code>save</code></td><td><code>gosprite64/save</code></td><td>EEPROM, SRAM, and FlashRAM save data</td></tr>
+<tr><td><code>gfx</code></td><td><code>gosprite64/gfx</code></td><td>Low-level display list construction and execution</td></tr>
+<tr><td><code>dma</code></td><td><code>gosprite64/dma</code></td><td>DMA transfer helpers, MIO0 decompression, memory pool</td></tr>
+<tr><td><code>rspq</code></td><td><code>gosprite64/rspq</code></td><td>RSP task queue, microcode loading, OS task submission</td></tr>
+<tr><td><code>n64os</code></td><td><code>gosprite64/n64os</code></td><td>N64 OS primitives: scheduler, timers, events, messages</td></tr>
+<tr><td><code>scene3d</code></td><td><code>gosprite64/scene3d</code></td><td>3D scene graph, camera, mesh, LOD, triangle rendering</td></tr>
+<tr><td><code>audio/sfx</code></td><td><code>gosprite64/audio/sfx</code></td><td>Sound effect ID type</td></tr>
+<tr><td><code>audio/music</code></td><td><code>gosprite64/audio/music</code></td><td>Music track ID type</td></tr>
+<tr><td><code>audio/bank</code></td><td><code>gosprite64/audio/bank</code></td><td>Instrument bank loading</td></tr>
+<tr><td><code>audio/sequence</code></td><td><code>gosprite64/audio/sequence</code></td><td>Sequence player for MIDI-style playback</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="performance-notes-1"><a class="header" href="#performance-notes-1">Performance Notes</a></h1>
+<p>Tips for keeping your game running at 60 FPS on real N64 hardware.</p>
+<h2 id="the-288x216-canvas"><a class="header" href="#the-288x216-canvas">The 288x216 Canvas</a></h2>
+<p>GoSprite64 renders to a fixed <strong>288x216 logical canvas</strong> with 16-pixel gutters on each side. This canvas is scaled up to the full TV resolution (640x480 NTSC or 640x576 PAL) by the Video Interface. All your drawing coordinates use this logical space.</p>
+<p>The 16-pixel gutters exist because CRT televisions overscan the edges of the picture. The visible safe area is the inner 256x184 region, but you can draw into the full 288x216 if you want edge-to-edge coverage on modern displays.</p>
+<h2 id="fixed-step-timing"><a class="header" href="#fixed-step-timing">Fixed-Step Timing</a></h2>
+<p>The game loop runs at a fixed <strong>60 FPS</strong> with a fixed-step accumulator. Each <code>Update()</code> call represents exactly one 1/60th-second tick. If the hardware falls behind, <code>Update()</code> runs multiple times to catch up before <code>Draw()</code> is called. This means your physics and input logic always see consistent time steps regardless of rendering performance.</p>
+<h2 id="blend-modes-and-fill-rate"><a class="header" href="#blend-modes-and-fill-rate">Blend Modes and Fill Rate</a></h2>
+<p>The blend mode you choose on sprites has a major impact on rendering cost:</p>
+<ul>
+<li><strong><code>BlendNone</code></strong> is the fastest path. It performs a simple opaque blit with no per-pixel blending. Use this for backgrounds, tiles, and any sprites without transparency.</li>
+<li><strong><code>BlendMasked</code></strong> treats each pixel as either fully opaque or fully transparent based on the alpha channel. It is roughly <strong>4x slower</strong> than <code>BlendNone</code> because the RDP must test each pixel individually.</li>
+<li><strong><code>BlendAlpha</code></strong> performs full per-pixel alpha blending. It has similar cost to <code>BlendMasked</code> for a single sprite, but <strong>overlapping blended sprites</strong> multiply the cost because each overlapping pixel must be blended again.</li>
+</ul>
+<p>Practical advice:</p>
+<ul>
+<li>Default to <code>BlendNone</code> for tiles and backgrounds.</li>
+<li>Use <code>BlendMasked</code> for characters and objects with hard-edged transparency.</li>
+<li>Reserve <code>BlendAlpha</code> for effects that genuinely need smooth transparency (particles, shadows, UI overlays).</li>
+<li>Avoid stacking many alpha-blended sprites in the same screen region.</li>
+</ul>
+<h2 id="rotation-and-scaling"><a class="header" href="#rotation-and-scaling">Rotation and Scaling</a></h2>
+<p>When you set <code>Rotation</code> to a non-zero value in <code>DrawSpriteOptions</code>, the sprite is drawn through the <strong>transformed-quad path</strong> instead of the fast axis-aligned blit. This path computes per-pixel source coordinates through an affine transform, which costs more per pixel than a straight copy.</p>
+<p>Scaling alone (without rotation) is cheaper than rotation but still more expensive than an unscaled blit. If a sprite’s <code>ScaleX</code>, <code>ScaleY</code>, and <code>Rotation</code> are all at their defaults, GoSprite64 automatically falls back to the fast <code>DrawSprite</code> path.</p>
+<p>Tips:</p>
+<ul>
+<li>Pre-render rotated frames in your sprite sheet if you only need a few fixed angles (e.g., 4 or 8 directions).</li>
+<li>Keep the number of simultaneously rotating sprites small, especially at larger sizes.</li>
+</ul>
+<h2 id="scene-rendering"><a class="header" href="#scene-rendering">Scene Rendering</a></h2>
+<p>Tile scenes are optimized for the N64’s constrained memory and fill rate:</p>
+<ul>
+<li><strong>Only visible cells are rendered.</strong> The renderer uses the camera viewport to determine which tiles fall within the screen bounds and skips everything outside. Scrolling a large map costs the same as rendering a small map, as long as the visible tile count stays similar.</li>
+<li><strong><code>LayerInfo()</code> is O(1).</strong> Layer metadata (sheet ID, non-zero tile count) is cached at load time, so querying layer properties in your update loop is free.</li>
+<li><strong><code>Stats()</code> is allocation-free.</strong> The <code>RuntimeStats</code> struct is returned by value from pre-computed fields, so you can call it every frame without triggering garbage collection.</li>
+</ul>
+<h2 id="audio-performance"><a class="header" href="#audio-performance">Audio Performance</a></h2>
+<p>The audio engine is designed for zero allocations after initialization:</p>
+<ul>
+<li>All buffers (output, per-voice source, byte conversion) are pre-allocated once during <code>initAudio</code>.</li>
+<li>The mixing loop reuses fixed-size arrays and never calls <code>make</code> or <code>append</code>.</li>
+<li>Command dispatch uses a lock-free ring buffer, so <code>PlaySoundEffect</code> and <code>PlayMusic</code> never block the game loop.</li>
+</ul>
+<p>This means audio has no GC pressure during gameplay. You can play and stop sounds freely without worrying about frame hitches.</p>
+<h2 id="math-avoid-sqrt-on-n64"><a class="header" href="#math-avoid-sqrt-on-n64">Math: Avoid sqrt on N64</a></h2>
+<p>The N64’s MIPS R4300i CPU does not have a hardware square root instruction. Computing <code>sqrt</code> requires a software approximation that takes many more cycles than basic arithmetic.</p>
+<p>The <code>math2d</code> package provides squared-distance methods on <code>Vec2</code> specifically for this:</p>
+<ul>
+<li><strong><code>v.LengthSq() float32</code></strong> returns <code>x*x + y*y</code> without the square root.</li>
+<li><strong><code>v.DistanceSq(other Vec2) float32</code></strong> returns the squared distance between two points.</li>
+</ul>
+<p>Use these for distance comparisons. Instead of:</p>
+<pre><code class="language-go">if a.Distance(b) &lt; 32 {
+</code></pre>
+<p>Write:</p>
+<pre><code class="language-go">if a.DistanceSq(b) &lt; 32*32 {
+</code></pre>
+<p>The result is mathematically equivalent for comparisons and avoids the expensive sqrt entirely. Only call <code>Distance()</code> or <code>Length()</code> when you actually need the scalar distance value (e.g., for normalization).</p>
+<h2 id="general-tips"><a class="header" href="#general-tips">General Tips</a></h2>
+<ul>
+<li><strong>Minimize draw calls for overlapping transparent sprites.</strong> Each overlapping blended pixel is processed again. Group opaque background layers together and draw them with <code>BlendNone</code>.</li>
+<li><strong>Use smaller sprite sizes when possible.</strong> A 16x16 sprite fills 4x fewer pixels than a 32x32 sprite. The N64’s fill rate is the most common bottleneck.</li>
+<li><strong>Profile with <code>Stats()</code>.</strong> Check <code>VisibleTiles</code> and <code>UploadCount</code> each frame to understand where rendering time is going. A spike in <code>UploadCount</code> means the renderer is loading new tile data into TMEM more often than expected.</li>
+<li><strong>Keep your map layers shallow.</strong> Each additional layer multiplies the number of tiles the renderer must process for every visible cell. Two or three layers is typical; five or more may stress the fill rate.</li>
+<li><strong>Pre-compute what you can.</strong> <code>LayerInfo</code> and <code>SheetInfo</code> are cached, so prefer them over re-scanning tile data manually.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="troubleshooting-2"><a class="header" href="#troubleshooting-2">Troubleshooting</a></h1>
+<p>Common build errors, runtime issues, and emulator quirks with solutions.</p>
+<h2 id="beginner-setup-and-first-run-problems"><a class="header" href="#beginner-setup-and-first-run-problems">Beginner setup and first-run problems</a></h2>
+<p>If you are blocked before the first ROM works:</p>
+<ul>
+<li>go back to <a href="#installation">Installation</a></li>
+<li>confirm you followed <a href="#run-your-first-rom">Run Your First ROM</a></li>
+<li>rebuild before reopening the ROM in your emulator</li>
+</ul>
+<h2 id="build-errors"><a class="header" href="#build-errors">Build Errors</a></h2>
+<h3 id="ambiguous-import-or-multiple-module-errors"><a class="header" href="#ambiguous-import-or-multiple-module-errors">“ambiguous import” or multiple module errors</a></h3>
+<p><strong>Symptom:</strong> <code>go build</code> reports an “ambiguous import” error, or complains about a package being provided by multiple modules.</p>
+<p><strong>Cause:</strong> There is a stray <code>go.mod</code> file inside one of the <code>examples/</code> subdirectories. Go sees it as a separate module that conflicts with the root module.</p>
+<p><strong>Fix:</strong> Make sure you are building from the repository root and that no example directory has its own <code>go.mod</code>. Each example should be part of the root module. If you find an extra <code>go.mod</code> in an example folder, delete it:</p>
+<pre><code class="language-bash">rm examples/mygame/go.mod
+rm examples/mygame/go.sum
+</code></pre>
+<p>Then run <code>go mod tidy</code> from the repository root.</p>
+<h3 id="package-x-is-not-in-std"><a class="header" href="#package-x-is-not-in-std">“package X is not in std”</a></h3>
+<p><strong>Symptom:</strong> The compiler reports that packages like <code>embedded/rtos</code> or <code>embedded/arch/r4000/systim</code> are not in the standard library.</p>
+<p><strong>Cause:</strong> You are using the standard <code>go build</code> path instead of the supported N64 cross-compilation workflow. GoSprite64 targets the N64 via the EmbeddedGo toolchain and the settings loaded from <code>n64.env</code>.</p>
+<p><strong>Fix:</strong> Build with <code>GOENV=n64.env</code> and the EmbeddedGo binary:</p>
+<pre><code class="language-bash">GOENV=n64.env go1.24.5-embedded build -o examples/mygame/game.elf ./examples/mygame
+GOENV=n64.env n64go rom examples/mygame/game.elf
+</code></pre>
+<p><code>GOENV=n64.env</code> tells the Go toolchain to load the tracked N64 settings from <code>n64.env</code>, including <code>GOTOOLCHAIN</code>, <code>GOOS</code>, <code>GOARCH</code>, and <code>GOFLAGS</code>. Without that configuration, Go tries to resolve N64-specific packages against your host toolchain.</p>
+<h3 id="build-fails-with-embedded-errors"><a class="header" href="#build-fails-with-embedded-errors">Build fails with embedded/* errors</a></h3>
+<p><strong>Symptom:</strong> Compilation fails with errors referencing <code>embedded/rtos</code>, <code>embedded/arch/...</code>, or other packages under the <code>embedded/</code> prefix.</p>
+<p><strong>Cause:</strong> You need the <code>go1.24.5-embedded</code> toolchain and the <code>n64.env</code> workflow. The standard Go toolchain does not include the embedded runtime packages.</p>
+<p><strong>Fix:</strong></p>
+<ol>
+<li>Install the N64-capable Go toolchain. Follow the installation guide in <a href="#installation">Installation</a>.</li>
+<li>Make sure <code>n64.env</code> exists in your project root, then build with it explicitly:</li>
+</ol>
+<pre><code class="language-bash">GOENV=n64.env go1.24.5-embedded build -o examples/mygame/game.elf ./examples/mygame
+GOENV=n64.env n64go rom examples/mygame/game.elf
+</code></pre>
+<ol start="3">
+<li>Verify your Go version:</li>
+</ol>
+<pre><code class="language-bash">go1.24.5-embedded version
+</code></pre>
+<p>It should report <code>go1.24.5-embedded</code>. If that command is missing or fails, reinstall the EmbeddedGo toolchain before trying the build again.</p>
+<h3 id="go-mod-tidy-fails-with-network-or-version-errors"><a class="header" href="#go-mod-tidy-fails-with-network-or-version-errors"><code>go mod tidy</code> fails with network or version errors</a></h3>
+<p><strong>Symptom:</strong> Running <code>go mod tidy</code> produces errors about missing versions or fails to fetch dependencies.</p>
+<p><strong>Cause:</strong> The N64 environment loaded through <code>n64.env</code> can confuse <code>go mod tidy</code> because it tries to resolve dependencies for the embedded target platform instead of your host environment.</p>
+<p><strong>Fix:</strong> Run <code>go mod tidy</code> with the same N64-specific environment cleared:</p>
+<pre><code class="language-bash">env -u GOENV -u GOOS -u GOARCH -u GOFLAGS -u GOTOOLCHAIN go mod tidy
+</code></pre>
+<p>This tells Go to use your host platform for dependency resolution while keeping the rest of your environment intact. After tidy completes, return to the normal build flow with <code>GOENV=n64.env</code>.</p>
+<h2 id="runtime-issues"><a class="header" href="#runtime-issues">Runtime Issues</a></h2>
+<h3 id="black-screen-nothing-renders"><a class="header" href="#black-screen-nothing-renders">Black screen (nothing renders)</a></h3>
+<p><strong>Symptom:</strong> The ROM boots but the screen stays black. No tiles, sprites, or text appear.</p>
+<p><strong>Cause:</strong> You forgot to call <code>RegisterAssetFS</code> before <code>Run()</code>. Without it, the cartridge filesystem is not mounted and all asset loads silently fail.</p>
+<p><strong>Fix:</strong> In your <code>main.go</code>, register the embedded filesystem before starting the game loop:</p>
+<pre><code class="language-go">package main
+
+import (
+    "embed"
+
+    "github.com/clktmr/n64/drivers/cartfs"
+    "github.com/drpaneas/gosprite64"
+)
+
+//go:embed assets/*
+var embeddedAssets embed.FS
+
+var assetFS = cartfs.Embed(embeddedAssets)
+
+func main() {
+    gosprite64.RegisterAssetFS(assetFS)
+    gosprite64.Run(&amp;MyGame{})
+}
+</code></pre>
+<p>Make sure the <code>go:embed</code> directive matches the directory where your compiled assets live. If you renamed or moved your assets folder, update the embed path accordingly.</p>
+<h3 id="no-audio-sound-effects-and-music-are-silent"><a class="header" href="#no-audio-sound-effects-and-music-are-silent">No audio (sound effects and music are silent)</a></h3>
+<p><strong>Symptom:</strong> The game runs and renders correctly, but <code>PlaySoundEffect</code> and <code>PlayMusic</code> do nothing. No sound is heard.</p>
+<p><strong>Cause:</strong> The audio bundle is not registered. GoSprite64 requires a generated <code>audio_embed.go</code> file that calls <code>RegisterAudioBundle</code> with your compiled audio assets.</p>
+<p><strong>Fix:</strong></p>
+<ol>
+<li>Make sure you have run the <code>audiogen</code> tool to compile your audio assets:</li>
+</ol>
+<pre><code class="language-bash">go run ./cmd/audiogen -manifest audio/manifest.json -out audio_embed.go
+</code></pre>
+<ol start="2">
+<li>
+<p>Verify that <code>audio_embed.go</code> exists in your game directory and contains a call to <code>gosprite64.RegisterAudioBundle(...)</code>.</p>
+</li>
+<li>
+<p>The <code>RegisterAudioBundle</code> call must execute before <code>Run()</code>. The generated file typically uses an <code>init()</code> function, so simply having the file in your package is enough.</p>
+</li>
+</ol>
+<p>If you still hear no audio, check that your emulator supports audio output (ares, simple64, and cen64 all support it; some older emulators may not).</p>
+<h3 id="scene-only-fills-part-of-the-screen"><a class="header" href="#scene-only-fills-part-of-the-screen">Scene only fills part of the screen</a></h3>
+<p><strong>Symptom:</strong> The tile scene renders but only covers a portion of the screen, leaving black bars or empty space.</p>
+<p><strong>Cause:</strong> The camera’s <code>Width</code> and <code>Height</code> do not match the logical canvas size of 288x216.</p>
+<p><strong>Fix:</strong> Set the camera dimensions to match the canvas:</p>
+<pre><code class="language-go">cam := &amp;gosprite64.Camera{
+    Width:  288,
+    Height: 216,
+}
+</code></pre>
+<p>If you are using <code>Scene.Draw(nil)</code>, the scene creates a default camera with the correct dimensions automatically. But if you create your own camera and forget to set the size, it defaults to zero, which means no tiles fall within the viewport.</p>
+<h3 id="d-pad-does-not-respond"><a class="header" href="#d-pad-does-not-respond">D-pad does not respond</a></h3>
+<p><strong>Symptom:</strong> <code>IsButtonDown(ButtonDPadUp)</code> and similar calls always return false, even though the D-pad works in other games.</p>
+<p><strong>Cause:</strong> This is usually an emulator input mapping issue. Some emulators map keyboard arrow keys to the analog stick by default rather than the D-pad.</p>
+<p><strong>Fix (ares):</strong></p>
+<ol>
+<li>Go to <strong>Settings &gt; Input</strong>.</li>
+<li>Find the D-pad mappings (DPad Up, DPad Down, DPad Left, DPad Right).</li>
+<li>Bind them to your preferred keyboard keys.</li>
+</ol>
+<p><strong>Fix (simple64):</strong></p>
+<ol>
+<li>Go to <strong>Options &gt; Configure Controller</strong>.</li>
+<li>Verify that the D-pad entries are mapped. By default, simple64 may only map the analog stick.</li>
+</ol>
+<p>If you want your game to respond to both the D-pad and analog stick, check both in your update logic:</p>
+<pre><code class="language-go">func (g *MyGame) Update() {
+    sx, sy := gosprite64.StickPosition(0.2)
+    if gosprite64.IsButtonDown(gosprite64.ButtonDPadLeft) || sx &lt; -0.5 {
+        // move left
+    }
+}
+</code></pre>
+<h2 id="emulator-notes"><a class="header" href="#emulator-notes">Emulator Notes</a></h2>
+<h3 id="which-emulators-work"><a class="header" href="#which-emulators-work">Which emulators work?</a></h3>
+<p>GoSprite64 ROMs are tested primarily with:</p>
+<ul>
+<li><strong>ares</strong> - Recommended. Accurate N64 emulation with good audio and input support.</li>
+<li><strong>simple64</strong> - Good alternative with a user-friendly interface.</li>
+<li><strong>cen64</strong> - Cycle-accurate but slower. Useful for verifying hardware accuracy.</li>
+</ul>
+<p>Project64 and Mupen64Plus may also work but are not regularly tested.</p>
+<h3 id="rom-does-not-boot-in-the-emulator"><a class="header" href="#rom-does-not-boot-in-the-emulator">ROM does not boot in the emulator</a></h3>
+<p>If the emulator shows an error or the ROM does not start:</p>
+<ol>
+<li>Make sure you built a <code>.z64</code> ROM file (big-endian format), not just a <code>.elf</code> file. The ELF is an intermediate output; the supported conversion step is:</li>
+</ol>
+<pre><code class="language-bash">GOENV=n64.env n64go rom examples/mygame/game.elf
+</code></pre>
+<ol start="2">
+<li>Check that the ROM header is correct. Some emulators are strict about the header format.</li>
+<li>Try a different emulator to narrow down whether it is a ROM issue or an emulator compatibility issue.</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="dma-transfers"><a class="header" href="#dma-transfers">DMA Transfers</a></h1>
 <p>The <code>dma</code> package provides low-level data transfer functions for the N64. The N64’s CPU cannot directly access cartridge ROM - all data must be copied into RDRAM via DMA (Direct Memory Access). This package also covers SRAM access for save data, MIO0 decompression, memory pools, and segment address translation.</p>
 <h2 id="cartridge-rom-to-rdram"><a class="header" href="#cartridge-rom-to-rdram">Cartridge ROM to RDRAM</a></h2>
@@ -8109,593 +9068,6 @@ for {
 audioPool := dma.NewPool(0x80260000, 64*1024)  // audio buffers
 </code></pre>
 <p>This prevents audio allocations from competing with graphics allocations.</p>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="api-quick-reference"><a class="header" href="#api-quick-reference">API Quick Reference</a></h1>
-<p>A compact listing of every public function, type, and constant in the GoSprite64 API.</p>
-<h2 id="core"><a class="header" href="#core">Core</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>Run(g Game)</code></td><td>Starts the game loop with fixed-step timing at 60 FPS</td></tr>
-<tr><td><code>Game</code> (interface)</td><td>Implement <code>Init()</code>, <code>Update()</code>, <code>Draw()</code> to define your game</td></tr>
-<tr><td><code>TargetFPS</code> (var, int)</td><td>Target frame rate, defaults to 60</td></tr>
-<tr><td><code>RegisterAssetFS(f cartfs.FS)</code></td><td>Registers the embedded cartridge filesystem for asset loading</td></tr>
-<tr><td><code>LoadFromCartridge(filename string) ([]byte, error)</code></td><td>Reads a raw file from the cartridge filesystem</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="drawing"><a class="header" href="#drawing">Drawing</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>ClearScreen()</code></td><td>Fills the screen with Black</td></tr>
-<tr><td><code>ClearScreenWith(c color.Color)</code></td><td>Fills the screen with the given color</td></tr>
-<tr><td><code>FillRect(x1, y1, x2, y2 int, c color.Color)</code></td><td>Draws a filled rectangle (inclusive coordinates)</td></tr>
-<tr><td><code>DrawRect(x1, y1, x2, y2 int, c color.Color)</code></td><td>Draws a rectangle outline</td></tr>
-<tr><td><code>DrawLine(x1, y1, x2, y2 int, c color.Color)</code></td><td>Draws a 1-pixel line (Bresenham for diagonals)</td></tr>
-<tr><td><code>DrawImage(src image.Image, x, y int)</code></td><td>Draws a Go <code>image.Image</code> at screen coordinates</td></tr>
-<tr><td><code>DrawWorldImage(src image.Image, worldX, worldY int, cam *Camera)</code></td><td>Draws an image in world space, offset by camera</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="colors-1"><a class="header" href="#colors-1">Colors</a></h2>
-<p>All 16 predefined palette colors are exported as <code>color.Color</code> variables:</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Variable</th><th>RGB</th></tr>
-</thead>
-<tbody>
-<tr><td><code>Black</code></td><td>(0, 0, 0)</td></tr>
-<tr><td><code>DarkBlue</code></td><td>(29, 43, 83)</td></tr>
-<tr><td><code>DarkPurple</code></td><td>(126, 37, 83)</td></tr>
-<tr><td><code>DarkGreen</code></td><td>(0, 135, 81)</td></tr>
-<tr><td><code>Brown</code></td><td>(171, 82, 54)</td></tr>
-<tr><td><code>DarkGray</code></td><td>(95, 87, 79)</td></tr>
-<tr><td><code>LightGray</code></td><td>(194, 195, 199)</td></tr>
-<tr><td><code>White</code></td><td>(255, 241, 232)</td></tr>
-<tr><td><code>Red</code></td><td>(255, 0, 77)</td></tr>
-<tr><td><code>Orange</code></td><td>(255, 163, 0)</td></tr>
-<tr><td><code>Yellow</code></td><td>(255, 236, 39)</td></tr>
-<tr><td><code>Green</code></td><td>(0, 228, 54)</td></tr>
-<tr><td><code>Blue</code></td><td>(41, 173, 255)</td></tr>
-<tr><td><code>Indigo</code></td><td>(131, 118, 156)</td></tr>
-<tr><td><code>Pink</code></td><td>(255, 119, 168)</td></tr>
-<tr><td><code>Peach</code></td><td>(255, 204, 170)</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="sprites-2"><a class="header" href="#sprites-2">Sprites</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>SpriteSheet</code> (struct)</td><td>A loaded sprite sheet containing animation frames</td></tr>
-<tr><td><code>LoadSpriteSheet(path string) (*SpriteSheet, error)</code></td><td>Loads a sprite sheet from the cartridge filesystem</td></tr>
-<tr><td><code>(*SpriteSheet).FrameCount() int</code></td><td>Returns the total number of frames</td></tr>
-<tr><td><code>(*SpriteSheet).FrameWidth() int</code></td><td>Returns the width of each frame in pixels</td></tr>
-<tr><td><code>(*SpriteSheet).FrameHeight() int</code></td><td>Returns the height of each frame in pixels</td></tr>
-<tr><td><code>DrawSprite(sheet *SpriteSheet, frame int, x, y float32)</code></td><td>Draws a sprite frame at screen coordinates</td></tr>
-<tr><td><code>DrawSpriteWithOptions(sheet *SpriteSheet, frame int, x, y float32, opts DrawSpriteOptions)</code></td><td>Draws a sprite with flip, scale, rotation, blend</td></tr>
-<tr><td><code>DrawWorldSprite(sheet *SpriteSheet, frame int, worldX, worldY float32, cam *Camera)</code></td><td>Draws a sprite in world space</td></tr>
-<tr><td><code>DrawWorldSpriteWithOptions(sheet *SpriteSheet, frame int, worldX, worldY float32, cam *Camera, opts DrawSpriteOptions)</code></td><td>World-space sprite with options</td></tr>
-<tr><td><code>DrawSpriteOptions</code> (struct)</td><td>FlipH, FlipV, ScaleX, ScaleY, Rotation, OriginX, OriginY, Blend, Alpha</td></tr>
-<tr><td><code>BlendMode</code> (uint8)</td><td>Blend mode enum type</td></tr>
-<tr><td><code>BlendNone</code></td><td>No blending (fastest, opaque blit)</td></tr>
-<tr><td><code>BlendMasked</code></td><td>Binary alpha (pixels are fully opaque or fully transparent)</td></tr>
-<tr><td><code>BlendAlpha</code></td><td>Per-pixel alpha blending</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="sheet--tile"><a class="header" href="#sheet--tile">Sheet &amp; Tile</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>Sheet</code> (struct)</td><td>A tile sheet loaded from a bundle</td></tr>
-<tr><td><code>SheetInfo</code> (struct)</td><td>TileWidth, TileHeight, TileCount, AtlasWidth, AtlasHeight</td></tr>
-<tr><td><code>(*Sheet).Info() SheetInfo</code></td><td>Returns tile dimensions and atlas size</td></tr>
-<tr><td><code>(*Sheet).Tile(tileID uint16) image.Image</code></td><td>Returns the image for a single tile</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="animation-2"><a class="header" href="#animation-2">Animation</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>AnimationSet</code> (struct)</td><td>A named collection of animation clips</td></tr>
-<tr><td><code>AnimationClip</code> (struct)</td><td>Name, FPS, and frame indices for one clip</td></tr>
-<tr><td><code>(*AnimationSet).Name() string</code></td><td>Returns the animation set’s name</td></tr>
-<tr><td><code>(*AnimationSet).Clips() []AnimationClip</code></td><td>Returns all clips in the set</td></tr>
-<tr><td><code>(*AnimationSet).Clip(name string) (AnimationClip, bool)</code></td><td>Looks up a clip by name</td></tr>
-<tr><td><code>AnimationPlayer</code> (struct)</td><td>Drives frame-by-frame playback of a clip</td></tr>
-<tr><td><code>NewAnimationPlayer() *AnimationPlayer</code></td><td>Creates a new player (stopped)</td></tr>
-<tr><td><code>(*AnimationPlayer).Play(clip AnimationClip)</code></td><td>Starts playing a clip from frame 0</td></tr>
-<tr><td><code>(*AnimationPlayer).Pause()</code></td><td>Pauses playback</td></tr>
-<tr><td><code>(*AnimationPlayer).Resume()</code></td><td>Resumes a paused player</td></tr>
-<tr><td><code>(*AnimationPlayer).Stop()</code></td><td>Stops playback and resets to frame 0</td></tr>
-<tr><td><code>(*AnimationPlayer).Restart()</code></td><td>Replays the current clip from the start</td></tr>
-<tr><td><code>(*AnimationPlayer).SetLoop(loop bool)</code></td><td>Enables or disables looping</td></tr>
-<tr><td><code>(*AnimationPlayer).Advance(ticks int)</code></td><td>Advances playback by the given number of ticks</td></tr>
-<tr><td><code>(*AnimationPlayer).Frame() int</code></td><td>Returns the current frame index</td></tr>
-<tr><td><code>(*AnimationPlayer).Playing() bool</code></td><td>True if the player is actively playing</td></tr>
-<tr><td><code>(*AnimationPlayer).Done() bool</code></td><td>True if playback has stopped</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="fonts--text"><a class="header" href="#fonts--text">Fonts &amp; Text</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>DrawText(str string, x, y int, c color.Color)</code></td><td>Draws text using the built-in 8x8 font</td></tr>
-<tr><td><code>Font</code> (struct)</td><td>Custom font with per-glyph metrics from a sprite sheet</td></tr>
-<tr><td><code>Glyph</code> (struct)</td><td>Frame, Width, Advance, OffsetX, OffsetY</td></tr>
-<tr><td><code>NewFont(sheet *SpriteSheet, glyphs map[rune]Glyph, lineHeight int) *Font</code></td><td>Creates a custom font</td></tr>
-<tr><td><code>(*Font).LineHeight() int</code></td><td>Vertical distance between baselines</td></tr>
-<tr><td><code>(*Font).GlyphFor(r rune) (Glyph, bool)</code></td><td>Looks up a glyph, falls back to <code>Font.Fallback</code></td></tr>
-<tr><td><code>(*Font).MeasureText(text string) (width, height int)</code></td><td>Measures pixel size of rendered text</td></tr>
-<tr><td><code>(*Font).DrawTextEx(text string, x, y int, align TextAlign)</code></td><td>Draws text with alignment</td></tr>
-<tr><td><code>(*Font).WrapText(text string, maxWidth int) string</code></td><td>Inserts newlines to wrap text at a pixel width</td></tr>
-<tr><td><code>FormatScore(score int, width int) string</code></td><td>Formats an integer with leading zeros</td></tr>
-<tr><td><code>TextAlign</code> (int)</td><td>Horizontal alignment enum</td></tr>
-<tr><td><code>AlignLeft</code></td><td>Left-aligned (default)</td></tr>
-<tr><td><code>AlignCenter</code></td><td>Center-aligned</td></tr>
-<tr><td><code>AlignRight</code></td><td>Right-aligned</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="input-1"><a class="header" href="#input-1">Input</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>IsButtonDown(button ButtonMask) bool</code></td><td>True if button is held (port 0)</td></tr>
-<tr><td><code>IsButtonJustPressed(button ButtonMask) bool</code></td><td>True on the frame a button transitions to pressed (port 0)</td></tr>
-<tr><td><code>StickPosition(deadzone float64) (float64, float64)</code></td><td>Analog stick X/Y in [-1, 1] (port 0)</td></tr>
-<tr><td><code>PlayerButtonDown(port int, button ButtonMask) bool</code></td><td>Per-port button held check</td></tr>
-<tr><td><code>PlayerButtonJustPressed(port int, button ButtonMask) bool</code></td><td>Per-port just-pressed check</td></tr>
-<tr><td><code>PlayerStickPosition(port int, deadzone float64) (float64, float64)</code></td><td>Per-port analog stick</td></tr>
-<tr><td><code>IsControllerConnected(port int) bool</code></td><td>True if a controller is plugged into the given port</td></tr>
-<tr><td><code>ConnectedControllers() int</code></td><td>Number of connected controllers</td></tr>
-<tr><td><code>SetRumble(port int, enabled bool)</code></td><td>Enables or disables the rumble pak</td></tr>
-<tr><td><code>ButtonMask</code> (type alias)</td><td>Bitmask type for button constants</td></tr>
-<tr><td><code>MaxControllers</code> (const, 4)</td><td>Number of controller ports</td></tr>
-</tbody>
-</table>
-</div>
-<p><strong>Button constants:</strong> <code>ButtonA</code>, <code>ButtonB</code>, <code>ButtonZ</code>, <code>ButtonStart</code>, <code>ButtonDPadUp</code>, <code>ButtonDPadDown</code>, <code>ButtonDPadLeft</code>, <code>ButtonDPadRight</code>, <code>ButtonL</code>, <code>ButtonR</code>, <code>ButtonCUp</code>, <code>ButtonCDown</code>, <code>ButtonCLeft</code>, <code>ButtonCRight</code></p>
-<h2 id="input-replay"><a class="header" href="#input-replay">Input Replay</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>FrameInput</code> (struct)</td><td>Buttons, StickX, StickY for one player/frame</td></tr>
-<tr><td><code>ReplayData</code> (struct)</td><td>PlayerCount, FrameCount, and recorded frames</td></tr>
-<tr><td><code>InputRecorder</code> (struct)</td><td>Records per-frame input during gameplay</td></tr>
-<tr><td><code>NewInputRecorder(playerCount int) *InputRecorder</code></td><td>Creates a recorder</td></tr>
-<tr><td><code>(*InputRecorder).CaptureFrame(player int, input FrameInput)</code></td><td>Records one frame</td></tr>
-<tr><td><code>(*InputRecorder).Finish() *ReplayData</code></td><td>Finalizes recording</td></tr>
-<tr><td><code>InputPlayer</code> (struct)</td><td>Replays recorded input</td></tr>
-<tr><td><code>NewInputPlayer(data *ReplayData) *InputPlayer</code></td><td>Creates a replay player</td></tr>
-<tr><td><code>(*InputPlayer).NextFrame(player int) (FrameInput, bool)</code></td><td>Gets next frame for a player</td></tr>
-<tr><td><code>(*InputPlayer).Done() bool</code></td><td>True when all frames consumed</td></tr>
-<tr><td><code>(*InputPlayer).Reset()</code></td><td>Restarts playback from the beginning</td></tr>
-<tr><td><code>(*InputPlayer).CurrentFrame() int</code></td><td>Current playback position</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="audio-1"><a class="header" href="#audio-1">Audio</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>AudioAsset</code> (struct)</td><td>Describes a single audio asset (ID, rate, loop points, etc.)</td></tr>
-<tr><td><code>AudioBundle</code> (struct)</td><td>Collection of audio assets with data and name resolver</td></tr>
-<tr><td><code>RegisterAudioBundle(bundle AudioBundle)</code></td><td>Registers audio assets before <code>Run()</code></td></tr>
-<tr><td><code>PlaySoundEffect(id sfx.ID) bool</code></td><td>Plays a sound effect, returns true if queued</td></tr>
-<tr><td><code>PlayMusic(id music.ID) bool</code></td><td>Starts music playback</td></tr>
-<tr><td><code>StopMusic()</code></td><td>Stops the current music track</td></tr>
-<tr><td><code>SetSoundEffectVolume(v float32)</code></td><td>Sets SFX volume (0.0-1.0)</td></tr>
-<tr><td><code>SetMusicVolume(v float32)</code></td><td>Sets music volume (0.0-1.0)</td></tr>
-<tr><td><code>DefaultAudioOutputRate</code> (const, 48000)</td><td>DAC output rate in Hz</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="tile-scenes"><a class="header" href="#tile-scenes">Tile Scenes</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>Bundle</code> (struct)</td><td>A loaded asset bundle containing sheets, maps, and animations</td></tr>
-<tr><td><code>OpenBundle(path string) (*Bundle, error)</code></td><td>Opens a bundle from the cartridge filesystem</td></tr>
-<tr><td><code>(*Bundle).LoadSheet(name string) (*Sheet, error)</code></td><td>Loads a named sheet from the bundle</td></tr>
-<tr><td><code>(*Bundle).LoadMap(name string) (*Map, error)</code></td><td>Loads a named map from the bundle</td></tr>
-<tr><td><code>(*Bundle).LoadAnimation(name string) (*AnimationSet, error)</code></td><td>Loads a named animation set</td></tr>
-<tr><td><code>Scene</code> (struct)</td><td>A fully loaded tile scene with map, sheets, and animations</td></tr>
-<tr><td><code>LoadScene(bundle *Bundle) (*Scene, error)</code></td><td>Loads all assets from a bundle into a renderable scene</td></tr>
-<tr><td><code>(*Scene).Draw(cam *Camera)</code></td><td>Renders all visible layers with the given camera</td></tr>
-<tr><td><code>(*Scene).Map() *Map</code></td><td>Returns the scene’s map</td></tr>
-<tr><td><code>(*Scene).Sheet(index int) *Sheet</code></td><td>Returns a sheet by index</td></tr>
-<tr><td><code>(*Scene).SheetByID(id uint16) *Sheet</code></td><td>Returns a sheet by 1-based ID</td></tr>
-<tr><td><code>(*Scene).SheetCount() int</code></td><td>Number of sheets in the scene</td></tr>
-<tr><td><code>(*Scene).Animation(index int) *AnimationSet</code></td><td>Returns an animation by index</td></tr>
-<tr><td><code>(*Scene).AnimationByName(name string) *AnimationSet</code></td><td>Looks up an animation set by name</td></tr>
-<tr><td><code>(*Scene).AnimationCount() int</code></td><td>Number of animation sets</td></tr>
-<tr><td><code>(*Scene).LayerSheet(layer int) (*Sheet, bool)</code></td><td>Returns the sheet assigned to a layer</td></tr>
-<tr><td><code>(*Scene).LayerAssets(layer int) (MapLayerInfo, *Sheet, bool)</code></td><td>Returns layer info and sheet together</td></tr>
-<tr><td><code>(*Scene).LayerSheetInfo(layer int) (SheetInfo, bool)</code></td><td>Returns the SheetInfo for a layer</td></tr>
-<tr><td><code>(*Scene).Stats() RuntimeStats</code></td><td>Returns rendering statistics (allocation-free)</td></tr>
-<tr><td><code>Map</code> (struct)</td><td>Tile map with layers of cell data</td></tr>
-<tr><td><code>MapLayerInfo</code> (struct)</td><td>SheetID, NonZeroTiles</td></tr>
-<tr><td><code>(*Map).Width() int</code></td><td>Map width in tiles</td></tr>
-<tr><td><code>(*Map).Height() int</code></td><td>Map height in tiles</td></tr>
-<tr><td><code>(*Map).TileWidth() int</code></td><td>Width of each tile in pixels</td></tr>
-<tr><td><code>(*Map).TileHeight() int</code></td><td>Height of each tile in pixels</td></tr>
-<tr><td><code>(*Map).PixelWidth() int</code></td><td>Total map width in pixels</td></tr>
-<tr><td><code>(*Map).PixelHeight() int</code></td><td>Total map height in pixels</td></tr>
-<tr><td><code>(*Map).LayerCount() int</code></td><td>Number of layers</td></tr>
-<tr><td><code>(*Map).LayerInfo(layer int) (MapLayerInfo, bool)</code></td><td>Returns cached info for a layer (O(1))</td></tr>
-<tr><td><code>(*Map).LayerSheetID(layer int) (uint16, bool)</code></td><td>Returns the sheet ID for a layer</td></tr>
-<tr><td><code>(*Map).TileAt(layer, x, y int) (uint16, bool)</code></td><td>Returns the tile ID at a grid position</td></tr>
-<tr><td><code>RuntimeStats</code> (struct)</td><td>SheetRAMBytes, MapRAMBytes, CachedChunks, VisibleTiles, SheetCount, LayerCount, UploadCount</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="game-systems-1"><a class="header" href="#game-systems-1">Game Systems</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>GameState</code> (interface)</td><td>Enter, Update, Draw, Exit for screen management</td></tr>
-<tr><td><code>StateMachine</code> (struct)</td><td>Stack-based game state manager</td></tr>
-<tr><td><code>NewStateMachine(initial GameState) *StateMachine</code></td><td>Creates a state machine</td></tr>
-<tr><td><code>(*StateMachine).Init()</code></td><td>Triggers <code>Enter()</code> on the initial state</td></tr>
-<tr><td><code>(*StateMachine).Update()</code></td><td>Delegates to the top state’s <code>Update()</code></td></tr>
-<tr><td><code>(*StateMachine).Draw()</code></td><td>Delegates to the top state’s <code>Draw()</code></td></tr>
-<tr><td><code>(*StateMachine).Switch(state GameState)</code></td><td>Replaces the top state</td></tr>
-<tr><td><code>(*StateMachine).Push(state GameState)</code></td><td>Overlays a new state (for pause menus, dialogs)</td></tr>
-<tr><td><code>(*StateMachine).Pop()</code></td><td>Removes the top state</td></tr>
-<tr><td><code>(*StateMachine).Current() GameState</code></td><td>Returns the active state</td></tr>
-<tr><td><code>(*StateMachine).Depth() int</code></td><td>Number of states on the stack</td></tr>
-<tr><td><code>MenuItem</code> (struct)</td><td>Label, Disabled, OnConfirm callback</td></tr>
-<tr><td><code>Menu</code> (struct)</td><td>D-pad-navigated list with cursor tracking</td></tr>
-<tr><td><code>NewMenu(items []MenuItem) *Menu</code></td><td>Creates a menu</td></tr>
-<tr><td><code>(*Menu).HandleInput() bool</code></td><td>Reads D-pad/A button, returns true on confirm</td></tr>
-<tr><td><code>(*Menu).Draw()</code></td><td>Renders the menu using <code>DrawText</code></td></tr>
-<tr><td><code>(*Menu).MoveUp()</code></td><td>Moves cursor up (skips disabled items)</td></tr>
-<tr><td><code>(*Menu).MoveDown()</code></td><td>Moves cursor down (skips disabled items)</td></tr>
-<tr><td><code>(*Menu).Confirm()</code></td><td>Triggers the selected item’s callback</td></tr>
-<tr><td><code>(*Menu).Cursor() int</code></td><td>Returns the cursor position</td></tr>
-<tr><td><code>(*Menu).SetCursor(index int)</code></td><td>Sets the cursor position</td></tr>
-<tr><td><code>(*Menu).Selected() MenuItem</code></td><td>Returns the highlighted item</td></tr>
-<tr><td><code>(*Menu).Count() int</code></td><td>Number of items</td></tr>
-<tr><td><code>Timer</code> (struct)</td><td>Counts down a fixed number of frames</td></tr>
-<tr><td><code>NewTimer(durationFrames int) *Timer</code></td><td>Creates a one-shot timer</td></tr>
-<tr><td><code>(*Timer).Tick() bool</code></td><td>Advances one frame, returns true when it finishes</td></tr>
-<tr><td><code>(*Timer).Done() bool</code></td><td>True when the timer has expired</td></tr>
-<tr><td><code>(*Timer).Progress() float32</code></td><td>Elapsed/duration ratio (0-1)</td></tr>
-<tr><td><code>(*Timer).Elapsed() int</code></td><td>Frames elapsed</td></tr>
-<tr><td><code>(*Timer).Remaining() int</code></td><td>Frames left</td></tr>
-<tr><td><code>(*Timer).Duration() int</code></td><td>Total frame count</td></tr>
-<tr><td><code>(*Timer).Reset()</code></td><td>Restarts with the same duration</td></tr>
-<tr><td><code>(*Timer).ResetWith(durationFrames int)</code></td><td>Restarts with a new duration</td></tr>
-<tr><td><code>RepeatingTimer</code> (struct)</td><td>Triggers at a fixed interval, counts triggers</td></tr>
-<tr><td><code>NewRepeatingTimer(intervalFrames int) *RepeatingTimer</code></td><td>Creates a repeating timer</td></tr>
-<tr><td><code>(*RepeatingTimer).Tick() bool</code></td><td>Advances one frame, returns true on trigger</td></tr>
-<tr><td><code>(*RepeatingTimer).Count() int</code></td><td>Number of times triggered</td></tr>
-<tr><td><code>(*RepeatingTimer).Reset()</code></td><td>Clears elapsed time and count</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="parallax"><a class="header" href="#parallax">Parallax</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>ParallaxLayer</code> (struct)</td><td>SpeedX, SpeedY scroll multipliers</td></tr>
-<tr><td><code>(ParallaxLayer).Offset(cameraX, cameraY int) (int, int)</code></td><td>Computes the layer offset for a camera position</td></tr>
-<tr><td><code>ParallaxConfig</code> (struct)</td><td>Holds a slice of <code>ParallaxLayer</code></td></tr>
-<tr><td><code>NewParallaxConfig(speeds ...ParallaxLayer) ParallaxConfig</code></td><td>Creates a parallax config from layer speeds</td></tr>
-<tr><td><code>(ParallaxConfig).LayerOffset(layer, cameraX, cameraY int) (int, int)</code></td><td>Returns the scroll offset for a specific layer</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="transitions"><a class="header" href="#transitions">Transitions</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>TransitionStyle</code> (int)</td><td>Enum for transition types</td></tr>
-<tr><td><code>FadeToBlack</code></td><td>Screen fades to black</td></tr>
-<tr><td><code>FadeFromBlack</code></td><td>Screen fades in from black</td></tr>
-<tr><td><code>Transition</code> (struct)</td><td>Style, Duration, active state</td></tr>
-<tr><td><code>StartTransition(style TransitionStyle, durationFrames int) *Transition</code></td><td>Begins a screen transition</td></tr>
-<tr><td><code>(*Transition).Advance()</code></td><td>Advances the transition by one frame</td></tr>
-<tr><td><code>(*Transition).Done() bool</code></td><td>True when the transition has completed</td></tr>
-<tr><td><code>(*Transition).Active() bool</code></td><td>True while the transition is running</td></tr>
-<tr><td><code>(*Transition).Stop()</code></td><td>Cancels the transition</td></tr>
-<tr><td><code>(*Transition).Draw()</code></td><td>Renders the transition overlay</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="draw-regions-2"><a class="header" href="#draw-regions-2">Draw Regions</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>DrawRegion</code> (struct)</td><td>X, Y, W, H defining a sub-rectangle of the screen</td></tr>
-<tr><td><code>(DrawRegion).Active() bool</code></td><td>True if the region restricts drawing</td></tr>
-<tr><td><code>(DrawRegion).Offset(x, y int) (int, int)</code></td><td>Translates local coordinates to screen space</td></tr>
-<tr><td><code>(DrawRegion).Clip(x1, y1, x2, y2 int) (int, int, int, int, bool)</code></td><td>Clips a rectangle to the region, returns false if outside</td></tr>
-<tr><td><code>(DrawRegion).ContainsPoint(x, y int) bool</code></td><td>True if a local point is inside the region</td></tr>
-<tr><td><code>SetDrawRegion(x, y, w, h int)</code></td><td>Restricts drawing to a screen sub-rectangle (nestable)</td></tr>
-<tr><td><code>ResetDrawRegion()</code></td><td>Removes the most recent draw region</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="camera-1"><a class="header" href="#camera-1">Camera</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Symbol</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>Camera</code> (struct)</td><td>X, Y, Width, Height, Zoom, FollowTarget, FollowSpeed, Bounds</td></tr>
-<tr><td><code>(*Camera).EffectiveZoom() float32</code></td><td>Returns Zoom, defaulting to 1.0 if unset</td></tr>
-<tr><td><code>(*Camera).WorldToScreen(worldX, worldY float32) (float32, float32)</code></td><td>Converts world coordinates to screen coordinates</td></tr>
-<tr><td><code>(*Camera).UpdateFollow()</code></td><td>Moves the camera toward <code>FollowTarget</code> with smooth lerp</td></tr>
-<tr><td><code>(*Camera).ClampToBounds()</code></td><td>Restricts camera position to stay within <code>Bounds</code></td></tr>
-<tr><td><code>(*Camera).AddTrauma(amount float32)</code></td><td>Adds screen shake intensity (0-1)</td></tr>
-<tr><td><code>(*Camera).UpdateShake()</code></td><td>Decays trauma each frame</td></tr>
-<tr><td><code>(*Camera).ShakeOffset() (int, int)</code></td><td>Returns the current frame’s shake displacement</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="sub-packages"><a class="header" href="#sub-packages">Sub-Packages</a></h2>
-<p>GoSprite64 also provides these sub-packages for specialized functionality:</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Package</th><th>Import Path</th><th>Purpose</th></tr>
-</thead>
-<tbody>
-<tr><td><code>math2d</code></td><td><code>gosprite64/math2d</code></td><td>2D vectors, rectangles, collision, easing, grid utilities, random numbers</td></tr>
-<tr><td><code>math3d</code></td><td><code>gosprite64/math3d</code></td><td>3D vectors, 4x4 matrices, viewport projection</td></tr>
-<tr><td><code>save</code></td><td><code>gosprite64/save</code></td><td>EEPROM, SRAM, and FlashRAM save data</td></tr>
-<tr><td><code>gfx</code></td><td><code>gosprite64/gfx</code></td><td>Low-level display list construction and execution</td></tr>
-<tr><td><code>dma</code></td><td><code>gosprite64/dma</code></td><td>DMA transfer helpers, MIO0 decompression, memory pool</td></tr>
-<tr><td><code>rspq</code></td><td><code>gosprite64/rspq</code></td><td>RSP task queue, microcode loading, OS task submission</td></tr>
-<tr><td><code>n64os</code></td><td><code>gosprite64/n64os</code></td><td>N64 OS primitives: scheduler, timers, events, messages</td></tr>
-<tr><td><code>scene3d</code></td><td><code>gosprite64/scene3d</code></td><td>3D scene graph, camera, mesh, LOD, triangle rendering</td></tr>
-<tr><td><code>audio/sfx</code></td><td><code>gosprite64/audio/sfx</code></td><td>Sound effect ID type</td></tr>
-<tr><td><code>audio/music</code></td><td><code>gosprite64/audio/music</code></td><td>Music track ID type</td></tr>
-<tr><td><code>audio/bank</code></td><td><code>gosprite64/audio/bank</code></td><td>Instrument bank loading</td></tr>
-<tr><td><code>audio/sequence</code></td><td><code>gosprite64/audio/sequence</code></td><td>Sequence player for MIDI-style playback</td></tr>
-</tbody>
-</table>
-</div>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="performance-notes-1"><a class="header" href="#performance-notes-1">Performance Notes</a></h1>
-<p>Tips for keeping your game running at 60 FPS on real N64 hardware.</p>
-<h2 id="the-288x216-canvas"><a class="header" href="#the-288x216-canvas">The 288x216 Canvas</a></h2>
-<p>GoSprite64 renders to a fixed <strong>288x216 logical canvas</strong> with 16-pixel gutters on each side. This canvas is scaled up to the full TV resolution (640x480 NTSC or 640x576 PAL) by the Video Interface. All your drawing coordinates use this logical space.</p>
-<p>The 16-pixel gutters exist because CRT televisions overscan the edges of the picture. The visible safe area is the inner 256x184 region, but you can draw into the full 288x216 if you want edge-to-edge coverage on modern displays.</p>
-<h2 id="fixed-step-timing"><a class="header" href="#fixed-step-timing">Fixed-Step Timing</a></h2>
-<p>The game loop runs at a fixed <strong>60 FPS</strong> with a fixed-step accumulator. Each <code>Update()</code> call represents exactly one 1/60th-second tick. If the hardware falls behind, <code>Update()</code> runs multiple times to catch up before <code>Draw()</code> is called. This means your physics and input logic always see consistent time steps regardless of rendering performance.</p>
-<h2 id="blend-modes-and-fill-rate"><a class="header" href="#blend-modes-and-fill-rate">Blend Modes and Fill Rate</a></h2>
-<p>The blend mode you choose on sprites has a major impact on rendering cost:</p>
-<ul>
-<li><strong><code>BlendNone</code></strong> is the fastest path. It performs a simple opaque blit with no per-pixel blending. Use this for backgrounds, tiles, and any sprites without transparency.</li>
-<li><strong><code>BlendMasked</code></strong> treats each pixel as either fully opaque or fully transparent based on the alpha channel. It is roughly <strong>4x slower</strong> than <code>BlendNone</code> because the RDP must test each pixel individually.</li>
-<li><strong><code>BlendAlpha</code></strong> performs full per-pixel alpha blending. It has similar cost to <code>BlendMasked</code> for a single sprite, but <strong>overlapping blended sprites</strong> multiply the cost because each overlapping pixel must be blended again.</li>
-</ul>
-<p>Practical advice:</p>
-<ul>
-<li>Default to <code>BlendNone</code> for tiles and backgrounds.</li>
-<li>Use <code>BlendMasked</code> for characters and objects with hard-edged transparency.</li>
-<li>Reserve <code>BlendAlpha</code> for effects that genuinely need smooth transparency (particles, shadows, UI overlays).</li>
-<li>Avoid stacking many alpha-blended sprites in the same screen region.</li>
-</ul>
-<h2 id="rotation-and-scaling"><a class="header" href="#rotation-and-scaling">Rotation and Scaling</a></h2>
-<p>When you set <code>Rotation</code> to a non-zero value in <code>DrawSpriteOptions</code>, the sprite is drawn through the <strong>transformed-quad path</strong> instead of the fast axis-aligned blit. This path computes per-pixel source coordinates through an affine transform, which costs more per pixel than a straight copy.</p>
-<p>Scaling alone (without rotation) is cheaper than rotation but still more expensive than an unscaled blit. If a sprite’s <code>ScaleX</code>, <code>ScaleY</code>, and <code>Rotation</code> are all at their defaults, GoSprite64 automatically falls back to the fast <code>DrawSprite</code> path.</p>
-<p>Tips:</p>
-<ul>
-<li>Pre-render rotated frames in your sprite sheet if you only need a few fixed angles (e.g., 4 or 8 directions).</li>
-<li>Keep the number of simultaneously rotating sprites small, especially at larger sizes.</li>
-</ul>
-<h2 id="scene-rendering"><a class="header" href="#scene-rendering">Scene Rendering</a></h2>
-<p>Tile scenes are optimized for the N64’s constrained memory and fill rate:</p>
-<ul>
-<li><strong>Only visible cells are rendered.</strong> The renderer uses the camera viewport to determine which tiles fall within the screen bounds and skips everything outside. Scrolling a large map costs the same as rendering a small map, as long as the visible tile count stays similar.</li>
-<li><strong><code>LayerInfo()</code> is O(1).</strong> Layer metadata (sheet ID, non-zero tile count) is cached at load time, so querying layer properties in your update loop is free.</li>
-<li><strong><code>Stats()</code> is allocation-free.</strong> The <code>RuntimeStats</code> struct is returned by value from pre-computed fields, so you can call it every frame without triggering garbage collection.</li>
-</ul>
-<h2 id="audio-performance"><a class="header" href="#audio-performance">Audio Performance</a></h2>
-<p>The audio engine is designed for zero allocations after initialization:</p>
-<ul>
-<li>All buffers (output, per-voice source, byte conversion) are pre-allocated once during <code>initAudio</code>.</li>
-<li>The mixing loop reuses fixed-size arrays and never calls <code>make</code> or <code>append</code>.</li>
-<li>Command dispatch uses a lock-free ring buffer, so <code>PlaySoundEffect</code> and <code>PlayMusic</code> never block the game loop.</li>
-</ul>
-<p>This means audio has no GC pressure during gameplay. You can play and stop sounds freely without worrying about frame hitches.</p>
-<h2 id="math-avoid-sqrt-on-n64"><a class="header" href="#math-avoid-sqrt-on-n64">Math: Avoid sqrt on N64</a></h2>
-<p>The N64’s MIPS R4300i CPU does not have a hardware square root instruction. Computing <code>sqrt</code> requires a software approximation that takes many more cycles than basic arithmetic.</p>
-<p>The <code>math2d</code> package provides squared-distance methods on <code>Vec2</code> specifically for this:</p>
-<ul>
-<li><strong><code>v.LengthSq() float32</code></strong> returns <code>x*x + y*y</code> without the square root.</li>
-<li><strong><code>v.DistanceSq(other Vec2) float32</code></strong> returns the squared distance between two points.</li>
-</ul>
-<p>Use these for distance comparisons. Instead of:</p>
-<pre><code class="language-go">if a.Distance(b) &lt; 32 {
-</code></pre>
-<p>Write:</p>
-<pre><code class="language-go">if a.DistanceSq(b) &lt; 32*32 {
-</code></pre>
-<p>The result is mathematically equivalent for comparisons and avoids the expensive sqrt entirely. Only call <code>Distance()</code> or <code>Length()</code> when you actually need the scalar distance value (e.g., for normalization).</p>
-<h2 id="general-tips"><a class="header" href="#general-tips">General Tips</a></h2>
-<ul>
-<li><strong>Minimize draw calls for overlapping transparent sprites.</strong> Each overlapping blended pixel is processed again. Group opaque background layers together and draw them with <code>BlendNone</code>.</li>
-<li><strong>Use smaller sprite sizes when possible.</strong> A 16x16 sprite fills 4x fewer pixels than a 32x32 sprite. The N64’s fill rate is the most common bottleneck.</li>
-<li><strong>Profile with <code>Stats()</code>.</strong> Check <code>VisibleTiles</code> and <code>UploadCount</code> each frame to understand where rendering time is going. A spike in <code>UploadCount</code> means the renderer is loading new tile data into TMEM more often than expected.</li>
-<li><strong>Keep your map layers shallow.</strong> Each additional layer multiplies the number of tiles the renderer must process for every visible cell. Two or three layers is typical; five or more may stress the fill rate.</li>
-<li><strong>Pre-compute what you can.</strong> <code>LayerInfo</code> and <code>SheetInfo</code> are cached, so prefer them over re-scanning tile data manually.</li>
-</ul>
-<div style="break-before: page; page-break-before: always;"></div>
-<h1 id="troubleshooting-2"><a class="header" href="#troubleshooting-2">Troubleshooting</a></h1>
-<p>Common build errors, runtime issues, and emulator quirks with solutions.</p>
-<h2 id="build-errors"><a class="header" href="#build-errors">Build Errors</a></h2>
-<h3 id="ambiguous-import-or-multiple-module-errors"><a class="header" href="#ambiguous-import-or-multiple-module-errors">“ambiguous import” or multiple module errors</a></h3>
-<p><strong>Symptom:</strong> <code>go build</code> reports an “ambiguous import” error, or complains about a package being provided by multiple modules.</p>
-<p><strong>Cause:</strong> There is a stray <code>go.mod</code> file inside one of the <code>examples/</code> subdirectories. Go sees it as a separate module that conflicts with the root module.</p>
-<p><strong>Fix:</strong> Make sure you are building from the repository root and that no example directory has its own <code>go.mod</code>. Each example should be part of the root module. If you find an extra <code>go.mod</code> in an example folder, delete it:</p>
-<pre><code class="language-bash">rm examples/mygame/go.mod
-rm examples/mygame/go.sum
-</code></pre>
-<p>Then run <code>go mod tidy</code> from the repository root.</p>
-<h3 id="package-x-is-not-in-std"><a class="header" href="#package-x-is-not-in-std">“package X is not in std”</a></h3>
-<p><strong>Symptom:</strong> The compiler reports that packages like <code>embedded/rtos</code> or <code>embedded/arch/r4000/systim</code> are not in the standard library.</p>
-<p><strong>Cause:</strong> You are using the standard <code>go build</code> command instead of the N64 cross-compilation toolchain. GoSprite64 targets the N64 via a custom Go fork and requires the <code>n64.env</code> environment file.</p>
-<p><strong>Fix:</strong> Source the N64 environment and use the correct build command:</p>
-<pre><code class="language-bash">source n64.env
-go build -tags n64 -o game.elf ./examples/mygame
-</code></pre>
-<p>The <code>n64.env</code> file sets <code>GOOS</code>, <code>GOARCH</code>, <code>GOROOT</code>, and other variables needed for the embedded Go toolchain. Without it, Go tries to resolve N64-specific packages against your host’s standard library.</p>
-<h3 id="build-fails-with-embedded-errors"><a class="header" href="#build-fails-with-embedded-errors">Build fails with embedded/* errors</a></h3>
-<p><strong>Symptom:</strong> Compilation fails with errors referencing <code>embedded/rtos</code>, <code>embedded/arch/...</code>, or other packages under the <code>embedded/</code> prefix.</p>
-<p><strong>Cause:</strong> You need the <code>go1.24.5-embedded</code> toolchain (or later) and the <code>n64.env</code> environment file. The standard Go toolchain does not include the embedded runtime packages.</p>
-<p><strong>Fix:</strong></p>
-<ol>
-<li>Install the N64-capable Go toolchain. Follow the installation guide in <a href="#getting-started">Getting Started</a>.</li>
-<li>Make sure <code>n64.env</code> exists in your project root and is sourced before building:</li>
-</ol>
-<pre><code class="language-bash">source n64.env
-</code></pre>
-<ol start="3">
-<li>Verify your Go version:</li>
-</ol>
-<pre><code class="language-bash">go version
-</code></pre>
-<p>It should report <code>go1.24.5-embedded</code> or similar. If it shows a standard Go version like <code>go1.24.5</code>, your <code>GOROOT</code> is not pointing to the embedded fork.</p>
-<h3 id="go-mod-tidy-fails-with-network-or-version-errors"><a class="header" href="#go-mod-tidy-fails-with-network-or-version-errors"><code>go mod tidy</code> fails with network or version errors</a></h3>
-<p><strong>Symptom:</strong> Running <code>go mod tidy</code> produces errors about missing versions or fails to fetch dependencies.</p>
-<p><strong>Cause:</strong> The N64 environment variables (<code>GOOS</code>, <code>GOARCH</code>, etc.) from <code>n64.env</code> can confuse <code>go mod tidy</code> because it tries to resolve dependencies for the embedded target platform.</p>
-<p><strong>Fix:</strong> Run <code>go mod tidy</code> with the N64-specific environment variables unset:</p>
-<pre><code class="language-bash">env -u GOOS -u GOARCH -u GOARM -u CGO_ENABLED go mod tidy
-</code></pre>
-<p>This tells Go to use your host platform for dependency resolution while keeping the rest of your environment intact. After tidy completes, you can source <code>n64.env</code> again for building.</p>
-<h2 id="runtime-issues"><a class="header" href="#runtime-issues">Runtime Issues</a></h2>
-<h3 id="black-screen-nothing-renders"><a class="header" href="#black-screen-nothing-renders">Black screen (nothing renders)</a></h3>
-<p><strong>Symptom:</strong> The ROM boots but the screen stays black. No tiles, sprites, or text appear.</p>
-<p><strong>Cause:</strong> You forgot to call <code>RegisterAssetFS</code> before <code>Run()</code>. Without it, the cartridge filesystem is not mounted and all asset loads silently fail.</p>
-<p><strong>Fix:</strong> In your <code>main.go</code>, register the embedded filesystem before starting the game loop:</p>
-<pre><code class="language-go">//go:embed assets/*
-var assets embed.FS
-
-func main() {
-    gosprite64.RegisterAssetFS(assets)
-    gosprite64.Run(&amp;MyGame{})
-}
-</code></pre>
-<p>Make sure the <code>go:embed</code> directive matches the directory where your compiled assets live. If you renamed or moved your assets folder, update the embed path accordingly.</p>
-<h3 id="no-audio-sound-effects-and-music-are-silent"><a class="header" href="#no-audio-sound-effects-and-music-are-silent">No audio (sound effects and music are silent)</a></h3>
-<p><strong>Symptom:</strong> The game runs and renders correctly, but <code>PlaySoundEffect</code> and <code>PlayMusic</code> do nothing. No sound is heard.</p>
-<p><strong>Cause:</strong> The audio bundle is not registered. GoSprite64 requires a generated <code>audio_embed.go</code> file that calls <code>RegisterAudioBundle</code> with your compiled audio assets.</p>
-<p><strong>Fix:</strong></p>
-<ol>
-<li>Make sure you have run the <code>audiogen</code> tool to compile your audio assets:</li>
-</ol>
-<pre><code class="language-bash">go run ./cmd/audiogen -manifest audio/manifest.json -out audio_embed.go
-</code></pre>
-<ol start="2">
-<li>
-<p>Verify that <code>audio_embed.go</code> exists in your game directory and contains a call to <code>gosprite64.RegisterAudioBundle(...)</code>.</p>
-</li>
-<li>
-<p>The <code>RegisterAudioBundle</code> call must execute before <code>Run()</code>. The generated file typically uses an <code>init()</code> function, so simply having the file in your package is enough.</p>
-</li>
-</ol>
-<p>If you still hear no audio, check that your emulator supports audio output (ares, simple64, and cen64 all support it; some older emulators may not).</p>
-<h3 id="scene-only-fills-part-of-the-screen"><a class="header" href="#scene-only-fills-part-of-the-screen">Scene only fills part of the screen</a></h3>
-<p><strong>Symptom:</strong> The tile scene renders but only covers a portion of the screen, leaving black bars or empty space.</p>
-<p><strong>Cause:</strong> The camera’s <code>Width</code> and <code>Height</code> do not match the logical canvas size of 288x216.</p>
-<p><strong>Fix:</strong> Set the camera dimensions to match the canvas:</p>
-<pre><code class="language-go">cam := &amp;gosprite64.Camera{
-    Width:  288,
-    Height: 216,
-}
-</code></pre>
-<p>If you are using <code>Scene.Draw(nil)</code>, the scene creates a default camera with the correct dimensions automatically. But if you create your own camera and forget to set the size, it defaults to zero, which means no tiles fall within the viewport.</p>
-<h3 id="d-pad-does-not-respond"><a class="header" href="#d-pad-does-not-respond">D-pad does not respond</a></h3>
-<p><strong>Symptom:</strong> <code>IsButtonDown(ButtonDPadUp)</code> and similar calls always return false, even though the D-pad works in other games.</p>
-<p><strong>Cause:</strong> This is usually an emulator input mapping issue. Some emulators map keyboard arrow keys to the analog stick by default rather than the D-pad.</p>
-<p><strong>Fix (ares):</strong></p>
-<ol>
-<li>Go to <strong>Settings &gt; Input</strong>.</li>
-<li>Find the D-pad mappings (DPad Up, DPad Down, DPad Left, DPad Right).</li>
-<li>Bind them to your preferred keyboard keys.</li>
-</ol>
-<p><strong>Fix (simple64):</strong></p>
-<ol>
-<li>Go to <strong>Options &gt; Configure Controller</strong>.</li>
-<li>Verify that the D-pad entries are mapped. By default, simple64 may only map the analog stick.</li>
-</ol>
-<p>If you want your game to respond to both the D-pad and analog stick, check both in your update logic:</p>
-<pre><code class="language-go">func (g *MyGame) Update() {
-    sx, sy := gosprite64.StickPosition(0.2)
-    if gosprite64.IsButtonDown(gosprite64.ButtonDPadLeft) || sx &lt; -0.5 {
-        // move left
-    }
-}
-</code></pre>
-<h2 id="emulator-notes"><a class="header" href="#emulator-notes">Emulator Notes</a></h2>
-<h3 id="which-emulators-work"><a class="header" href="#which-emulators-work">Which emulators work?</a></h3>
-<p>GoSprite64 ROMs are tested primarily with:</p>
-<ul>
-<li><strong>ares</strong> - Recommended. Accurate N64 emulation with good audio and input support.</li>
-<li><strong>simple64</strong> - Good alternative with a user-friendly interface.</li>
-<li><strong>cen64</strong> - Cycle-accurate but slower. Useful for verifying hardware accuracy.</li>
-</ul>
-<p>Project64 and Mupen64Plus may also work but are not regularly tested.</p>
-<h3 id="rom-does-not-boot-in-the-emulator"><a class="header" href="#rom-does-not-boot-in-the-emulator">ROM does not boot in the emulator</a></h3>
-<p>If the emulator shows an error or the ROM does not start:</p>
-<ol>
-<li>Make sure you built a <code>.z64</code> ROM file (big-endian format), not a <code>.elf</code> file. The ELF is an intermediate output; you need to convert it with <code>n64tool</code> or similar.</li>
-<li>Check that the ROM header is correct. Some emulators are strict about the header format.</li>
-<li>Try a different emulator to narrow down whether it is a ROM issue or an emulator compatibility issue.</li>
-</ol>
 
                     </main>
 

@@ -1,5 +1,7 @@
 # The Fixed Canvas
 
+> If you just finished the beginner journey, this page explains the concept behind the behavior you already saw on screen.
+
 GoSprite64 gives you a single, fixed drawing surface: **288 x 216 logical pixels**. Every drawing function in the library operates in this coordinate space, and the runtime handles everything else.
 
 ## The Logical Canvas
@@ -37,7 +39,7 @@ The N64's actual framebuffer is **320 x 240** pixels. GoSprite64 places your 288
 
 The origin offset is `(16, 12)` - every logical coordinate you pass is translated by this amount before being drawn to the framebuffer. The margin area is not accessible to your game code.
 
-After rendering, the 320x240 framebuffer is scaled up to the TV's output resolution (640x480 for NTSC, 640x576 for PAL) and centered on screen, ensuring that pixels appear square regardless of the video standard.
+After rendering, the 320x240 framebuffer is scaled up to a 640x480 output image and then centered appropriately for the active TV mode, ensuring that pixels appear square regardless of whether the console is running in NTSC or PAL timing.
 
 ## Why 288x216?
 

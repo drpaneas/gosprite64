@@ -3,7 +3,7 @@ authors = ["drpaneas"]
 language = "en"
 src = "docs"
 title = "GoSprite64 Documentation"
-description = "Technical reference for the GoSprite64 library to help you make 2D games for Nintendo64."
+description = "Beginner-first documentation for building 2D Nintendo 64 games with GoSprite64."
 
 [build]
 build-dir = "book"

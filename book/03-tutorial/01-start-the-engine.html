@@ -8,7 +8,7 @@
 
         <!-- Custom HTML head -->
 
-        <meta name="description" content="Technical reference for the GoSprite64 library to help you make 2D games for Nintendo64.">
+        <meta name="description" content="Beginner-first documentation for building 2D Nintendo 64 games with GoSprite64.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-93be131b.js";
+            window.path_to_searchindex_js = "../searchindex-4be1cf00.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-a38ee8ab.js"></script>
+        <script src="../toc-a9422952.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -175,6 +175,14 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="step-1-start-the-engine"><a class="header" href="#step-1-start-the-engine">Step 1: Start the Engine</a></h1>
+<p>This longer tutorial starts after the beginner journey.</p>
+<p>If you are brand new, complete these pages first:</p>
+<ol>
+<li><a href="../02-first-journey/01-run-your-first-rom.html">Run Your First ROM</a></li>
+<li><a href="../02-first-journey/02-change-one-thing.html">Change One Thing</a></li>
+<li><a href="../02-first-journey/03-make-something-move.html">Make Something Move</a></li>
+</ol>
+<p>Unlike <code>Hello World</code>, this tutorial continues inside the GoSprite64 repository and uses the <code>examples/platformer/</code> layout throughout.</p>
 <p>Set up a minimal GoSprite64 project that compiles, runs, and draws a solid blue screen.</p>
 <h2 id="what-you-will-learn"><a class="header" href="#what-you-will-learn">What you will learn</a></h2>
 <ul>
@@ -240,15 +248,15 @@ func init() {
 	gosprite64.RegisterAssetFS(assetFS)
 }
 </code></pre>
-<p>For now, create a placeholder assets directory so the embed does not fail:</p>
+<p>For now, create a placeholder asset file so <code>//go:embed assets/*</code> has a real match:</p>
 <pre><code class="language-bash">mkdir -p examples/platformer/assets
-touch examples/platformer/assets/.gitkeep
+printf "placeholder\n" &gt; examples/platformer/assets/placeholder.txt
 </code></pre>
 <p>Build and run:</p>
 <pre><code class="language-bash">GOENV=n64.env go1.24.5-embedded build -o examples/platformer/game.elf ./examples/platformer
 n64go rom examples/platformer/game.elf
 </code></pre>
-<p>Open <code>game.z64</code> in the ares emulator. You should see a solid blue screen filling the display. That is your game running on N64 hardware - the simplest possible starting point.</p>
+<p>Open <code>examples/platformer/game.z64</code> in the ares emulator. You should see a solid blue screen filling the display. That is your game running on N64 hardware - the simplest possible starting point.</p>
 <h2 id="what-comes-next"><a class="header" href="#what-comes-next">What comes next</a></h2>
 <p>In the next steps we will add a tile world, a player character, animation, and controls. But the structure will always be the same: load things in Init, update state in Update, draw everything in Draw.</p>
 

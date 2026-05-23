@@ -1,6 +1,8 @@
 # D-Pad and Buttons
 
-Read digital button presses from the player-one controller. GoSprite64 polls controller state once per frame automatically, so these functions always reflect the current frame's input.
+> If you just finished the beginner journey, this page explains the concept behind the behavior you already saw on screen.
+
+Read digital button presses from the player-one controller. GoSprite64 polls controller state automatically before each `Update()` tick, so these functions reflect the current update tick's input.
 
 ```go
 import gs "github.com/drpaneas/gosprite64"
@@ -29,7 +31,7 @@ The N64 controller has 14 digital buttons. Each constant is a `ButtonMask` bitma
 
 ## Checking held buttons
 
-`IsButtonDown` returns `true` for every frame the button is physically held down:
+`IsButtonDown` returns `true` for every update tick the button is physically held down:
 
 ```go
 func (g *Game) Update() {
@@ -48,11 +50,11 @@ func (g *Game) Update() {
 }
 ```
 
-Use `IsButtonDown` for continuous actions like movement - the callback fires every frame while the button is pressed.
+Use `IsButtonDown` for continuous actions like movement - the check stays true on each update tick while the button is pressed.
 
 ## Detecting a fresh press
 
-`IsButtonJustPressed` returns `true` only on the first frame the button transitions from released to pressed. It will not fire again until the player releases and re-presses the button.
+`IsButtonJustPressed` returns `true` only on the first update tick where the button transitions from released to pressed. It will not fire again until the player releases and re-presses the button.
 
 ```go
 func (g *Game) Update() {

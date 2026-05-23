@@ -18,7 +18,7 @@ This is the simplest possible tile game, but it uses the same pipeline you would
 
 ## Prerequisites
 
-Complete the [Getting Started](./getting_started.md) guide first. You need these tools installed:
+Complete the [Installation](../02-getting-started/installation.md) guide first. If you want a smaller warm-up before this longer tutorial, run through [Hello World](../02-getting-started/hello-world.md) too. You need these tools installed:
 
 | Tool | Purpose |
 |------|---------|
